@@ -1,0 +1,16 @@
+PINTO FC26 1.2.1 — FIX RELÁMPAGO EN CELULARES
+
+CORREGIDO:
+- La barra inferior móvil faltaba en app.html.
+- Ahora aparece ⚡ RELÁMPAGO en celulares.
+- También aparecen Inicio, Draft, Jugadores, Clubes, Liga y Admin.
+- El botón Admin solo aparece para cuentas Admin.
+- La barra se adapta automáticamente al ancho del teléfono.
+
+SUBE A GITHUB:
+1. app.html
+2. server.js
+3. package.json
+
+Después:
+Commit changes → espera Railway Online → cierra la pestaña/app del celular y vuelve a abrirla.

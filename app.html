@@ -289,11 +289,39 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
 }
 @media(max-width:420px){.relTeamSelector{grid-template-columns:1fr}.relBolt{font-size:60px}}
 
+
+@media(max-width:760px){
+  .mobileBottomNav{
+    display:flex!important;
+    height:72px;
+    gap:2px;
+    padding:5px 3px calc(5px + env(safe-area-inset-bottom));
+    overflow:hidden;
+  }
+  .mobileBottomNav button{
+    flex:1 1 0;
+    min-width:0;
+    padding:4px 1px;
+    font-size:7px;
+    letter-spacing:-.15px;
+    min-height:54px;
+  }
+  .mobileBottomNav button span{font-size:17px}
+  .mobileBottomNav button[data-mobile-page="relampago"]{
+    color:#62ff7f;
+    font-weight:1000;
+  }
+  .mobileBottomNav button[data-mobile-page="relampago"].active{
+    background:#0b4c20;
+    color:#fff;
+  }
+}
+
 </style>
 </head>
 <body><div id="app" class="app">
   <header class="top">
-    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.2.0 PLATFORM</div></div></div>
+    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.2.1 PLATFORM</div></div></div>
     <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="relampago">⚡ RELÁMPAGO</button><button data-page="rules">REGLAMENTO</button><button data-page="admin">ADMIN PANEL</button></nav>
     <div class="topUser"><span id="syncBadge" class="syncBadge">● CONECTADO</span><div id="roleChip" class="roleChip"></div><button class="btn secondary" id="logout">SALIR</button></div>
   </header>
@@ -589,6 +617,16 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
 </section>
   </main>
 </div>
+
+<nav class="mobileBottomNav" aria-label="Navegación móvil">
+  <button class="active" data-mobile-page="home"><span>⌂</span>INICIO</button>
+  <button data-mobile-page="draft"><span>◉</span>DRAFT</button>
+  <button data-mobile-page="players"><span>♙</span>JUGADORES</button>
+  <button data-mobile-page="clubs"><span>🛡</span>CLUBES</button>
+  <button data-mobile-page="league"><span>▦</span>LIGA</button>
+  <button data-mobile-page="relampago"><span>⚡</span>RELÁMPAGO</button>
+  <button class="admin-mobile hidden" data-mobile-page="admin"><span>⚙</span>ADMIN</button>
+</nav>
 
 <div id="pickModal" class="modal"><div class="reveal"><h2>THE PICK IS IN</h2><div id="modalTeam" style="font-size:22px;font-weight:900"></div><div class="muted" style="margin:10px">SELECTS</div><div id="modalPlayer" class="big green"></div><div id="modalMeta" class="muted"></div></div></div>
 
@@ -1161,7 +1199,7 @@ function render(){
  leagueBody.innerHTML=state.teams.filter(t=>t.approved).map((t,idx)=>`<tr><td>${idx+1}</td><td>${t.name}</td><td>${t.dt}</td><td>${state.picks.filter(p=>p.teamId===t.id).length}</td><td class="green">ACTIVO</td></tr>`).join("");
  if(isAdmin()) renderPendingAccounts();
  adminLog.innerHTML=state.log.slice(0,25).map((l,idx)=>`<div class="row"><b>${idx+1}</b><span>${l}</span><span></span></div>`).join("")||'<div class="muted">Sin actividad.</div>';
- pauseBtn.textContent=state.paused?"REANUDAR DRAFT":"PAUSAR DRAFT";renderCards();renderV8();renderLeague();renderRelampago();renderRulebook();updateTimer();if(isAdmin())renderPendingAccounts()
+ pauseBtn.textContent=state.paused?"REANUDAR DRAFT":"PAUSAR DRAFT";renderCards();renderV8();renderLeague();renderRelampago();renderRulebook();mobileRoleNav();updateTimer();if(isAdmin())renderPendingAccounts()
 }
 
 pauseBtn.addEventListener("click",()=>{if(!isAdmin())return;state.paused=!state.paused;state.log.unshift(state.paused?"Draft pausado":"Draft reanudado");persist()});
