@@ -1,0 +1,16 @@
+PINTO FC26 1.0.11 — LOGO EMBEBIDO
+
+CORREGIDO:
+- El logo ya NO depende de /assets/pinto-draft-logo.png.
+- El logo está guardado directamente dentro de index.html.
+- Safari, iPhone y Railway no pueden perder la ruta del archivo.
+- Se mantiene la animación del logo.
+- No necesitas subir carpeta assets.
+
+SUBE A GITHUB SOLO:
+index.html
+server.js
+package.json
+
+Después Commit changes y espera Railway Online.
+No necesitas rehacer Setup.exe.
