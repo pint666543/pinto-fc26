@@ -34,6 +34,27 @@ body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;back
   .msg{font-size:13px!important;line-height:1.45!important}
 }
 
+
+/* ===== MOBILE PRO ANIMATED 1.0.7 ===== */
+@keyframes floatGlow{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(12px,-10px,0) scale(1.06)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(60,255,103,.08)}50%{box-shadow:0 0 30px 0 rgba(60,255,103,.16)}}
+@keyframes shimmer{0%{background-position:-180% 0}100%{background-position:180% 0}}
+body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(60px);pointer-events:none;z-index:-1}
+body::before{width:260px;height:260px;background:rgba(60,255,103,.08);top:-80px;right:-60px;animation:floatGlow 7s ease-in-out infinite}
+body::after{width:220px;height:220px;background:rgba(65,125,255,.05);bottom:-70px;left:-60px;animation:floatGlow 9s ease-in-out infinite reverse}
+.shell{animation:fadeUp .55s ease both}
+.hero,.card{position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:auto -30% -45% 15%;height:180px;background:linear-gradient(110deg,transparent,rgba(60,255,103,.08),transparent);transform:rotate(-8deg);animation:shimmer 6s linear infinite;background-size:220% 100%}
+.tabs button,.btn,input,select{transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
+.tabs button:active,.btn:active{transform:scale(.98)}
+.btn{animation:pulseGlow 3.2s ease-in-out infinite}
+input:focus,select:focus{transform:translateY(-1px);box-shadow:0 0 0 3px rgba(60,255,103,.07)}
+.form:not(.hidden){animation:fadeUp .28s ease both}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+
 </style>
 </head>
 <body>

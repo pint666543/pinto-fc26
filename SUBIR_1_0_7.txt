@@ -1,0 +1,24 @@
+PINTO FC26 1.0.7 MOBILE PRO ANIMATED
+
+NUEVO:
+- Animaciones suaves al entrar y cambiar de sección.
+- Fondo con luces vivas y profundidad.
+- Tarjetas con entrada animada.
+- Timer con pulso visual.
+- Menú móvil con feedback y animación.
+- Botones con microinteracciones.
+- Pick Reveal con barrido de luz.
+- Vibración ligera en móviles compatibles.
+- Respeta "Reducir movimiento" del sistema.
+
+MISMO BACKEND / MISMA BASE:
+No cambia tu Railway ni PostgreSQL.
+No necesitas rehacer Setup.exe.
+
+SUBE A GITHUB:
+index.html
+app.html
+server.js
+package.json
+
+Luego Commit changes y espera Railway Online.
