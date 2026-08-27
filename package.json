@@ -1,8 +1,8 @@
 {
   "name": "pinto-fc26-v10-online",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
-  "description": "PINTO FC26 Release 1.0.4 in-app admin panel",
+  "description": "PINTO FC26 Release 1.0.5 clean league and admin delete controls",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

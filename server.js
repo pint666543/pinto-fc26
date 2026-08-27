@@ -169,6 +169,72 @@ app.post("/api/admin/users/:id/:action",auth,adminOnly,async(req,res)=>{
 });
 
 
+
+async function deleteUserAccount(id){
+ if(!id)return;
+ if(!usePostgres){
+   localUsers=localUsers.filter(u=>String(u.id)!==String(id)||u.role==="admin");
+   saveLocal(); return;
+ }
+ await pool.query("DELETE FROM pinto_users WHERE id=$1 AND role<>'admin'",[id]);
+}
+
+app.delete("/api/admin/players/:id",auth,adminOnly,async(req,res)=>{
+ try{
+   const id=req.params.id;
+   const st=(await getStore()).state;
+   const player=(st.players||[]).find(p=>String(p.id)===String(id));
+   if(!player)return res.status(404).json({error:"not_found"});
+   await mutate(x=>{
+     x.players=(x.players||[]).filter(p=>String(p.id)!==String(id));
+     x.picks=(x.picks||[]).filter(pk=>String(pk.playerId)!==String(id));
+     if(x.scouting)Object.values(x.scouting).forEach(v=>{
+       if(v?.favorites)v.favorites=v.favorites.filter(pid=>String(pid)!==String(id));
+       if(v?.notes)delete v.notes[id];
+     });
+     if(x.combine)delete x.combine[id];
+     x.log.unshift(`Jugador eliminado: ${player.name}`);
+   });
+   if(player.accountId)await deleteUserAccount(player.accountId);
+   res.json({ok:true});
+ }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.delete("/api/admin/clubs/:id",auth,adminOnly,async(req,res)=>{
+ try{
+   const id=req.params.id;
+   const st=(await getStore()).state;
+   const team=(st.teams||[]).find(t=>String(t.id)===String(id));
+   if(!team)return res.status(404).json({error:"not_found"});
+   await mutate(x=>{
+     x.teams=(x.teams||[]).filter(t=>String(t.id)!==String(id));
+     const removedPicks=(x.picks||[]).filter(pk=>String(pk.teamId)===String(id));
+     const returned=new Set(removedPicks.map(pk=>String(pk.playerId)));
+     x.picks=(x.picks||[]).filter(pk=>String(pk.teamId)!==String(id));
+     (x.players||[]).forEach(p=>{if(returned.has(String(p.id)))p.status="Disponible"});
+     x.skips=(x.skips||[]).filter(sk=>String(sk.teamId)!==String(id));
+     x.log.unshift(`Club eliminado: ${team.name}`);
+   });
+   if(team.accountId)await deleteUserAccount(team.accountId);
+   res.json({ok:true});
+ }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.post("/api/admin/clean-league",auth,adminOnly,async(req,res)=>{
+ try{
+   await mutate(x=>{
+     x.teams=[];x.players=[];x.playerRequests=[];x.dtRequests=[];x.picks=[];x.skips=[];
+     x.paused=false;x.scouting={};x.combine={};x.log=["Liga limpiada por administrador"];
+   });
+   if(!usePostgres){
+     localUsers=localUsers.filter(u=>u.role==="admin"); saveLocal();
+   }else{
+     await pool.query("DELETE FROM pinto_users WHERE role<>'admin'");
+   }
+   res.json({ok:true});
+ }catch(e){res.status(500).json({error:"server_error"})}
+});
+
 app.get("/api/admin/users",auth,adminOnly,async(req,res)=>{
  try{
    let users;
@@ -213,4 +279,4 @@ app.put("/api/state",auth,async(req,res)=>{
 app.get("/app.html",(req,res)=>res.sendFile(path.join(ROOT,"app.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"index.html")));
 
-initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.0.4 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
+initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.0.5 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});

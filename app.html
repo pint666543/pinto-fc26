@@ -230,6 +230,7 @@ button{cursor:pointer}
           <button class="btn secondary" id="adminTimeBtn">+60 SEGUNDOS</button>
           <button class="btn secondary" id="adminResetBtn">REINICIAR DRAFT</button>
           <button class="btn secondary" id="adminBackupBtn">BACKUP JSON</button>
+          <button class="btn danger" id="adminCleanLeagueBtn">LIMPIAR EQUIPOS Y JUGADORES</button>
         </div>
       </div>
 
@@ -421,6 +422,25 @@ function approveDt(id){
 }
 function rejectDt(id){const r=state.dtRequests.find(x=>x.id===id);state.dtRequests=state.dtRequests.filter(x=>x.id!==id);state.log.unshift(`DT rechazado: ${r?.name||id}`);persist()}
 
+async function deletePlayerAdmin(id){
+ if(!isAdmin()||!confirm("¿Eliminar este jugador definitivamente?"))return;
+ const r=await fetch("/api/admin/players/"+encodeURIComponent(id),{method:"DELETE",headers:authHeaders()});
+ if(!r.ok){alert("No se pudo eliminar el jugador.");return}
+ await fetchServerState();render();loadAdminPanel();
+}
+async function deleteClubAdmin(id){
+ if(!isAdmin()||!confirm("¿Eliminar este club? Sus picks serán retirados y los jugadores volverán a estar disponibles."))return;
+ const r=await fetch("/api/admin/clubs/"+encodeURIComponent(id),{method:"DELETE",headers:authHeaders()});
+ if(!r.ok){alert("No se pudo eliminar el club.");return}
+ await fetchServerState();render();loadAdminPanel();
+}
+async function cleanLeagueAdmin(){
+ if(!isAdmin()||!confirm("¿LIMPIAR TODO? Se eliminarán todos los clubes, jugadores, solicitudes y cuentas que no sean Admin."))return;
+ const r=await fetch("/api/admin/clean-league",{method:"POST",headers:authHeaders()});
+ if(!r.ok){alert("No se pudo limpiar la liga.");return}
+ await fetchServerState();render();loadAdminPanel();alert("Liga limpia. Lista para nuevos equipos y jugadores.");
+}
+
 function render(){
  
  const i=currentInfo(),mine=myTeam();
@@ -443,8 +463,10 @@ function render(){
  homeTracker.innerHTML=tracker;fullTracker.innerHTML=tracker;nextTurns.innerHTML=tracker;
  const picks=state.picks.slice(-6).reverse().map(pk=>{const t=state.teams.find(x=>x.id===pk.teamId),p=state.players.find(x=>x.id===pk.playerId);return `<div class="row"><b>#${pk.no}</b><span>${t.name} → ${p.name}</span><span>${p.pos}</span></div>`}).join("")||'<div class="muted">Sin picks todavía.</div>';homePicks.innerHTML=picks;recentPicks.innerHTML=picks;
  homeRequests.innerHTML=[...state.playerRequests.map(r=>`<div class="row"><b>JUG</b><span>${r.name} • ${r.pos}</span><span>PEND.</span></div>`),...state.dtRequests.map(r=>`<div class="row"><b>DT</b><span>${r.name} • ${r.club}</span><span>PEND.</span></div>`)].slice(0,6).join("")||'<div class="muted">Sin registros pendientes.</div>';
- playersTable.innerHTML='<tr><th>Jugador</th><th>EA ID</th><th>Pos</th><th>2ª</th><th>País</th><th>Plataforma</th><th>Estado</th></tr>'+state.players.map(p=>`<tr><td>${p.name}</td><td>${p.ea}</td><td>${p.pos}</td><td>${p.sec}</td><td>${p.country}</td><td>${p.platform}</td><td>${p.status}</td></tr>`).join("");
- clubsTable.innerHTML='<tr><th>Club</th><th>DT</th><th>Abbr</th><th>Plantilla</th></tr>'+state.teams.filter(t=>t.approved).map(t=>`<tr><td>${t.name}</td><td>${t.dt}</td><td>${t.abbr}</td><td>${state.picks.filter(p=>p.teamId===t.id).length}</td></tr>`).join("");
+ playersTable.innerHTML='<tr><th>Jugador</th><th>EA ID</th><th>Pos</th><th>2ª</th><th>País</th><th>Plataforma</th><th>Estado</th>'+(isAdmin()?'<th>Acción</th>':'')+'</tr>'+state.players.map(p=>`<tr><td>${p.name}</td><td>${p.ea}</td><td>${p.pos}</td><td>${p.sec}</td><td>${p.country}</td><td>${p.platform}</td><td>${p.status}</td>${isAdmin()?`<td><button class="btn danger" data-delete-player="${p.id}">ELIMINAR</button></td>`:""}</tr>`).join("");
+ document.querySelectorAll("[data-delete-player]").forEach(b=>b.onclick=()=>deletePlayerAdmin(b.dataset.deletePlayer));
+ clubsTable.innerHTML='<tr><th>Club</th><th>DT</th><th>Abbr</th><th>Plantilla</th>'+(isAdmin()?'<th>Acción</th>':'')+'</tr>'+state.teams.filter(t=>t.approved).map(t=>`<tr><td>${t.name}</td><td>${t.dt}</td><td>${t.abbr}</td><td>${state.picks.filter(p=>p.teamId===t.id).length}</td>${isAdmin()?`<td><button class="btn danger" data-delete-club="${t.id}">ELIMINAR</button></td>`:""}</tr>`).join("");
+ document.querySelectorAll("[data-delete-club]").forEach(b=>b.onclick=()=>deleteClubAdmin(b.dataset.deleteClub));
  leagueBody.innerHTML=state.teams.filter(t=>t.approved).map((t,idx)=>`<tr><td>${idx+1}</td><td>${t.name}</td><td>${t.dt}</td><td>${state.picks.filter(p=>p.teamId===t.id).length}</td><td class="green">ACTIVO</td></tr>`).join("");
  if(isAdmin()) renderPendingAccounts();
  adminLog.innerHTML=state.log.slice(0,25).map((l,idx)=>`<div class="row"><b>${idx+1}</b><span>${l}</span><span></span></div>`).join("")||'<div class="muted">Sin actividad.</div>';
@@ -513,6 +535,7 @@ function setupAdminPanel(){
   const time=document.getElementById("adminTimeBtn"); if(time)time.onclick=()=>document.getElementById("addTimeBtn")?.click();
   const reset=document.getElementById("adminResetBtn"); if(reset)reset.onclick=()=>document.getElementById("resetDraftBtn")?.click();
   const backup=document.getElementById("adminBackupBtn"); if(backup)backup.onclick=()=>document.getElementById("exportBtn")?.click();
+  const clean=document.getElementById("adminCleanLeagueBtn"); if(clean)clean.onclick=cleanLeagueAdmin;
 
   loadAdminPanel();
 }

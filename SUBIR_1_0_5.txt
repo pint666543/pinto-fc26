@@ -1,0 +1,15 @@
+PINTO FC26 1.0.5
+- Botón ELIMINAR en PLAYERS (solo Admin)
+- Botón ELIMINAR en CLUBS (solo Admin)
+- Botón LIMPIAR EQUIPOS Y JUGADORES en PANEL ADMIN
+- Limpiar todo conserva únicamente las cuentas Admin
+- Elimina clubes, jugadores, solicitudes, picks y datos asociados para empezar la liga desde cero.
+
+SUBE A GITHUB Y REEMPLAZA:
+index.html
+app.html
+server.js
+package.json
+
+Después Commit changes y espera Railway Deployment successful.
+No necesitas rehacer el Setup.exe.
