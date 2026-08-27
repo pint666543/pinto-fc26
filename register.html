@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PINTO FC26 — Registro Online</title>
+<style>
+:root{--bg:#020609;--panel:#09151d;--line:#1b3945;--green:#3cff67;--text:#f5f8fa;--muted:#8fa2ad}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,rgba(60,255,103,.09),transparent 30%),linear-gradient(#020609,#07110a);color:var(--text);font-family:Segoe UI,Arial,sans-serif;padding:18px}
+.wrap{max-width:680px;margin:auto}.brand{display:flex;align-items:center;gap:10px;margin:12px 0 22px}.logo{width:48px;height:48px;border:2px solid var(--green);display:grid;place-items:center;font-weight:900;font-size:24px;clip-path:polygon(50% 0,94% 18%,88% 78%,50% 100%,12% 78%,6% 18%)}h1{margin:0;font-size:23px;font-style:italic}h1 span{color:var(--green)}small{color:var(--muted);letter-spacing:3px}
+.panel{background:linear-gradient(180deg,#0a1821,#061017);border:1px solid var(--line);border-radius:12px;padding:18px}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px}.tabs button{padding:12px;background:#0b1922;border:1px solid #1d3a46;color:white;border-radius:7px;font-weight:800}.tabs button.active{border-color:var(--green);background:#0d3619}.form{display:none}.form.active{display:block}label{display:block;color:#a7b5bd;font-size:12px;font-weight:800;margin:11px 0 5px}input,select,textarea{width:100%;padding:12px;background:#06121a;border:1px solid #1e3b47;color:white;border-radius:7px;font-size:16px}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.send{width:100%;margin-top:16px;padding:13px;border-radius:7px;border:1px solid var(--green);background:linear-gradient(#25d253,#0d8a31);color:white;font-weight:900;font-size:16px}.msg{display:none;margin-top:14px;padding:12px;border:1px solid #1a7438;background:#092012;border-radius:7px;color:#d7ffe1}.muted{color:var(--muted)}@media(max-width:520px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="brand"><div class="logo">P</div><div><h1>PINTO <span>FC26</span></h1><small>REGISTRATION</small></div></div>
+<div class="panel">
+<h2>Inscripción oficial</h2><p class="muted">Llena tu formulario desde el teléfono. Tu solicitud llegará directamente al panel del comisionado.</p>
+<div class="tabs"><button class="active" data-tab="player">JUGADOR</button><button data-tab="dt">DT / CLUB</button></div>
+<div id="player" class="form active">
+<label>Nombre / apodo</label><input id="pName">
+<label>EA ID</label><input id="pEa">
+<div class="two"><div><label>Posición</label><select id="pPos"><option>POR</option><option>DFC</option><option>LI</option><option>LD</option><option>MCD</option><option>MC</option><option>MCO</option><option>EI</option><option>ED</option><option>DC</option></select></div><div><label>Secundaria</label><select id="pSec"><option>-</option><option>POR</option><option>DFC</option><option>LI</option><option>LD</option><option>MCD</option><option>MC</option><option>MCO</option><option>EI</option><option>ED</option><option>DC</option></select></div></div>
+<div class="two"><div><label>País</label><input id="pCountry"></div><div><label>Plataforma</label><select id="pPlatform"><option>PC</option><option>PlayStation</option><option>Xbox</option></select></div></div>
+<label>Discord</label><input id="pDiscord">
+<label>Disponibilidad</label><input id="pAvail" placeholder="Ej. Lun-Jue después de 9 PM">
+<label>Experiencia / comentario</label><textarea id="pNotes" rows="3"></textarea>
+<button class="send" id="sendPlayer">ENVIAR INSCRIPCIÓN</button>
+</div>
+<div id="dt" class="form">
+<label>Nombre del DT</label><input id="dName">
+<label>EA ID</label><input id="dEa">
+<label>Nombre del club</label><input id="dClub">
+<div class="two"><div><label>Abreviatura</label><input id="dAbbr" maxlength="4"></div><div><label>Región</label><input id="dRegion"></div></div>
+<label>Capitán</label><input id="dCaptain"><label>Subcapitán</label><input id="dVice">
+<label>Discord</label><input id="dDiscord">
+<label>Experiencia como DT</label><textarea id="dNotes" rows="3"></textarea>
+<button class="send" id="sendDt">ENVIAR SOLICITUD</button>
+</div>
+<div id="msg" class="msg"></div>
+</div>
+</div>
+<script>
+document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-tab]").forEach(x=>x.classList.toggle("active",x===b));document.querySelectorAll(".form").forEach(f=>f.classList.toggle("active",f.id===b.dataset.tab))});
+function show(m){msg.textContent=m;msg.style.display="block";window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"})}
+sendPlayer.onclick=async()=>{const name=pName.value.trim();if(!name){show("Escribe tu nombre/apodo.");return}
+const req={id:Date.now(),name,ea:pEa.value.trim()||name,pos:pPos.value,sec:pSec.value,country:pCountry.value.trim()||"—",platform:pPlatform.value,discord:pDiscord.value.trim(),availability:pAvail.value.trim(),notes:pNotes.value.trim(),status:"Pendiente",created:new Date().toLocaleString()};
+try{const r=await fetch("/api/register/player",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(req)});if(!r.ok)throw 0;show("✅ Inscripción enviada. El comisionado ya puede verla en la app.");sendPlayer.disabled=true}catch(e){show("❌ No se pudo conectar con el servidor. Verifica que estés en la Internet que la PC.")}};
+sendDt.onclick=async()=>{const name=dName.value.trim(),club=dClub.value.trim();if(!name||!club){show("Escribe nombre del DT y club.");return}
+const req={id:Date.now(),name,ea:dEa.value.trim()||name,club,abbr:dAbbr.value.trim().toUpperCase()||"FC",region:dRegion.value.trim(),captain:dCaptain.value.trim(),vice:dVice.value.trim(),discord:dDiscord.value.trim(),notes:dNotes.value.trim(),status:"Pendiente",created:new Date().toLocaleString()};
+try{const r=await fetch("/api/register/dt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(req)});if(!r.ok)throw 0;show("✅ Solicitud enviada. El comisionado ya puede verla en la app.");sendDt.disabled=true}catch(e){show("❌ No se pudo conectar con el servidor.")}};
+</script>
+</body></html>

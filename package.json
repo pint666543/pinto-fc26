@@ -1,0 +1,17 @@
+{
+  "name": "pinto-fc26-v10-online",
+  "version": "10.0.0",
+  "private": true,
+  "description": "PINTO FC26 online Pro Clubs draft platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "pg": "^8.13.3"
+  }
+}

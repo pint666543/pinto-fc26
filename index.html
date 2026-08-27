@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PINTO FC26 — V10 Online</title>
+<style>
+:root{
+  --bg:#020609;--bg2:#071009;--panel:#071219;--panel2:#0b1821;--panel3:#10222d;
+  --line:#17333f;--green:#3cff67;--green2:#1ac449;--green3:#0f7c31;
+  --text:#f6f9fa;--muted:#8ea1ac;--blue:#4aa5ff;--red:#ff4f5c;--gold:#e6c64e;
+  --shadow:0 16px 55px rgba(0,0,0,.38)
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:
+ radial-gradient(circle at 70% 10%,rgba(60,255,103,.07),transparent 28%),
+ radial-gradient(circle at 12% 80%,rgba(60,255,103,.045),transparent 25%),
+ linear-gradient(180deg,#020609,#06100b 58%,#020609);
+ color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.green{color:var(--green)}.blue{color:var(--blue)}.red{color:var(--red)}.muted{color:var(--muted)}
+.panel{background:linear-gradient(180deg,rgba(10,24,33,.98),rgba(5,13,18,.98));border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.btn{border:0;border-radius:7px;padding:11px 15px;font-weight:850}
+.btn.primary{background:linear-gradient(180deg,#28d455,#0b8f31);border:1px solid var(--green);color:white}
+.btn.secondary{background:#0d1b25;border:1px solid #284754;color:white}
+.btn.danger{background:#72232c;border:1px solid #a83d48;color:white}
+.input{background:#07131b;border:1px solid #1e3b48;border-radius:7px;color:white;padding:11px 12px;outline:none}
+.input:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(60,255,103,.08)}
+
+.auth{min-height:100vh;display:grid;grid-template-columns:1.15fr .85fr}
+.authHero{padding:58px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.authHero:after{content:"26";position:absolute;right:4%;bottom:-4%;font-size:270px;font-weight:1000;font-style:italic;color:rgba(60,255,103,.035)}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:58px;height:58px;border:2px solid var(--green);clip-path:polygon(50% 0,94% 18%,88% 78%,50% 100%,12% 78%,6% 18%);display:grid;place-items:center;font-weight:950;font-size:30px}
+.brandTitle{font-size:29px;font-weight:950;font-style:italic;letter-spacing:-1px}.brandTitle span{color:var(--green)}.brandSub{font-size:9px;color:#a5b5bd;letter-spacing:5px}
+.authHero h1{font-size:58px;line-height:.94;margin:54px 0 14px;max-width:780px}.authHero h1 em{font-style:italic;color:var(--green)}
+.authHero p{max-width:650px;color:#becbd1;font-size:17px;line-height:1.6}.authPills{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.pill{border:1px solid #1c3d48;background:#08151c;padding:9px 13px;border-radius:999px;color:#c8d4da;font-size:12px;font-weight:700}
+.authSide{padding:34px;display:flex;align-items:center;justify-content:center}.authCard{width:min(520px,100%);padding:26px}.authTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:#061018;padding:5px;border-radius:9px}.authTabs button{background:transparent;border:0;color:#93a4ae;padding:10px;border-radius:6px;font-weight:800}.authTabs button.active{background:#10351b;color:white;box-shadow:inset 0 0 0 1px #1e7f38}
+.authForm{margin-top:18px}.authForm label{display:block;font-size:11px;color:#9badb6;font-weight:800;margin:11px 0 5px}.authForm .input{width:100%}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.roleGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.roleBox{padding:14px;border:1px solid #19343f;border-radius:8px;background:#08141c}.roleBox b{display:block;margin-bottom:4px}
+.note{padding:10px;border:1px solid #1c6935;background:#092012;border-radius:6px;color:#d6ffe0;font-size:12px;margin-top:12px}
+
+.app{display:grid;grid-template-columns:238px 1fr;grid-template-rows:74px 1fr;min-height:100vh}
+.top{grid-column:1/3;height:74px;background:rgba(2,6,8,.96);border-bottom:1px solid #112a34;display:flex;align-items:center;padding:0 18px;gap:20px;position:sticky;top:0;z-index:10}
+.topBrand{width:220px}.topBrand .logo{width:45px;height:45px;font-size:23px}.topBrand .brandTitle{font-size:21px}.topBrand .brandSub{font-size:7px}
+.topNav{height:100%;display:flex}.topNav button{background:transparent;border:0;border-bottom:3px solid transparent;color:#d4dde1;padding:0 18px;font-weight:850}.topNav button:hover,.topNav button.active{border-bottom-color:var(--green);background:linear-gradient(180deg,rgba(60,255,103,.09),transparent);color:white}
+.topUser{margin-left:auto;display:flex;align-items:center;gap:10px}.roleChip{padding:9px 12px;border:1px solid #1c3b48;background:#08151d;border-radius:7px;font-size:11px;font-weight:900}
+.side{grid-row:2;background:linear-gradient(180deg,#061018,#06100c);border-right:1px solid var(--line);padding:11px 9px;display:flex;flex-direction:column}
+.side button{background:transparent;border:0;color:#c2cfd5;text-align:left;padding:10px 13px;border-radius:6px;font-weight:780;margin-bottom:2px}.side button:hover,.side button.active{background:linear-gradient(90deg,#0b6526,#12341a);outline:1px solid #1a9d3d;color:white}
+.sideFoot{margin-top:auto}.server{padding:11px;border:1px solid var(--line);border-radius:8px;background:#08141b;font-size:11px}
+.main{grid-column:2;grid-row:2;padding:14px;min-width:0}.page{display:none}.page.active{display:block}
+.pageTitle{font-size:23px;font-weight:950;margin:2px 0 12px}
+.heroGrid{display:grid;grid-template-columns:1.55fr .85fr .72fr;gap:12px}
+.hero{min-height:300px;padding:28px;position:relative;overflow:hidden;background:
+ radial-gradient(circle at 76% 44%,rgba(60,255,103,.14),transparent 25%),
+ linear-gradient(120deg,#071118,#082013)}
+.hero:before{content:"PINTO";position:absolute;right:4%;top:10%;font-size:100px;font-weight:1000;color:rgba(255,255,255,.018);font-style:italic}
+.hero small{color:var(--green);font-weight:900}.hero h2{font-size:33px;margin:8px 0 0}.hero h1{font-size:60px;color:var(--green);font-style:italic;line-height:.92;margin:0 0 14px}.hero p{max-width:550px;color:#bdc9cf;line-height:1.5}
+.clockCard{padding:18px}.clockCard h3{margin:0 0 12px;color:var(--green)}.teamLine{display:flex;gap:10px;align-items:center}.badge{width:62px;height:70px;border:2px solid #e0e7ea;border-radius:17px 17px 27px 27px;display:grid;place-items:center;font-weight:900;background:#121a1e}.timer{font-size:55px;text-align:center;font-weight:950;color:var(--green);margin:12px 0 0}
+.needCard{padding:16px}.pitch{height:180px;border:1px solid #1c6835;border-radius:7px;background:linear-gradient(rgba(0,40,20,.24),rgba(0,18,10,.28));position:relative}.pitch:before{content:"";position:absolute;inset:12px;border:1px solid #1d5630}.pitch:after{content:"";position:absolute;left:50%;top:12px;bottom:12px;border-left:1px solid #1d5630}.pos{position:absolute;width:31px;height:31px;border:1px solid var(--green);border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:850;background:#07110c;z-index:2}
+.metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:10px 0}.metric{padding:15px}.metric b{display:block;color:var(--green);font-size:30px}.metric span{color:#b9c6cc;font-size:10px;font-weight:800}
+.bottomGrid{display:grid;grid-template-columns:1.05fr 1fr 1.05fr;gap:10px}.cardHead{padding:13px 15px;border-bottom:1px solid #15303b;font-weight:900}.body{padding:14px}
+.row{display:grid;grid-template-columns:44px 1fr auto;gap:8px;padding:8px;border-bottom:1px solid #142d37;align-items:center;font-size:12px}.row.on{background:#0c3518;border:1px solid #1c8034;border-radius:6px}
+.draftGrid{display:grid;grid-template-columns:1fr 340px;gap:12px}.draftMain{padding:16px}.filters{display:flex;gap:8px;flex-wrap:wrap;margin:13px 0}.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.pCard{padding:12px;background:linear-gradient(180deg,#142018,#0a120e);border:1px solid #294833;border-radius:9px}.pCard.top{border-color:var(--green)}.rating{font-size:32px;font-weight:950}.avatar{height:83px;border-radius:7px;background:radial-gradient(circle,#293a30,#0b120f 65%);display:grid;place-items:center;font-size:39px;margin:8px 0}.pickBtn{width:100%;margin-top:9px;background:#0f812d;border:1px solid var(--green);color:white;border-radius:5px;padding:8px;font-weight:900}
+.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px;border-bottom:1px solid #16303b;text-align:left;font-size:12px}.table th{font-size:10px;color:#90a2ac}.table tr:hover{background:#0b1b22}
+.adminGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.command{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.command .btn{min-height:67px}
+.requestCard{padding:14px;border:1px solid #1d3945;border-radius:8px;background:#08141c;margin-bottom:8px}.requestTop{display:flex;justify-content:space-between;gap:10px}.requestMeta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.tag{padding:5px 8px;border-radius:999px;background:#10232d;border:1px solid #24434f;font-size:10px;color:#c8d4d9}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:30;place-items:center}.modal.show{display:grid}.reveal{width:min(760px,92vw);padding:50px;text-align:center;background:radial-gradient(circle at 50% 45%,rgba(60,255,103,.17),transparent 36%),#050b0e;border:1px solid #1d7037;border-radius:14px}.reveal h2{color:var(--green)}.big{font-size:47px;font-weight:950}
+@media(max-width:1200px){.heroGrid{grid-template-columns:1fr 1fr}.heroGrid>:last-child{display:none}.metrics{grid-template-columns:repeat(3,1fr)}.cards{grid-template-columns:repeat(3,1fr)}}
+
+.warGrid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px}
+.board{overflow:auto}.boardGrid{display:grid;grid-template-columns:90px repeat(4,minmax(170px,1fr));min-width:850px}
+.boardCell{min-height:86px;padding:10px;border-right:1px solid #17313c;border-bottom:1px solid #17313c;background:#08141b}
+.boardCell.head{min-height:auto;background:#0c2028;font-weight:900;color:#dbe6ea}.boardCell.round{background:#0a181f;color:var(--green);font-weight:950}
+.favorite{border-color:#826f20!important;box-shadow:inset 0 0 0 1px rgba(230,198,78,.25)}.starBtn{float:right;background:transparent;border:0;color:var(--gold);font-size:20px;padding:0}
+.scoutRow{display:grid;grid-template-columns:1fr 90px 90px;gap:8px;align-items:center;padding:9px;border-bottom:1px solid #15303b}
+.scoutRow input{width:100%}.formation{height:520px;position:relative;border:1px solid #1e6d39;border-radius:10px;background:linear-gradient(90deg,rgba(12,71,36,.34),rgba(5,37,21,.34));overflow:hidden}
+.formation:before{content:"";position:absolute;inset:20px;border:1px solid rgba(84,202,112,.45)}
+.formation:after{content:"";position:absolute;left:50%;top:20px;bottom:20px;border-left:1px solid rgba(84,202,112,.45)}
+.slot{position:absolute;transform:translate(-50%,-50%);width:104px;min-height:58px;border:1px dashed #4d8560;border-radius:8px;background:rgba(4,16,9,.88);display:grid;place-items:center;text-align:center;padding:5px;font-size:11px;z-index:2}.slot.filled{border-style:solid;border-color:var(--green);background:#0b3518}
+.combineGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.combineCard{padding:14px}.combineScore{font-size:34px;color:var(--green);font-weight:950}
+.profileHero{display:grid;grid-template-columns:170px 1fr;gap:18px}.profileCard{height:210px;border:1px solid #397247;border-radius:12px;background:radial-gradient(circle,#263c2c,#09110d 68%);display:grid;place-items:center;font-size:72px}.statBars{display:grid;grid-template-columns:1fr 1fr;gap:9px}.bar{height:8px;background:#10242b;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#148f35,#3cff67)}
+
+
+.syncBadge{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid #1e5530;border-radius:999px;background:#081b10;color:#bfffcf;font-size:10px;font-weight:900}
+.syncBadge.off{border-color:#63313a;background:#1e0b0e;color:#ffc2c7}
+.mobileLinkBox{padding:14px;border:1px solid #1d4d2d;background:#081a0f;border-radius:9px;margin-top:12px}
+.mobileLink{font-family:Consolas,monospace;color:var(--green);word-break:break-all}
+
+</style>
+</head>
+<body>
+
+<div id="auth" class="auth">
+  <section class="authHero">
+    <div class="brand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">PRO CLUBS PLATFORM</div></div></div>
+    <h1>Tu liga. Tu draft. <em>Tu plataforma.</em></h1>
+    <p>Registro de jugadores y DTs, aprobación del comisionado, picks en vivo, draft por turnos y una interfaz diseñada para sentirse como una experiencia de fútbol competitivo.</p>
+    <div class="authPills"><span class="pill">LIVE DRAFT</span><span class="pill">PLAYER REGISTRATION</span><span class="pill">DT ACCOUNTS</span><span class="pill">COMMISSIONER CONTROL</span></div>
+  </section>
+  <aside class="authSide">
+    <div class="panel authCard">
+      <div class="authTabs"><button class="active" data-auth-tab="login">INICIAR</button><button data-auth-tab="player">JUGADOR</button><button data-auth-tab="dt">DT</button></div>
+
+      <div class="authForm" id="auth-login">
+        <h2>Iniciar sesión</h2>
+        <label>Tipo de acceso</label>
+        <select id="loginRole" class="input"><option value="admin">Comisionado / Admin</option><option value="viewer">Espectador</option><option value="1">DT Real Bakardi</option><option value="2">DT Titans X</option><option value="3">DT Relámpagos</option><option value="4">DT Invictus</option></select>
+        <label>Usuario</label><input class="input" id="loginUser" placeholder="Usuario">
+        <label>Contraseña</label><input class="input" id="loginPass" type="password" placeholder="••••••••">
+        <button class="btn primary" style="width:100%;margin-top:18px" id="loginBtn">ENTRAR</button>
+        <div class="note">Demo: puedes entrar sin contraseña. En la versión online real se conectará a autenticación segura.</div>
+      </div>
+
+      <div class="authForm hidden" id="auth-player">
+        <h2>Inscripción de jugador</h2>
+        <div class="two"><div><label>Nombre / apodo</label><input id="rpName" class="input" placeholder="LV_Pint0"></div><div><label>EA ID</label><input id="rpEa" class="input" placeholder="EA ID"></div></div>
+        <div class="two"><div><label>Posición principal</label><select id="rpPos" class="input"><option>POR</option><option>DFC</option><option>LI</option><option>LD</option><option>MCD</option><option>MC</option><option>MCO</option><option>EI</option><option>ED</option><option>DC</option></select></div><div><label>Secundaria</label><select id="rpSec" class="input"><option>-</option><option>POR</option><option>DFC</option><option>LI</option><option>LD</option><option>MCD</option><option>MC</option><option>MCO</option><option>EI</option><option>ED</option><option>DC</option></select></div></div>
+        <div class="two"><div><label>País</label><input id="rpCountry" class="input" placeholder="Cuba"></div><div><label>Plataforma</label><select id="rpPlatform" class="input"><option>PC</option><option>PlayStation</option><option>Xbox</option></select></div></div>
+        <label>Discord</label><input id="rpDiscord" class="input" placeholder="usuario">
+        <label>Disponibilidad</label><input id="rpAvail" class="input" placeholder="Ej. Lun-Jue después de 9 PM">
+        <label>Experiencia / comentario</label><textarea id="rpNotes" class="input" rows="3" placeholder="Experiencia en Clubes..."></textarea>
+        <button class="btn primary" style="width:100%;margin-top:16px" id="submitPlayer">ENVIAR INSCRIPCIÓN</button>
+      </div>
+
+      <div class="authForm hidden" id="auth-dt">
+        <h2>Solicitud de DT</h2>
+        <div class="two"><div><label>Nombre del DT</label><input id="rdName" class="input"></div><div><label>EA ID</label><input id="rdEa" class="input"></div></div>
+        <label>Nombre del club</label><input id="rdClub" class="input">
+        <div class="two"><div><label>Abreviatura</label><input id="rdAbbr" class="input" maxlength="4"></div><div><label>Región</label><input id="rdRegion" class="input" placeholder="NA / LATAM / EU"></div></div>
+        <div class="two"><div><label>Capitán</label><input id="rdCaptain" class="input"></div><div><label>Subcapitán</label><input id="rdVice" class="input"></div></div>
+        <label>Discord</label><input id="rdDiscord" class="input">
+        <label>Experiencia como DT</label><textarea id="rdNotes" class="input" rows="3"></textarea>
+        <button class="btn primary" style="width:100%;margin-top:16px" id="submitDt">SOLICITAR REGISTRO</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div id="app" class="app hidden">
+  <header class="top">
+    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">V10 ONLINE PLATFORM</div></div></div>
+    <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="admin">ADMIN</button></nav>
+    <div class="topUser"><span id="syncBadge" class="syncBadge">● CONECTADO</span><div id="roleChip" class="roleChip"></div><button class="btn secondary" id="logout">SALIR</button></div>
+  </header>
+
+  <aside class="side">
+    <button data-page="home" class="active">▦ &nbsp; DASHBOARD</button>
+    <button data-page="draft">⚽ &nbsp; DRAFT ROOM</button>
+    <button data-page="tracker">◉ &nbsp; LIVE TRACKER</button>
+    <button data-page="players">♟ &nbsp; PLAYERS</button>
+    <button data-page="clubs">🛡 &nbsp; CLUBS</button><button data-page="warroom">⌂ &nbsp; WAR ROOM</button><button data-page="board">▦ &nbsp; DRAFT BOARD</button><button data-page="combine">◈ &nbsp; COMBINE</button><button data-page="formation">⚽ &nbsp; XI BUILDER</button>
+    <button data-page="requests" class="adminOnly">✦ &nbsp; REGISTRATION</button>
+    <button data-page="admin" class="adminOnly">⚙ &nbsp; COMMISSIONER</button>
+    <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">V10 ONLINE • LOCAL DEMO</div></div></div>
+  </aside>
+
+  <main class="main">
+    <section class="page active" id="page-home">
+      <div class="heroGrid">
+        <div class="panel hero"><small>PINTO FC26 • SEASON 1</small><h2>PRO CLUBS</h2><h1>LIVE DRAFT</h1><p>Jugadores inscritos, DTs aprobados, selección por turnos y seguimiento completo del draft en una sola plataforma.</p><button class="btn primary" data-page="draft">ENTRAR AL DRAFT ROOM</button></div>
+        <div class="panel clockCard"><h3>ON THE CLOCK</h3><div class="teamLine"><div class="badge" id="homeBadge">RB</div><div><b id="homeTeam">REAL BAKARDI FC</b><div class="muted" id="homeMeta">ROUND 1 • PICK #01</div></div></div><div class="timer" id="homeTimer">00:45</div><div class="muted" style="text-align:center">TIEMPO RESTANTE</div></div>
+        <div class="panel needCard"><b>NECESIDADES • 4-3-3</b><div class="pitch" style="margin-top:10px"><span class="pos" style="left:10%;top:13%">EI</span><span class="pos" style="left:45%;top:7%">DC</span><span class="pos" style="right:10%;top:13%">ED</span><span class="pos" style="left:22%;top:45%">MC</span><span class="pos" style="left:45%;top:50%">MC</span><span class="pos" style="right:22%;top:45%">MCO</span><span class="pos" style="left:8%;bottom:11%">LI</span><span class="pos" style="left:32%;bottom:10%">DFC</span><span class="pos" style="right:32%;bottom:10%">DFC</span><span class="pos" style="right:8%;bottom:11%">LD</span><span class="pos" style="left:45%;bottom:-5%">POR</span></div></div>
+      </div>
+      <div class="metrics"><div class="panel metric"><span>JUGADORES</span><b id="mPlayers">0</b></div><div class="panel metric"><span>DTs / CLUBES</span><b id="mTeams">0</b></div><div class="panel metric"><span>PICKS</span><b id="mPicks">0</b></div><div class="panel metric"><span>PENDIENTES</span><b id="mRequests">0</b></div><div class="panel metric"><span>RONDA</span><b id="mRound">1</b></div></div>
+      <div class="bottomGrid">
+        <div class="panel"><div class="cardHead">LIVE TRACKER</div><div class="body" id="homeTracker"></div></div>
+        <div class="panel"><div class="cardHead">ÚLTIMOS PICKS</div><div class="body" id="homePicks"></div></div>
+        <div class="panel"><div class="cardHead">REGISTROS RECIENTES</div><div class="body" id="homeRequests"></div></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-draft">
+      <div class="pageTitle">DRAFT ROOM</div>
+      <div id="turnNotice"></div>
+      <div class="draftGrid">
+        <div class="panel draftMain">
+          <div style="display:flex;justify-content:space-between;align-items:center"><div><b id="draftTeam"></b><div class="muted" id="draftMeta"></div></div><div class="timer" id="draftTimer" style="font-size:34px">00:45</div></div>
+          <div class="filters"><select id="filterPos" class="input"><option>TODAS</option><option>POR</option><option>DFC</option><option>LI</option><option>LD</option><option>MCD</option><option>MC</option><option>MCO</option><option>EI</option><option>ED</option><option>DC</option></select><input id="filterSearch" class="input" placeholder="Buscar jugador"><button id="timerStart" class="btn secondary">INICIAR</button><button id="timerReset" class="btn secondary">RESET</button></div>
+          <div class="cards" id="playerCards"></div>
+        </div>
+        <div class="panel body"><b>PRÓXIMOS TURNOS</b><div id="nextTurns" style="margin-top:10px"></div><b style="display:block;margin-top:18px">PICKS RECIENTES</b><div id="recentPicks"></div></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-tracker"><div class="pageTitle">LIVE TRACKER</div><div class="panel body" id="fullTracker"></div></section>
+
+    <section class="page" id="page-players"><div class="pageTitle">PLAYERS</div><div class="panel body"><table class="table" id="playersTable"></table></div></section>
+
+    <section class="page" id="page-clubs"><div class="pageTitle">CLUBS</div><div class="panel body"><table class="table" id="clubsTable"></table></div></section>
+
+    <section class="page" id="page-league"><div class="pageTitle">LEAGUE</div><div class="panel body"><table class="table"><tr><th>#</th><th>Club</th><th>DT</th><th>Plantilla</th><th>Estado</th></tr><tbody id="leagueBody"></tbody></table></div></section>
+
+    <section class="page" id="page-requests">
+      <div class="pageTitle">REGISTRATION CENTER</div>
+      <div class="adminGrid">
+        <div class="panel body"><h3>JUGADORES PENDIENTES</h3><div id="playerRequests"></div></div>
+        <div class="panel body"><h3>DTs PENDIENTES</h3><div id="dtRequests"></div></div>
+      </div>
+    </section>
+
+
+    <section class="page" id="page-warroom">
+      <div class="pageTitle">WAR ROOM <span class="green">PRIVATE</span></div>
+      <div id="warRoleNote" class="note"></div>
+      <div class="warGrid" style="margin-top:12px">
+        <div class="panel body"><h3>SCOUTING BOARD</h3><div class="muted">Favoritos y notas privadas de tu club.</div><div id="scoutingBoard" style="margin-top:12px"></div></div>
+        <div class="panel body"><h3>TEAM NEEDS</h3><div class="combineGrid" id="teamNeeds"></div><h3 style="margin-top:20px">MY ROSTER</h3><div id="warRoster"></div></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-board">
+      <div class="pageTitle">DRAFT BOARD</div>
+      <div class="panel body board"><div class="boardGrid" id="draftBoard"></div></div>
+    </section>
+
+    <section class="page" id="page-combine">
+      <div class="pageTitle">FC26 COMBINE</div>
+      <div class="panel body"><div class="muted">Evaluación previa al draft. El comisionado puede modificar las notas.</div><div class="combineGrid" id="combineCards" style="margin-top:12px"></div></div>
+    </section>
+
+    <section class="page" id="page-formation">
+      <div class="pageTitle">STARTING XI BUILDER</div>
+      <div class="warGrid">
+        <div class="panel body"><div class="formation" id="formationPitch"></div></div>
+        <div class="panel body"><h3>PLANTILLA DEL CLUB</h3><div id="formationRoster"></div><div class="note">La V8 coloca automáticamente los jugadores drafteados en una formación 4-3-3 según su posición.</div></div>
+      </div>
+    </section>
+
+    <section class="page" id="page-admin">
+      <div class="pageTitle">COMMISSIONER CONTROL</div>
+      <div class="mobileLinkBox adminOnly">
+        <b>🌎 INSCRIPCIÓN ONLINE</b>
+        <div class="muted" style="margin-top:5px">Comparte este enlace con jugadores y DTs conectados a tu cualquier país.</div>
+        <div id="mobileRegistrationUrl" class="mobileLink" style="margin-top:8px">Tu enlace público aparecerá aquí al desplegar la V10</div>
+        <button class="btn secondary" id="openRegistrationPage" style="margin-top:10px">ABRIR FORMULARIO</button>
+      </div>
+      <div class="panel body adminOnly">
+        <div class="command"><button class="btn primary" id="pauseBtn">PAUSAR DRAFT</button><button class="btn secondary" id="skipBtn">SALTAR TURNO</button><button class="btn danger" id="undoBtn">DESHACER PICK</button><button class="btn secondary" id="addTimeBtn">+60 SEG</button><button class="btn secondary" id="resetDraftBtn">REINICIAR</button><button class="btn secondary" id="exportBtn">BACKUP JSON</button></div>
+        <h3 style="margin-top:18px">ADMIN LOG</h3><div id="adminLog"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="pickModal" class="modal"><div class="reveal"><h2>THE PICK IS IN</h2><div id="modalTeam" style="font-size:22px;font-weight:900"></div><div class="muted" style="margin:10px">SELECTS</div><div id="modalPlayer" class="big green"></div><div id="modalMeta" class="muted"></div></div></div>
+
+<script>
+const seed={
+ teams:[
+  {id:1,name:"REAL BAKARDI FC",abbr:"RB",dt:"DT Bakardi",approved:true},
+  {id:2,name:"TITANS X",abbr:"TX",dt:"DT Titans",approved:true},
+  {id:3,name:"RELÁMPAGOS FC",abbr:"RF",dt:"DT Rayo",approved:true},
+  {id:4,name:"INVICTUS X VKGY",abbr:"IX",dt:"DT Invictus",approved:true}
+ ],
+ players:[
+  {id:1,name:"LV_Pint0",ea:"LV_Pint0",pos:"POR",sec:"-",country:"Cuba",platform:"PC",discord:"",availability:"",notes:"",ovr:88,status:"Disponible"},
+  {id:2,name:"Player02",ea:"Player02",pos:"DFC",sec:"MCD",country:"Brasil",platform:"PC",discord:"",availability:"",notes:"",ovr:87,status:"Disponible"},
+  {id:3,name:"Player03",ea:"Player03",pos:"MCO",sec:"MC",country:"Argentina",platform:"PC",discord:"",availability:"",notes:"",ovr:86,status:"Disponible"},
+  {id:4,name:"Pachy",ea:"Pachy",pos:"DC",sec:"ED",country:"Cuba",platform:"PC",discord:"",availability:"",notes:"",ovr:86,status:"Disponible"}
+ ],
+ playerRequests:[],dtRequests:[],picks:[],skips:[],paused:false,scouting:{},combine:{},settings:{seconds:45,draftType:"Snake"},log:[]
+};
+let state=JSON.parse(localStorage.getItem("pinto_v9_state")||"null")||seed;
+let role=null,remaining=state.settings.seconds,timer=null;
+let serverRevision=0, syncing=false, connected=false;
+const bc=("BroadcastChannel" in window)?new BroadcastChannel("pinto_v9_channel"):null;
+
+
+async function fetchServerState(){
+  try{
+    const r=await fetch("/api/state",{cache:"no-store"});
+    if(!r.ok) throw new Error("server");
+    const payload=await r.json();
+    state=payload.state;
+    serverRevision=payload.revision||0;
+    localStorage.setItem("pinto_v9_state",JSON.stringify(state));
+    connected=true;
+    updateSyncBadge();
+    if(!document.getElementById("app").classList.contains("hidden")) render();
+  }catch(e){
+    connected=false;updateSyncBadge();
+  }
+}
+async function persist(src="local"){
+  localStorage.setItem("pinto_v9_state",JSON.stringify(state));
+  if(bc&&src!=="bc")bc.postMessage(state);
+  if(!syncing){
+    syncing=true;
+    try{
+      const r=await fetch("/api/state",{
+        method:"PUT",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({state,revision:serverRevision})
+      });
+      if(r.status===409){
+        const payload=await r.json();
+        state=payload.state;serverRevision=payload.revision||0;
+        localStorage.setItem("pinto_v9_state",JSON.stringify(state));
+      }else if(r.ok){
+        const payload=await r.json();
+        serverRevision=payload.revision||serverRevision+1;
+        connected=true;
+      }
+    }catch(e){connected=false}
+    syncing=false;updateSyncBadge();
+  }
+  if(!document.getElementById("app").classList.contains("hidden")) render();
+}
+function updateSyncBadge(){
+  const b=document.getElementById("syncBadge");if(!b)return;
+  b.textContent=connected?"● CONECTADO":"● SIN SERVIDOR";
+  b.classList.toggle("off",!connected);
+}
+window.addEventListener("storage",e=>{if(e.key==="pinto_v9_state"&&e.newValue&&!connected){state=JSON.parse(e.newValue);render()}});
+if(bc)bc.onmessage=e=>{if(!connected){state=e.data;localStorage.setItem("pinto_v9_state",JSON.stringify(state));render()}};
+setInterval(fetchServerState,1500);
+fetchServerState();
+
+document.querySelectorAll("[data-auth-tab]").forEach(b=>b.addEventListener("click",()=>{
+ document.querySelectorAll("[data-auth-tab]").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+ ["login","player","dt"].forEach(n=>document.getElementById("auth-"+n).classList.toggle("hidden",n!==b.dataset.authTab));
+}));
+
+async function submitPlayer(){
+ const name=rpName.value.trim();if(!name){alert("Escribe tu nombre/apodo.");return}
+ const req={id:Date.now(),name,ea:rpEa.value.trim()||name,pos:rpPos.value,sec:rpSec.value,country:rpCountry.value.trim()||"—",platform:rpPlatform.value,discord:rpDiscord.value.trim(),availability:rpAvail.value.trim(),notes:rpNotes.value.trim(),status:"Pendiente",created:new Date().toLocaleString()};
+ try{
+   const r=await fetch("/api/register/player",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(req)});
+   if(!r.ok)throw new Error("server");
+   await fetchServerState();
+   alert("Inscripción enviada. El comisionado la verá en su app.");
+ }catch(e){
+   state.playerRequests.push(req);state.log.unshift(`Nueva inscripción de jugador: ${name}`);await persist();alert("Inscripción guardada localmente. Abre la app mediante INICIAR_SERVIDOR_V9.bat para recibir registros desde teléfonos.");
+ }
+ ["rpName","rpEa","rpCountry","rpDiscord","rpAvail","rpNotes"].forEach(id=>document.getElementById(id).value="")
+}
+document.getElementById("submitPlayer").addEventListener("click",submitPlayer);
+
+document.getElementById("submitDt").addEventListener("click",async ()=>{
+ const name=rdName.value.trim(),club=rdClub.value.trim();if(!name||!club){alert("Escribe nombre del DT y club.");return}
+ const req={id:Date.now(),name,ea:rdEa.value.trim()||name,club,abbr:rdAbbr.value.trim().toUpperCase()||"FC",region:rdRegion.value.trim(),captain:rdCaptain.value.trim(),vice:rdVice.value.trim(),discord:rdDiscord.value.trim(),notes:rdNotes.value.trim(),status:"Pendiente",created:new Date().toLocaleString()};
+ try{
+   const r=await fetch("/api/register/dt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(req)});
+   if(!r.ok)throw new Error("server");
+   await fetchServerState();
+   alert("Solicitud enviada. El comisionado la verá en su app.");
+ }catch(e){
+   state.dtRequests.push(req);state.log.unshift(`Nueva solicitud de DT: ${name} / ${club}`);await persist();alert("Solicitud guardada localmente.");
+ }
+});
+
+document.getElementById("loginBtn").addEventListener("click",()=>{
+ const v=loginRole.value;role=(v==="admin"||v==="viewer")?v:Number(v);auth.classList.add("hidden");app.classList.remove("hidden");updateRole();render()
+});
+logout.addEventListener("click",()=>location.reload());
+function isAdmin(){return role==="admin"} function isViewer(){return role==="viewer"} function myTeam(){return typeof role==="number"?state.teams.find(t=>t.id===role):null}
+function updateRole(){roleChip.textContent=isAdmin()?"COMISIONADO":isViewer()?"ESPECTADOR":myTeam()?`${myTeam().dt} • ${myTeam().name}`:"DT";document.querySelectorAll(".adminOnly").forEach(e=>e.classList.toggle("hidden",!isAdmin()))}
+
+document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById("page-"+b.dataset.page)?.classList.add("active");document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x.dataset.page===b.dataset.page))}));
+
+function currentInfo(offset=0){
+ const teams=state.teams.filter(t=>t.approved),n=teams.length;let effective=state.picks.length+state.skips.length+1+offset;
+ const round=Math.floor((effective-1)/n)+1,slot=(effective-1)%n,idx=(state.settings.draftType==="Snake"&&round%2===0)?n-1-slot:slot;
+ return {team:teams[idx],round,pick:effective}
+}
+function canPick(){if(state.paused||isViewer())return false;if(isAdmin())return true;return currentInfo().team.id===role}
+function fmt(){const m=Math.floor(remaining/60),s=remaining%60;return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`}
+function updateTimer(){homeTimer.textContent=fmt();draftTimer.textContent=fmt()}
+timerStart.addEventListener("click",()=>{if(timer||state.paused)return;timer=setInterval(()=>{remaining--;if(remaining<=0){remaining=0;clearInterval(timer);timer=null}updateTimer()},1000)});
+timerReset.addEventListener("click",()=>{clearInterval(timer);timer=null;remaining=state.settings.seconds;updateTimer()});
+
+function makePick(pid){
+ const p=state.players.find(x=>x.id===pid),i=currentInfo();if(!p||p.status!=="Disponible")return;
+ if(!canPick()){alert("No es el turno de tu club.");return}
+ if(!confirm(`${i.team.name} selecciona a ${p.name}?`))return;
+ p.status="Drafteado";state.picks.push({no:i.pick,round:i.round,teamId:i.team.id,playerId:p.id,dt:i.team.dt,time:new Date().toLocaleTimeString()});state.log.unshift(`PICK #${i.pick}: ${i.team.dt} / ${i.team.name} → ${p.name}`);
+ modalTeam.textContent=`${i.team.dt} • ${i.team.name}`;modalPlayer.textContent=`${p.ovr} ${p.pos} ${p.name}`;modalMeta.textContent=`${p.country} • ROUND ${i.round} • PICK #${i.pick}`;pickModal.classList.add("show");setTimeout(()=>pickModal.classList.remove("show"),1800);remaining=state.settings.seconds;persist()
+}
+
+function scoutKey(){return typeof role==="number"?String(role):"admin"}
+function scoutData(){state.scouting=state.scouting||{};const k=scoutKey();state.scouting[k]=state.scouting[k]||{favorites:[],notes:{}};return state.scouting[k]}
+function isFavorite(pid){return scoutData().favorites.includes(pid)}
+function toggleFavorite(pid){
+ if(isViewer())return;
+ const s=scoutData(),idx=s.favorites.indexOf(pid);if(idx>=0)s.favorites.splice(idx,1);else s.favorites.push(pid);persist()
+}
+function saveScoutNote(pid,val){scoutData().notes[pid]=val;persist()}
+function combineFor(p){
+ state.combine=state.combine||{};
+ if(!state.combine[p.id]){
+   const base=Math.max(55,Math.min(95,p.ovr||80));
+   state.combine[p.id]={overall:base,passing:Math.max(50,base-2),defending:p.pos==="POR"||p.pos==="DFC"?Math.min(95,base+3):Math.max(45,base-9),attack:p.pos==="DC"||p.pos==="EI"||p.pos==="ED"?Math.min(95,base+3):Math.max(45,base-6),reaction:Math.min(96,base+1)}
+ }
+ return state.combine[p.id]
+}
+function renderV8(){
+ const team=(typeof role==="number"?myTeam():currentInfo().team);
+ warRoleNote.innerHTML=isViewer()?"Espectador: War Room en modo lectura.":isAdmin()?"Comisionado: viendo tablero global de scouting.":`War Room privado de <b>${team?.name||""}</b>. Tus favoritos y notas no aparecen en el Draft Board público.`;
+ const sd=scoutData();
+ const favPlayers=sd.favorites.map(id=>state.players.find(p=>p.id===id)).filter(Boolean);
+ scoutingBoard.innerHTML=favPlayers.map(p=>`<div class="scoutRow"><div><b class="green">★ ${p.name}</b><div class="muted">${p.pos} • ${p.ovr} OVR • ${p.country}</div></div><input class="input" data-note="${p.id}" value="${(sd.notes[p.id]||"").replace(/"/g,"&quot;")}" placeholder="Nota privada"><button class="btn secondary" data-unfav="${p.id}">QUITAR</button></div>`).join("")||'<div class="muted">Marca ★ jugadores desde el Draft Room para agregarlos aquí.</div>';
+ document.querySelectorAll("[data-note]").forEach(x=>x.onchange=()=>saveScoutNote(Number(x.dataset.note),x.value));
+ document.querySelectorAll("[data-unfav]").forEach(x=>x.onclick=()=>toggleFavorite(Number(x.dataset.unfav)));
+
+ const myPicks=team?state.picks.filter(pk=>pk.teamId===team.id):[];
+ const roster=myPicks.map(pk=>state.players.find(p=>p.id===pk.playerId)).filter(Boolean);
+ const counts={POR:0,DEF:0,MED:0,ATA:0};roster.forEach(p=>{if(p.pos==="POR")counts.POR++;else if(["DFC","LI","LD"].includes(p.pos))counts.DEF++;else if(["MCD","MC","MCO"].includes(p.pos))counts.MED++;else counts.ATA++});
+ teamNeeds.innerHTML=[["POR",Math.max(0,1-counts.POR)],["DEF",Math.max(0,4-counts.DEF)],["MED",Math.max(0,3-counts.MED)],["ATA",Math.max(0,3-counts.ATA)]].map(x=>`<div class="panel combineCard"><div class="muted">${x[0]} NEED</div><div class="combineScore">${x[1]}</div></div>`).join("");
+ warRoster.innerHTML=roster.map(p=>`<div class="row"><b>${p.pos}</b><span>${p.name}</span><span>${p.ovr}</span></div>`).join("")||'<div class="muted">Aún no hay jugadores drafteados.</div>';
+
+ const teams=state.teams.filter(t=>t.approved);
+ let board='<div class="boardCell head">RONDA</div>'+teams.map(t=>`<div class="boardCell head">${t.abbr}<br><span class="muted">${t.name}</span></div>`).join("");
+ for(let r=1;r<=5;r++){
+   board+=`<div class="boardCell round">ROUND ${r}</div>`;
+   teams.forEach(t=>{
+     const pk=state.picks.find(x=>x.round===r&&x.teamId===t.id),p=pk?state.players.find(x=>x.id===pk.playerId):null;
+     board+=`<div class="boardCell">${p?`<b class="green">#${pk.no} ${p.name}</b><div>${p.pos} • ${p.ovr} OVR</div><div class="muted">${pk.dt}</div>`:'<span class="muted">—</span>'}</div>`
+   })
+ }
+ draftBoard.innerHTML=board;
+
+ combineCards.innerHTML=state.players.map(p=>{const c=combineFor(p);return `<div class="panel combineCard"><div style="display:flex;justify-content:space-between"><div><b>${p.name}</b><div class="green">${p.pos}</div></div><div class="combineScore">${c.overall}</div></div><div class="muted">PASS ${c.passing} • DEF ${c.defending} • ATT ${c.attack} • REA ${c.reaction}</div></div>`}).join("");
+
+ const slots=[
+  ["EI",17,18],["DC",50,12],["ED",83,18],
+  ["MC",25,43],["MCO",50,48],["MC",75,43],
+  ["LI",12,72],["DFC",37,72],["DFC",63,72],["LD",88,72],["POR",50,91]
+ ];
+ const used=new Set();
+ formationPitch.innerHTML=slots.map(([pos,x,y])=>{
+   let candidates=roster.filter(p=>!used.has(p.id)&&(p.pos===pos||(pos==="MC"&&["MC","MCD"].includes(p.pos))));
+   let p=candidates[0];if(!p){p=roster.find(q=>!used.has(q.id))}if(p)used.add(p.id);
+   return `<div class="slot ${p?"filled":""}" style="left:${x}%;top:${y}%">${p?`<b>${p.name}</b><span class="green">${p.pos} • ${p.ovr}</span>`:`${pos}<br><span class="muted">VACÍO</span>`}</div>`
+ }).join("");
+ formationRoster.innerHTML=roster.map(p=>`<div class="row"><b>${p.pos}</b><span>${p.name}</span><span>${p.ovr}</span></div>`).join("")||'<div class="muted">Sin plantilla todavía.</div>';
+}
+
+function renderCards(){
+ const f=filterPos.value,s=filterSearch.value.toLowerCase();const rows=state.players.filter(p=>p.status==="Disponible"&&(f==="TODAS"||p.pos===f)&&(!s||(`${p.name} ${p.country}`).toLowerCase().includes(s))).sort((a,b)=>b.ovr-a.ovr).slice(0,10);
+ playerCards.innerHTML=rows.map((p,i)=>`<div class="pCard ${i===0?"top":""} ${isFavorite(p.id)?"favorite":""}"><button class="starBtn" data-fav="${p.id}" title="Favorito">${isFavorite(p.id)?"★":"☆"}</button><div class="rating">${p.ovr}</div><div class="green" style="font-weight:900">${p.pos}</div><div class="avatar">👤</div><b>${p.name}</b><div class="muted">${p.country} • ${p.platform}</div><button class="pickBtn" data-pick="${p.id}" ${canPick()?"":"disabled"}>${canPick()?"SELECCIONAR":"ESPERANDO TURNO"}</button></div>`).join("")||'<div class="muted">No hay jugadores.</div>';
+ document.querySelectorAll("[data-pick]").forEach(b=>b.addEventListener("click",()=>makePick(Number(b.dataset.pick))));document.querySelectorAll("[data-fav]").forEach(b=>b.addEventListener("click",()=>toggleFavorite(Number(b.dataset.fav))))
+}
+filterPos.addEventListener("change",renderCards);filterSearch.addEventListener("input",renderCards);
+
+function approvePlayer(id){
+ const r=state.playerRequests.find(x=>x.id===id);if(!r)return;state.players.push({id:Date.now()+Math.random(),name:r.name,ea:r.ea,pos:r.pos,sec:r.sec,country:r.country,platform:r.platform,discord:r.discord,availability:r.availability,notes:r.notes,ovr:80,status:"Disponible"});state.playerRequests=state.playerRequests.filter(x=>x.id!==id);state.log.unshift(`Jugador aprobado: ${r.name}`);persist()
+}
+function rejectPlayer(id){const r=state.playerRequests.find(x=>x.id===id);state.playerRequests=state.playerRequests.filter(x=>x.id!==id);state.log.unshift(`Jugador rechazado: ${r?.name||id}`);persist()}
+function approveDt(id){
+ const r=state.dtRequests.find(x=>x.id===id);if(!r)return;const next=Math.max(0,...state.teams.map(t=>t.id))+1;state.teams.push({id:next,name:r.club.toUpperCase(),abbr:r.abbr,dt:r.name,approved:true});state.dtRequests=state.dtRequests.filter(x=>x.id!==id);state.log.unshift(`DT aprobado: ${r.name} / ${r.club}`);persist()
+}
+function rejectDt(id){const r=state.dtRequests.find(x=>x.id===id);state.dtRequests=state.dtRequests.filter(x=>x.id!==id);state.log.unshift(`DT rechazado: ${r?.name||id}`);persist()}
+
+function render(){
+ if(app.classList.contains("hidden"))return;
+ const i=currentInfo(),mine=myTeam();
+ homeBadge.textContent=i.team.abbr;homeTeam.textContent=i.team.name;homeMeta.textContent=`ROUND ${i.round} • PICK #${String(i.pick).padStart(2,"0")}`;
+ draftTeam.textContent=`${i.team.dt} • ${i.team.name}`;draftMeta.textContent=`ROUND ${i.round} • PICK #${String(i.pick).padStart(2,"0")}`;
+ mPlayers.textContent=state.players.length;mTeams.textContent=state.teams.filter(t=>t.approved).length;mPicks.textContent=state.picks.length;mRequests.textContent=state.playerRequests.length+state.dtRequests.length;mRound.textContent=i.round;
+ turnNotice.innerHTML=isAdmin()?'<div class="note">Modo Comisionado: puedes seleccionar por cualquier club.</div>':isViewer()?'<div class="note">Modo Espectador: solo lectura.</div>':mine&&mine.id===i.team.id?`<div class="note"><b>ES TU TURNO:</b> ${mine.name}</div>`:`<div class="note" style="background:#0d1820;border-color:#28404c"><b>${mine?.name||"DT"}:</b> esperando turno. Ahora selecciona ${i.team.name}.</div>`;
+ const tracker=[0,1,2,3,4,5].map(o=>{const n=currentInfo(o);return `<div class="row ${o===0?"on":""}"><b>#${n.pick}</b><span>${n.team.dt} • ${n.team.name}</span><span>R${n.round}</span></div>`}).join("");
+ homeTracker.innerHTML=tracker;fullTracker.innerHTML=tracker;nextTurns.innerHTML=tracker;
+ const picks=state.picks.slice(-6).reverse().map(pk=>{const t=state.teams.find(x=>x.id===pk.teamId),p=state.players.find(x=>x.id===pk.playerId);return `<div class="row"><b>#${pk.no}</b><span>${t.name} → ${p.name}</span><span>${p.pos}</span></div>`}).join("")||'<div class="muted">Sin picks todavía.</div>';homePicks.innerHTML=picks;recentPicks.innerHTML=picks;
+ homeRequests.innerHTML=[...state.playerRequests.map(r=>`<div class="row"><b>JUG</b><span>${r.name} • ${r.pos}</span><span>PEND.</span></div>`),...state.dtRequests.map(r=>`<div class="row"><b>DT</b><span>${r.name} • ${r.club}</span><span>PEND.</span></div>`)].slice(0,6).join("")||'<div class="muted">Sin registros pendientes.</div>';
+ playersTable.innerHTML='<tr><th>Jugador</th><th>EA ID</th><th>Pos</th><th>2ª</th><th>País</th><th>Plataforma</th><th>Estado</th></tr>'+state.players.map(p=>`<tr><td>${p.name}</td><td>${p.ea}</td><td>${p.pos}</td><td>${p.sec}</td><td>${p.country}</td><td>${p.platform}</td><td>${p.status}</td></tr>`).join("");
+ clubsTable.innerHTML='<tr><th>Club</th><th>DT</th><th>Abbr</th><th>Plantilla</th></tr>'+state.teams.filter(t=>t.approved).map(t=>`<tr><td>${t.name}</td><td>${t.dt}</td><td>${t.abbr}</td><td>${state.picks.filter(p=>p.teamId===t.id).length}</td></tr>`).join("");
+ leagueBody.innerHTML=state.teams.filter(t=>t.approved).map((t,idx)=>`<tr><td>${idx+1}</td><td>${t.name}</td><td>${t.dt}</td><td>${state.picks.filter(p=>p.teamId===t.id).length}</td><td class="green">ACTIVO</td></tr>`).join("");
+ playerRequests.innerHTML=state.playerRequests.map(r=>`<div class="requestCard"><div class="requestTop"><div><b>${r.name}</b><div class="muted">${r.ea}</div></div><div><button class="btn primary" data-ap="${r.id}">APROBAR</button> <button class="btn danger" data-rp="${r.id}">RECHAZAR</button></div></div><div class="requestMeta"><span class="tag">${r.pos}/${r.sec}</span><span class="tag">${r.country}</span><span class="tag">${r.platform}</span><span class="tag">${r.discord||"Sin Discord"}</span></div><div class="muted" style="margin-top:8px">${r.availability||""}</div></div>`).join("")||'<div class="muted">No hay solicitudes.</div>';
+ dtRequests.innerHTML=state.dtRequests.map(r=>`<div class="requestCard"><div class="requestTop"><div><b>${r.name}</b><div class="muted">${r.club}</div></div><div><button class="btn primary" data-ad="${r.id}">APROBAR</button> <button class="btn danger" data-rd="${r.id}">RECHAZAR</button></div></div><div class="requestMeta"><span class="tag">${r.abbr}</span><span class="tag">${r.region||"Sin región"}</span><span class="tag">${r.discord||"Sin Discord"}</span></div></div>`).join("")||'<div class="muted">No hay solicitudes.</div>';
+ document.querySelectorAll("[data-ap]").forEach(b=>b.onclick=()=>approvePlayer(Number(b.dataset.ap)));document.querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>rejectPlayer(Number(b.dataset.rp)));document.querySelectorAll("[data-ad]").forEach(b=>b.onclick=()=>approveDt(Number(b.dataset.ad)));document.querySelectorAll("[data-rd]").forEach(b=>b.onclick=()=>rejectDt(Number(b.dataset.rd)));
+ adminLog.innerHTML=state.log.slice(0,25).map((l,idx)=>`<div class="row"><b>${idx+1}</b><span>${l}</span><span></span></div>`).join("")||'<div class="muted">Sin actividad.</div>';
+ pauseBtn.textContent=state.paused?"REANUDAR DRAFT":"PAUSAR DRAFT";renderCards();renderV8();updateTimer()
+}
+
+pauseBtn.addEventListener("click",()=>{if(!isAdmin())return;state.paused=!state.paused;state.log.unshift(state.paused?"Draft pausado":"Draft reanudado");persist()});
+skipBtn.addEventListener("click",()=>{if(!isAdmin())return;const i=currentInfo();state.skips.push({pick:i.pick,teamId:i.team.id});state.log.unshift(`Turno saltado: ${i.team.name}`);persist()});
+undoBtn.addEventListener("click",()=>{if(!isAdmin()||!state.picks.length)return;const pk=state.picks.pop(),p=state.players.find(x=>x.id===pk.playerId);if(p)p.status="Disponible";state.log.unshift(`Pick #${pk.no} deshecho`);persist()});
+addTimeBtn.addEventListener("click",()=>{if(!isAdmin())return;remaining+=60;state.log.unshift("+60 segundos");updateTimer();render()});
+resetDraftBtn.addEventListener("click",()=>{if(!isAdmin()||!confirm("¿Reiniciar draft?"))return;state.picks=[];state.skips=[];state.players.forEach(p=>p.status="Disponible");state.log.unshift("Draft reiniciado");remaining=state.settings.seconds;persist()});
+exportBtn.addEventListener("click",()=>{if(!isAdmin())return;const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="PINTO_FC26_V7_backup.json";a.click();URL.revokeObjectURL(a.href)});
+
+async function loadNetworkInfo(){
+  try{
+    const r=await fetch("/api/info",{cache:"no-store"});
+    const info=await r.json();
+    const url=info.registrationUrl||location.origin+"/register.html";
+    const el=document.getElementById("mobileRegistrationUrl");if(el)el.textContent=url;
+  }catch(e){
+    const el=document.getElementById("mobileRegistrationUrl");if(el)el.textContent=location.origin+"/register.html";
+  }
+}
+document.getElementById("openRegistrationPage")?.addEventListener("click",()=>window.open("/register.html","_blank"));
+loadNetworkInfo();
+
+</script>
+</body>
+</html>

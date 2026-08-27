@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: pinto-fc26
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_KEY
+        generateValue: true
