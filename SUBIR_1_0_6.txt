@@ -1,0 +1,22 @@
+PINTO FC26 1.0.6 MOBILE
+
+MEJORAS MÓVIL:
+- El mismo enlace detecta pantallas pequeñas automáticamente.
+- Menú inferior fijo: Home / Draft / Players / Clubs / Admin.
+- ADMIN solo aparece en móvil si la cuenta es Admin.
+- Login y Crear cuenta adaptados a una sola columna.
+- Inputs y botones grandes para tocar con el dedo.
+- Players y Clubs se convierten en tarjetas en móvil.
+- Botones Eliminar siguen disponibles para Admin.
+- Draft muestra jugadores en tarjetas verticales y PICK grande.
+- Panel Admin reorganizado para teléfono.
+- Soporte para pantallas pequeñas y safe-area.
+
+SUBE A GITHUB Y REEMPLAZA:
+index.html
+app.html
+server.js
+package.json
+
+Luego Commit changes. Railway actualizará la web y la app de PC automáticamente.
+No necesitas rehacer Setup.exe.
