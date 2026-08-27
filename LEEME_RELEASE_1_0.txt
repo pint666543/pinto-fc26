@@ -1,0 +1,59 @@
+PINTO FC26 — RELEASE 1.0
+========================
+
+ESTA VERSIÓN YA VIENE LIMPIA
+- Sin Real Bakardi, Titans X, Relámpagos, Invictus ni jugadores de prueba.
+- Equipos, jugadores, picks, scouting y actividad comienzan vacíos.
+- Registro único por usuario.
+- Roles: Jugador, DT y Espectador.
+- Usuario + contraseña obligatorios.
+- Un nombre de usuario no se puede registrar dos veces.
+- Todas las cuentas nuevas quedan PENDIENTES.
+- El Comisionado aprueba o rechaza.
+- Al aprobar Jugador: entra al pool del Draft.
+- Al aprobar DT: se crea su club.
+- Después de aprobado, el usuario inicia sesión siempre con las mismas credenciales.
+- Web y aplicación de escritorio usan el MISMO Railway/PostgreSQL.
+
+MUY IMPORTANTE PARA RAILWAY
+Agrega estas variables a pinto-fc26:
+DATABASE_URL = referencia de Postgres (ya la tienes)
+NODE_ENV = production
+ADMIN_KEY = secreto largo
+ADMIN_USER = el usuario que quieras para el Comisionado
+ADMIN_PASSWORD = contraseña del Comisionado
+
+Después haz Deploy.
+
+Si la base de datos que ya tienes contiene los equipos de prueba de V10,
+el nuevo código NO los borra automáticamente para evitar destruir datos reales.
+Para un lanzamiento totalmente limpio usa una base PostgreSQL nueva o elimina
+la fila de pinto_state antes del primer arranque de Release 1.0.
+
+ACTUALIZACIONES WEB + APP
+La aplicación de escritorio abre la versión alojada en Railway.
+Por eso, cuando actualizas GitHub y Railway hace Deploy, la próxima vez que
+abras PINTO FC26 ya verá la versión nueva. No necesitas crear otro Setup.exe
+para cambios normales de HTML/CSS/JS/backend.
+
+Solo necesitas otro Setup.exe si cambias el contenedor de escritorio
+(Electron), icono, permisos o comportamiento nativo.
+
+CREAR EL SETUP.EXE
+1. Instala Node.js LTS en Windows.
+2. Abre CREAR_SETUP_EXE.bat.
+3. Espera a que npm descargue Electron/electron-builder.
+4. El instalador aparecerá en:
+   desktop\dist\PINTO-FC26-Setup-1.0.0.exe
+
+PUBLICAR ESTA RELEASE
+Sube/reemplaza en tu repositorio GitHub los archivos de esta carpeta:
+index.html
+register.html
+server.js
+package.json
+railway.json
+render.yaml
+.env.example
+
+Railway detectará el cambio y hará un nuevo deploy.

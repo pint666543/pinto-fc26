@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PINTO FC26 — V10 Online</title>
+<title>PINTO FC26 — Release 1.0</title>
 <style>
 :root{
   --bg:#020609;--bg2:#071009;--panel:#071219;--panel2:#0b1821;--panel3:#10222d;
@@ -88,6 +88,7 @@ button{cursor:pointer}
 .mobileLinkBox{padding:14px;border:1px solid #1d4d2d;background:#081a0f;border-radius:9px;margin-top:12px}
 .mobileLink{font-family:Consolas,monospace;color:var(--green);word-break:break-all}
 
+.pendingUser{padding:12px;border:1px solid #173540;border-radius:8px;background:#07141b;margin:8px 0}.pendingUser .actions{display:flex;gap:7px;margin-top:9px}.hidden{display:none!important}
 </style>
 </head>
 <body>
@@ -140,7 +141,7 @@ button{cursor:pointer}
 
 <div id="app" class="app hidden">
   <header class="top">
-    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">V10 ONLINE PLATFORM</div></div></div>
+    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.0 PLATFORM</div></div></div>
     <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="admin">ADMIN</button></nav>
     <div class="topUser"><span id="syncBadge" class="syncBadge">● CONECTADO</span><div id="roleChip" class="roleChip"></div><button class="btn secondary" id="logout">SALIR</button></div>
   </header>
@@ -153,7 +154,7 @@ button{cursor:pointer}
     <button data-page="clubs">🛡 &nbsp; CLUBS</button><button data-page="warroom">⌂ &nbsp; WAR ROOM</button><button data-page="board">▦ &nbsp; DRAFT BOARD</button><button data-page="combine">◈ &nbsp; COMBINE</button><button data-page="formation">⚽ &nbsp; XI BUILDER</button>
     <button data-page="requests" class="adminOnly">✦ &nbsp; REGISTRATION</button>
     <button data-page="admin" class="adminOnly">⚙ &nbsp; COMMISSIONER</button>
-    <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">V10 ONLINE • LOCAL DEMO</div></div></div>
+    <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">RELEASE 1.0 • LOCAL DEMO</div></div></div>
   </aside>
 
   <main class="main">
@@ -195,8 +196,8 @@ button{cursor:pointer}
     <section class="page" id="page-requests">
       <div class="pageTitle">REGISTRATION CENTER</div>
       <div class="adminGrid">
-        <div class="panel body"><h3>JUGADORES PENDIENTES</h3><div id="playerRequests"></div></div>
-        <div class="panel body"><h3>DTs PENDIENTES</h3><div id="dtRequests"></div></div>
+        <div class="panel body"><h3>CUENTAS PENDIENTES</h3><div id="playerRequests"></div></div>
+        
       </div>
     </section>
 
@@ -248,19 +249,8 @@ button{cursor:pointer}
 
 <script>
 const seed={
- teams:[
-  {id:1,name:"REAL BAKARDI FC",abbr:"RB",dt:"DT Bakardi",approved:true},
-  {id:2,name:"TITANS X",abbr:"TX",dt:"DT Titans",approved:true},
-  {id:3,name:"RELÁMPAGOS FC",abbr:"RF",dt:"DT Rayo",approved:true},
-  {id:4,name:"INVICTUS X VKGY",abbr:"IX",dt:"DT Invictus",approved:true}
- ],
- players:[
-  {id:1,name:"LV_Pint0",ea:"LV_Pint0",pos:"POR",sec:"-",country:"Cuba",platform:"PC",discord:"",availability:"",notes:"",ovr:88,status:"Disponible"},
-  {id:2,name:"Player02",ea:"Player02",pos:"DFC",sec:"MCD",country:"Brasil",platform:"PC",discord:"",availability:"",notes:"",ovr:87,status:"Disponible"},
-  {id:3,name:"Player03",ea:"Player03",pos:"MCO",sec:"MC",country:"Argentina",platform:"PC",discord:"",availability:"",notes:"",ovr:86,status:"Disponible"},
-  {id:4,name:"Pachy",ea:"Pachy",pos:"DC",sec:"ED",country:"Cuba",platform:"PC",discord:"",availability:"",notes:"",ovr:86,status:"Disponible"}
- ],
- playerRequests:[],dtRequests:[],picks:[],skips:[],paused:false,scouting:{},combine:{},settings:{seconds:45,draftType:"Snake"},log:[]
+ teams:[],players:[],playerRequests:[],dtRequests:[],picks:[],skips:[],paused:false,
+ scouting:{},combine:{},settings:{seconds:45,draftType:"Snake"},log:[]
 };
 let state=JSON.parse(localStorage.getItem("pinto_v9_state")||"null")||seed;
 let role=null,remaining=state.settings.seconds,timer=null;
@@ -291,7 +281,7 @@ async function persist(src="local"){
     try{
       const r=await fetch("/api/state",{
         method:"PUT",
-        headers:{"Content-Type":"application/json"},
+        headers:{"Content-Type":"application/json",...authHeaders()},
         body:JSON.stringify({state,revision:serverRevision})
       });
       if(r.status===409){
@@ -318,45 +308,44 @@ if(bc)bc.onmessage=e=>{if(!connected){state=e.data;localStorage.setItem("pinto_v
 setInterval(fetchServerState,1500);
 fetchServerState();
 
-document.querySelectorAll("[data-auth-tab]").forEach(b=>b.addEventListener("click",()=>{
- document.querySelectorAll("[data-auth-tab]").forEach(x=>x.classList.remove("active"));b.classList.add("active");
- ["login","player","dt"].forEach(n=>document.getElementById("auth-"+n).classList.toggle("hidden",n!==b.dataset.authTab));
+
+let authToken=localStorage.getItem("pinto_auth_token")||"";
+let authUser=JSON.parse(localStorage.getItem("pinto_auth_user")||"null");
+function authHeaders(){return authToken?{"Authorization":"Bearer "+authToken}:{}}
+document.querySelectorAll("[data-auth-tab]").forEach(btn=>btn.addEventListener("click",()=>{
+ document.querySelectorAll("[data-auth-tab]").forEach(x=>x.classList.toggle("active",x===btn));
+ ["login","create"].forEach(n=>document.getElementById("auth-"+n).classList.toggle("hidden",n!==btn.dataset.authTab));
 }));
-
-async function submitPlayer(){
- const name=rpName.value.trim();if(!name){alert("Escribe tu nombre/apodo.");return}
- const req={id:Date.now(),name,ea:rpEa.value.trim()||name,pos:rpPos.value,sec:rpSec.value,country:rpCountry.value.trim()||"—",platform:rpPlatform.value,discord:rpDiscord.value.trim(),availability:rpAvail.value.trim(),notes:rpNotes.value.trim(),status:"Pendiente",created:new Date().toLocaleString()};
+function toggleRoleFields(){playerFields.classList.toggle("hidden",regRole.value!=="player");dtFields.classList.toggle("hidden",regRole.value!=="dt")}
+regRole.addEventListener("change",toggleRoleFields);toggleRoleFields();
+registerBtn.addEventListener("click",async()=>{
+ registerMsg.classList.remove("hidden");registerMsg.textContent="Creando cuenta...";
+ const body={role:regRole.value,username:regUser.value.trim(),password:regPass.value,display_name:regName.value.trim(),ea_id:regEa.value.trim(),country:regCountry.value.trim(),platform:regPlatform.value,position:regPos.value,secondary_position:regSec.value.trim(),club:regClub.value.trim(),abbr:regAbbr.value.trim(),region:regRegion.value.trim(),discord:regDiscord.value.trim()};
  try{
-   const r=await fetch("/api/register/player",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(req)});
-   if(!r.ok)throw new Error("server");
-   await fetchServerState();
-   alert("Inscripción enviada. El comisionado la verá en su app.");
- }catch(e){
-   state.playerRequests.push(req);state.log.unshift(`Nueva inscripción de jugador: ${name}`);await persist();alert("Inscripción guardada localmente. Abre la app mediante INICIAR_SERVIDOR_V9.bat para recibir registros desde teléfonos.");
- }
- ["rpName","rpEa","rpCountry","rpDiscord","rpAvail","rpNotes"].forEach(id=>document.getElementById(id).value="")
-}
-document.getElementById("submitPlayer").addEventListener("click",submitPlayer);
-
-document.getElementById("submitDt").addEventListener("click",async ()=>{
- const name=rdName.value.trim(),club=rdClub.value.trim();if(!name||!club){alert("Escribe nombre del DT y club.");return}
- const req={id:Date.now(),name,ea:rdEa.value.trim()||name,club,abbr:rdAbbr.value.trim().toUpperCase()||"FC",region:rdRegion.value.trim(),captain:rdCaptain.value.trim(),vice:rdVice.value.trim(),discord:rdDiscord.value.trim(),notes:rdNotes.value.trim(),status:"Pendiente",created:new Date().toLocaleString()};
+  const r=await fetch("/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}),j=await r.json();
+  if(r.status===409)throw new Error("Ese usuario ya existe. Inicia sesión con tu usuario y contraseña.");
+  if(!r.ok)throw new Error(j.error==="password_short"?"La contraseña necesita mínimo 8 caracteres.":"Revisa los datos del registro.");
+  registerMsg.textContent="✅ Cuenta creada una sola vez. Ahora espera la aprobación del Comisionado.";
+ }catch(e){registerMsg.textContent="❌ "+e.message}
+});
+loginBtn.addEventListener("click",async()=>{
+ loginMsg.classList.remove("hidden");loginMsg.textContent="Comprobando...";
  try{
-   const r=await fetch("/api/register/dt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(req)});
-   if(!r.ok)throw new Error("server");
-   await fetchServerState();
-   alert("Solicitud enviada. El comisionado la verá en su app.");
- }catch(e){
-   state.dtRequests.push(req);state.log.unshift(`Nueva solicitud de DT: ${name} / ${club}`);await persist();alert("Solicitud guardada localmente.");
- }
+  const r=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:loginUser.value.trim(),password:loginPass.value})}),j=await r.json();
+  if(!r.ok){
+   if(j.error==="pending")throw new Error("Tu cuenta todavía está pendiente de aprobación.");
+   if(j.error==="rejected")throw new Error("Tu solicitud fue rechazada.");
+   throw new Error("Usuario o contraseña incorrectos.");
+  }
+  authToken=j.token;authUser=j.user;localStorage.setItem("pinto_auth_token",authToken);localStorage.setItem("pinto_auth_user",JSON.stringify(authUser));
+  role=authUser.role==="admin"?"admin":authUser.role==="viewer"?"viewer":authUser.role==="dt"?Number(authUser.teamId):"player";
+  auth.classList.add("hidden");app.classList.remove("hidden");updateRole();await fetchServerState();render();
+ }catch(e){loginMsg.textContent="❌ "+e.message}
 });
+document.getElementById("logout").addEventListener("click",()=>{authToken="";authUser=null;localStorage.removeItem("pinto_auth_token");localStorage.removeItem("pinto_auth_user");location.reload()});
 
-document.getElementById("loginBtn").addEventListener("click",()=>{
- const v=loginRole.value;role=(v==="admin"||v==="viewer")?v:Number(v);auth.classList.add("hidden");app.classList.remove("hidden");updateRole();render()
-});
-logout.addEventListener("click",()=>location.reload());
-function isAdmin(){return role==="admin"} function isViewer(){return role==="viewer"} function myTeam(){return typeof role==="number"?state.teams.find(t=>t.id===role):null}
-function updateRole(){roleChip.textContent=isAdmin()?"COMISIONADO":isViewer()?"ESPECTADOR":myTeam()?`${myTeam().dt} • ${myTeam().name}`:"DT";document.querySelectorAll(".adminOnly").forEach(e=>e.classList.toggle("hidden",!isAdmin()))}
+function isAdmin(){return role==="admin"} function isViewer(){return role==="viewer"||role==="player"} function myTeam(){return typeof role==="number"?state.teams.find(t=>t.id===role):null}
+function updateRole(){roleChip.textContent=isAdmin()?"COMISIONADO":role==="player"?"JUGADOR":role==="viewer"?"ESPECTADOR":myTeam()?`${myTeam().dt} • ${myTeam().name}`:"DT";document.querySelectorAll(".adminOnly").forEach(e=>e.classList.toggle("hidden",!isAdmin()))}
 
 document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById("page-"+b.dataset.page)?.classList.add("active");document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x.dataset.page===b.dataset.page))}));
 
@@ -471,7 +460,7 @@ function render(){
  dtRequests.innerHTML=state.dtRequests.map(r=>`<div class="requestCard"><div class="requestTop"><div><b>${r.name}</b><div class="muted">${r.club}</div></div><div><button class="btn primary" data-ad="${r.id}">APROBAR</button> <button class="btn danger" data-rd="${r.id}">RECHAZAR</button></div></div><div class="requestMeta"><span class="tag">${r.abbr}</span><span class="tag">${r.region||"Sin región"}</span><span class="tag">${r.discord||"Sin Discord"}</span></div></div>`).join("")||'<div class="muted">No hay solicitudes.</div>';
  document.querySelectorAll("[data-ap]").forEach(b=>b.onclick=()=>approvePlayer(Number(b.dataset.ap)));document.querySelectorAll("[data-rp]").forEach(b=>b.onclick=()=>rejectPlayer(Number(b.dataset.rp)));document.querySelectorAll("[data-ad]").forEach(b=>b.onclick=()=>approveDt(Number(b.dataset.ad)));document.querySelectorAll("[data-rd]").forEach(b=>b.onclick=()=>rejectDt(Number(b.dataset.rd)));
  adminLog.innerHTML=state.log.slice(0,25).map((l,idx)=>`<div class="row"><b>${idx+1}</b><span>${l}</span><span></span></div>`).join("")||'<div class="muted">Sin actividad.</div>';
- pauseBtn.textContent=state.paused?"REANUDAR DRAFT":"PAUSAR DRAFT";renderCards();renderV8();updateTimer()
+ pauseBtn.textContent=state.paused?"REANUDAR DRAFT":"PAUSAR DRAFT";renderCards();renderV8();updateTimer();if(isAdmin())renderPendingAccounts()
 }
 
 pauseBtn.addEventListener("click",()=>{if(!isAdmin())return;state.paused=!state.paused;state.log.unshift(state.paused?"Draft pausado":"Draft reanudado");persist()});
@@ -493,6 +482,26 @@ async function loadNetworkInfo(){
 }
 document.getElementById("openRegistrationPage")?.addEventListener("click",()=>window.open("/register.html","_blank"));
 loadNetworkInfo();
+
+
+async function renderPendingAccounts(){
+ if(!isAdmin())return;
+ try{
+  const r=await fetch("/api/admin/pending",{headers:authHeaders()}),j=await r.json();
+  if(!r.ok)return;
+  playerRequests.innerHTML=(j.users||[]).map(u=>`<div class="pendingUser"><b>${u.display_name}</b> <span class="tag">${u.role.toUpperCase()}</span><div class="muted">@${u.username}${u.club?" • "+u.club:""}${u.position?" • "+u.position:""}${u.country?" • "+u.country:""}</div><div class="actions"><button class="btn primary" data-ua="${u.id}">APROBAR</button><button class="btn danger" data-ur="${u.id}">RECHAZAR</button></div></div>`).join("")||'<div class="muted">No hay cuentas pendientes.</div>';
+  document.querySelectorAll("[data-ua]").forEach(b=>b.onclick=()=>accountAction(b.dataset.ua,"approve"));
+  document.querySelectorAll("[data-ur]").forEach(b=>b.onclick=()=>accountAction(b.dataset.ur,"reject"));
+ }catch{}
+}
+async function accountAction(id,action){
+ await fetch(`/api/admin/users/${id}/${action}`,{method:"POST",headers:authHeaders()});
+ await fetchServerState();renderPendingAccounts();
+}
+setInterval(()=>{if(isAdmin())renderPendingAccounts()},2500);
+
+
+(async()=>{if(authToken&&authUser){try{const r=await fetch("/api/auth/me",{headers:authHeaders()});if(r.ok){role=authUser.role==="admin"?"admin":authUser.role==="viewer"?"viewer":authUser.role==="dt"?Number(authUser.teamId):"player";auth.classList.add("hidden");app.classList.remove("hidden");updateRole();await fetchServerState();render()}}catch{}}})();
 
 </script>
 </body>
