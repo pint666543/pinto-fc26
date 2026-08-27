@@ -1,0 +1,1 @@
+Reemplaza en GitHub: index.html, app.html, server.js y package.json. Luego Commit changes. Espera en Railway: PINTO FC26 RELEASE 1.0.3 on 8080. No recrees el Setup.exe.
