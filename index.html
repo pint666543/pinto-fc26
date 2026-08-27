@@ -429,6 +429,18 @@ h1 span{color:var(--green)}
   .realPintoLogo{width:170px!important;height:170px!important;object-fit:contain!important}
 }
 
+
+.passwordRevealWrap{position:relative;width:100%}
+.passwordRevealWrap input{padding-right:54px!important}
+.passwordRevealBtn{
+ position:absolute;right:6px;top:50%;transform:translateY(-50%);
+ width:42px;height:42px;border:0;border-radius:8px;background:transparent;
+ color:#9eabb1;display:grid;place-items:center;cursor:pointer;font-size:19px;
+ -webkit-tap-highlight-color:transparent;touch-action:manipulation
+}
+.passwordRevealBtn:hover,.passwordRevealBtn:focus{color:#3cff67;background:rgba(60,255,103,.08);outline:none}
+.passwordRevealBtn[aria-pressed="true"]{color:#3cff67}
+
 </style>
 </head>
 <body>
@@ -585,5 +597,48 @@ $("loginBtn").onclick=async()=>{
   }catch{}
 })();
 </script>
+
+<script>
+(function(){
+  function eyeIcon(open){
+    return open ? "◉" : "◌";
+  }
+  function installPasswordReveal(){
+    var inputs=document.querySelectorAll('input[type="password"]');
+    for(var i=0;i<inputs.length;i++){
+      var input=inputs[i];
+      if(input.dataset.revealReady==="1")continue;
+      input.dataset.revealReady="1";
+
+      var wrap=document.createElement("div");
+      wrap.className="passwordRevealWrap";
+      input.parentNode.insertBefore(wrap,input);
+      wrap.appendChild(input);
+
+      var btn=document.createElement("button");
+      btn.type="button";
+      btn.className="passwordRevealBtn";
+      btn.setAttribute("aria-label","Mostrar contraseña");
+      btn.setAttribute("aria-pressed","false");
+      btn.textContent=eyeIcon(false);
+      btn.addEventListener("click",function(){
+        var field=this.parentNode.querySelector("input");
+        var show=field.type==="password";
+        field.type=show?"text":"password";
+        this.setAttribute("aria-pressed",show?"true":"false");
+        this.setAttribute("aria-label",show?"Ocultar contraseña":"Mostrar contraseña");
+        this.textContent=eyeIcon(show);
+        field.focus();
+      });
+      wrap.appendChild(btn);
+    }
+  }
+  installPasswordReveal();
+  if(window.MutationObserver){
+    new MutationObserver(installPasswordReveal).observe(document.body,{childList:true,subtree:true});
+  }
+})();
+</script>
+
 </body>
 </html>

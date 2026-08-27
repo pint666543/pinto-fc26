@@ -780,4 +780,4 @@ app.put("/api/state",auth,async(req,res)=>{
 app.get("/app.html",(req,res)=>res.sendFile(path.join(ROOT,"app.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"index.html")));
 
-initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.2.4 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
+initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.2.5 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});

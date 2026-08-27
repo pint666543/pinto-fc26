@@ -1,0 +1,18 @@
+PINTO FC26 1.2.5 — MOSTRAR / OCULTAR CONTRASEÑA
+
+NUEVO:
+- Botón de ojo en todos los campos de contraseña.
+- Funciona al iniciar sesión.
+- Funciona al crear una cuenta.
+- Un toque muestra la contraseña escrita.
+- Otro toque vuelve a ocultarla.
+- Compatible con PC, iPhone y Android.
+- No cambia cómo se guardan las contraseñas en el servidor.
+
+SUBE A GITHUB:
+index.html
+server.js
+package.json
+
+app.html se incluye, pero no necesita cambios para esta función.
+Commit changes → Railway Online.
