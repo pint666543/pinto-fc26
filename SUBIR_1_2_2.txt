@@ -1,0 +1,21 @@
+PINTO FC26 1.2.2 — NAVEGACIÓN MÓVIL FUNCIONANDO
+
+CORREGIDO:
+- Los iconos inferiores del celular ahora sí cambian de sección.
+- Inicio abre Dashboard.
+- Draft abre Draft Room.
+- Jugadores abre Players.
+- Clubes abre Clubs.
+- Liga abre League.
+- ⚡ Relámpago abre Relámpago FC26-27.
+- Admin abre Panel Admin solo si la cuenta es Admin.
+- El botón activo se ilumina correctamente.
+- También se unificó la navegación de PC y móvil para evitar que vuelva a romperse.
+
+SUBE A GITHUB:
+1. app.html
+2. server.js
+3. package.json
+
+Después:
+Commit changes → Railway Online → cierra Safari completamente y vuelve a abrir la página.

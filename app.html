@@ -321,7 +321,7 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
 </head>
 <body><div id="app" class="app">
   <header class="top">
-    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.2.1 PLATFORM</div></div></div>
+    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.2.2 PLATFORM</div></div></div>
     <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="relampago">⚡ RELÁMPAGO</button><button data-page="rules">REGLAMENTO</button><button data-page="admin">ADMIN PANEL</button></nav>
     <div class="topUser"><span id="syncBadge" class="syncBadge">● CONECTADO</span><div id="roleChip" class="roleChip"></div><button class="btn secondary" id="logout">SALIR</button></div>
   </header>
@@ -704,7 +704,7 @@ document.getElementById("logout").addEventListener("click",()=>{localStorage.rem
 function isAdmin(){return role==="admin"} function isViewer(){return role==="viewer"||role==="player"} function myTeam(){return typeof role==="number"?state.teams.find(t=>t.id===role):null}
 function updateRole(){document.getElementById("roleChip").textContent=isAdmin()?"COMISIONADO":role==="player"?"JUGADOR":role==="viewer"?"ESPECTADOR":myTeam()?`${myTeam().dt} • ${myTeam().name}`:"DT";document.querySelectorAll(".adminOnly").forEach(e=>e.classList.toggle("hidden",!isAdmin()))}
 
-document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById("page-"+b.dataset.page)?.classList.add("active");document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x.dataset.page===b.dataset.page))}));
+document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>setPage(b.dataset.page)));
 
 function currentInfo(offset=0){
  const teams=state.teams.filter(t=>t.approved),n=teams.length;
@@ -1300,23 +1300,26 @@ setInterval(()=>{if(isAdmin())loadAdminPanel()},3000);
 function syncMobileNav(page){
   document.querySelectorAll("[data-mobile-page]").forEach(b=>b.classList.toggle("active",b.dataset.mobilePage===page));
 }
-document.querySelectorAll("[data-mobile-page]").forEach(btn=>btn.addEventListener("click",()=>{
-  if(btn.dataset.mobilePage==="admin"&&!isAdmin())return;
-  setPage(btn.dataset.mobilePage);
-  syncMobileNav(btn.dataset.mobilePage);
-  window.scrollTo({top:0,behavior:"smooth"});
-}));
-const originalSetPage=setPage;
-setPage=function(name){
-  originalSetPage(name);
+function setPage(name){
+  if(name==="admin"&&!isAdmin())return;
+  const target=document.getElementById("page-"+name);
+  if(!target)return;
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  target.classList.add("active");
+  document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x.dataset.page===name));
   syncMobileNav(name);
-};
+  animatePageEntry();
+  try{window.scrollTo({top:0,behavior:"smooth"})}catch{window.scrollTo(0,0)}
+}
+document.querySelectorAll("[data-mobile-page]").forEach(btn=>btn.addEventListener("click",()=>{
+  setPage(btn.dataset.mobilePage);
+}));
 function mobileRoleNav(){
   const a=document.querySelector('[data-mobile-page="admin"]');
   if(a)a.classList.toggle("hidden",!isAdmin());
 }
 mobileRoleNav();
-syncMobileNav("dashboard");
+syncMobileNav("home");
 
 
 function animatePageEntry(){
@@ -1324,14 +1327,6 @@ function animatePageEntry(){
   if(!p)return;
   p.style.animation="none";
   requestAnimationFrame(()=>{p.style.animation="pageIn .28s ease both"});
-}
-const _mobileOriginalSetPage=typeof setPage==="function"?setPage:null;
-if(_mobileOriginalSetPage){
-  setPage=function(name){
-    _mobileOriginalSetPage(name);
-    animatePageEntry();
-    syncMobileNav(name);
-  };
 }
 document.addEventListener("click",e=>{
   const b=e.target.closest(".btn,.pickBtn,.mobileBottomNav button");
