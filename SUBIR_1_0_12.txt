@@ -1,0 +1,24 @@
+PINTO FC26 1.0.12 — FIX FINAL DEL LOGO
+
+Encontré el error real:
+la versión anterior todavía tenía src="/assets/pinto-draft-logo.png".
+Por eso Safari seguía mostrando el cuadro con ?.
+
+AHORA:
+- El logo está realmente embebido dentro de index.html.
+- No existe ninguna referencia a /assets.
+- No necesitas subir carpeta assets.
+- Se mantiene la animación.
+- Compatible con Safari/iPhone.
+
+SUBE A GITHUB:
+index.html
+server.js
+package.json
+
+Después Commit changes y espera Railway Online.
+
+IMPORTANTE EN IPHONE:
+Después del Deploy, abre Safari y recarga la página una vez.
+Si Safari conserva la versión anterior, mantén pulsado el botón de recargar
+o cierra la pestaña y vuelve a abrir el dominio.
