@@ -317,11 +317,28 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
   }
 }
 
+
+@media(max-width:760px){
+  .mobileBottomNav{
+    pointer-events:auto!important;
+    touch-action:manipulation;
+    -webkit-user-select:none;
+    user-select:none;
+    z-index:2147483000!important;
+  }
+  .mobileBottomNav button{
+    pointer-events:auto!important;
+    touch-action:manipulation;
+    -webkit-tap-highlight-color:rgba(60,255,103,.18);
+    cursor:pointer;
+  }
+}
+
 </style>
 </head>
 <body><div id="app" class="app">
   <header class="top">
-    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.2.2 PLATFORM</div></div></div>
+    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.2.3 PLATFORM</div></div></div>
     <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="relampago">⚡ RELÁMPAGO</button><button data-page="rules">REGLAMENTO</button><button data-page="admin">ADMIN PANEL</button></nav>
     <div class="topUser"><span id="syncBadge" class="syncBadge">● CONECTADO</span><div id="roleChip" class="roleChip"></div><button class="btn secondary" id="logout">SALIR</button></div>
   </header>
@@ -619,14 +636,43 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
 </div>
 
 <nav class="mobileBottomNav" aria-label="Navegación móvil">
-  <button class="active" data-mobile-page="home"><span>⌂</span>INICIO</button>
-  <button data-mobile-page="draft"><span>◉</span>DRAFT</button>
-  <button data-mobile-page="players"><span>♙</span>JUGADORES</button>
-  <button data-mobile-page="clubs"><span>🛡</span>CLUBES</button>
-  <button data-mobile-page="league"><span>▦</span>LIGA</button>
-  <button data-mobile-page="relampago"><span>⚡</span>RELÁMPAGO</button>
-  <button class="admin-mobile hidden" data-mobile-page="admin"><span>⚙</span>ADMIN</button>
+  <button type="button" class="active" data-mobile-page="home" onclick="return mobileGoSafe('home',this,event)"><span>⌂</span>INICIO</button>
+  <button type="button" data-mobile-page="draft" onclick="return mobileGoSafe('draft',this,event)"><span>◉</span>DRAFT</button>
+  <button type="button" data-mobile-page="players" onclick="return mobileGoSafe('players',this,event)"><span>♙</span>JUGADORES</button>
+  <button type="button" data-mobile-page="clubs" onclick="return mobileGoSafe('clubs',this,event)"><span>🛡</span>CLUBES</button>
+  <button type="button" data-mobile-page="league" onclick="return mobileGoSafe('league',this,event)"><span>▦</span>LIGA</button>
+  <button type="button" data-mobile-page="relampago" onclick="return mobileGoSafe('relampago',this,event)"><span>⚡</span>RELÁMPAGO</button>
+  <button type="button" class="admin-mobile hidden" data-mobile-page="admin" onclick="return mobileGoSafe('admin',this,event)"><span>⚙</span>ADMIN</button>
 </nav>
+
+<script>
+function mobileGoSafe(name,btn,ev){
+  if(ev){ev.preventDefault();ev.stopPropagation();}
+  try{
+    var target=document.getElementById("page-"+name);
+    if(!target)return false;
+    var pages=document.querySelectorAll(".page");
+    for(var i=0;i<pages.length;i++)pages[i].classList.remove("active");
+    target.classList.add("active");
+
+    var mobileButtons=document.querySelectorAll("[data-mobile-page]");
+    for(var j=0;j<mobileButtons.length;j++){
+      mobileButtons[j].classList.toggle("active",mobileButtons[j].getAttribute("data-mobile-page")===name);
+    }
+
+    var desktopButtons=document.querySelectorAll("[data-page]");
+    for(var k=0;k<desktopButtons.length;k++){
+      desktopButtons[k].classList.toggle("active",desktopButtons[k].getAttribute("data-page")===name);
+    }
+
+    window.scrollTo(0,0);
+  }catch(err){
+    var fallback=document.getElementById("page-"+name);
+    if(fallback)fallback.style.display="block";
+  }
+  return false;
+}
+</script>
 
 <div id="pickModal" class="modal"><div class="reveal"><h2>THE PICK IS IN</h2><div id="modalTeam" style="font-size:22px;font-weight:900"></div><div class="muted" style="margin:10px">SELECTS</div><div id="modalPlayer" class="big green"></div><div id="modalMeta" class="muted"></div></div></div>
 
@@ -720,9 +766,15 @@ function canPick(){
  const i=currentInfo(); return !!i.team && i.team.id===role;
 }
 function fmt(){const m=Math.floor(remaining/60),s=remaining%60;return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`}
-function updateTimer(){homeTimer.textContent=fmt();draftTimer.textContent=fmt()}
-timerStart.addEventListener("click",()=>{if(timer||state.paused)return;timer=setInterval(()=>{remaining--;if(remaining<=0){remaining=0;clearInterval(timer);timer=null}updateTimer()},1000)});
-timerReset.addEventListener("click",()=>{clearInterval(timer);timer=null;remaining=state.settings.seconds;updateTimer()});
+function updateTimer(){
+  const ht=document.getElementById("homeTimer"),dt=document.getElementById("draftTimer");
+  if(ht)ht.textContent=fmt();
+  if(dt)dt.textContent=fmt();
+}
+const timerStartEl=document.getElementById("timerStart");
+const timerResetEl=document.getElementById("timerReset");
+if(timerStartEl)timerStartEl.addEventListener("click",()=>{if(timer||state.paused)return;timer=setInterval(()=>{remaining--;if(remaining<=0){remaining=0;clearInterval(timer);timer=null}updateTimer()},1000)});
+if(timerResetEl)timerResetEl.addEventListener("click",()=>{clearInterval(timer);timer=null;remaining=state.settings.seconds;updateTimer()});
 
 function makePick(pid){
  const p=state.players.find(x=>x.id===pid),i=currentInfo();if(!p||p.status!=="Disponible")return;

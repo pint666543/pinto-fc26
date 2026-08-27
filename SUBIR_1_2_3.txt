@@ -1,0 +1,22 @@
+PINTO FC26 1.2.3 — FIX DEFINITIVO NAVEGACIÓN iPHONE
+
+CAUSA ENCONTRADA:
+Safari podía detener el JavaScript principal antes de registrar los botones móviles
+por referencias antiguas a elementos HTML como variables globales.
+
+CORREGIDO:
+- Cada botón inferior ahora tiene navegación independiente.
+- Funciona aunque otro módulo JavaScript falle.
+- Inicio / Draft / Jugadores / Clubes / Liga / Relámpago abren directamente.
+- Se reforzó pointer-events y touch-action para Safari.
+- Se corrigieron referencias inseguras del temporizador que podían romper el script en iOS.
+- No depende del sistema anterior de listeners para poder navegar.
+
+SUBE A GITHUB:
+app.html
+server.js
+package.json
+
+Luego:
+Commit changes → espera Railway Online.
+En iPhone cierra la pestaña anterior y abre la web nuevamente.
