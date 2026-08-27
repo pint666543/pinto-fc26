@@ -1,0 +1,18 @@
+PINTO FC26 1.0.9 — iOS LOGIN FIX
+
+CORREGIDO:
+- Icono de usuario ya no usa emoji.
+- Candado ya no usa emoji.
+- Safari/iPhone ya no monta los iconos encima del texto.
+- Mejor padding y tamaño de inputs en móvil.
+- Botón y encabezado reajustados para pantallas iPhone.
+
+SUBE A GITHUB:
+index.html
+server.js
+package.json
+
+app.html puede quedarse igual.
+
+Luego Commit changes y espera Railway Online.
+No necesitas rehacer Setup.exe.

@@ -260,6 +260,73 @@ h1 span{color:var(--green)}
   .tabs{position:sticky;top:0;z-index:20}
 }
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ===== iOS SAFARI HOTFIX 1.0.9 ===== */
+.fieldIcon{
+  position:absolute;
+  left:20px;
+  top:50%;
+  transform:translateY(-50%);
+  width:24px;
+  height:24px;
+  z-index:2;
+  color:var(--green);
+  pointer-events:none;
+}
+.userIcon::before{
+  content:"";
+  position:absolute;
+  width:9px;height:9px;
+  border:2px solid currentColor;
+  border-radius:50%;
+  left:6px;top:1px;
+}
+.userIcon::after{
+  content:"";
+  position:absolute;
+  width:16px;height:9px;
+  border:2px solid currentColor;
+  border-bottom:0;
+  border-radius:10px 10px 0 0;
+  left:2px;bottom:1px;
+}
+.lockIcon::before{
+  content:"";
+  position:absolute;
+  width:10px;height:9px;
+  border:2px solid currentColor;
+  border-bottom:0;
+  border-radius:8px 8px 0 0;
+  left:5px;top:1px;
+}
+.lockIcon::after{
+  content:"";
+  position:absolute;
+  width:17px;height:13px;
+  border:2px solid currentColor;
+  border-radius:3px;
+  left:2px;bottom:1px;
+}
+.field input{
+  padding-left:60px!important;
+  -webkit-appearance:none;
+  appearance:none;
+}
+@media(max-width:560px){
+  .field{margin-bottom:14px}
+  .field input{
+    min-height:62px!important;
+    font-size:16px!important;
+    padding-left:58px!important;
+  }
+  .fieldIcon{left:19px;width:22px;height:22px}
+  .primaryBtn{min-height:62px!important;font-size:16px!important}
+  .loginCard{padding-top:30px!important}
+  .welcome{font-size:11px!important;letter-spacing:5px!important}
+  h1{font-size:31px!important;line-height:1.05!important}
+  .neonLine{margin:17px auto 28px!important}
+}
+
 </style>
 </head>
 <body>
@@ -295,11 +362,11 @@ h1 span{color:var(--green)}
 
     <div id="loginForm" class="form">
       <div class="field">
-        <span class="fieldIcon">👤</span>
+        <span class="fieldIcon userIcon" aria-hidden="true"></span>
         <input id="loginUser" autocomplete="username" placeholder="Usuario">
       </div>
       <div class="field">
-        <span class="fieldIcon">🔒</span>
+        <span class="fieldIcon lockIcon" aria-hidden="true"></span>
         <input id="loginPass" type="password" autocomplete="current-password" placeholder="Contraseña">
       </div>
       <button id="loginBtn" class="primaryBtn">INICIAR SESIÓN →</button>
