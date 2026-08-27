@@ -1,0 +1,21 @@
+PINTO FC26 1.2.4 — INSCRIPCIÓN DE EQUIPOS AL RELÁMPAGO
+
+NUEVO:
+- Los usuarios con rol DT ven el botón ⚡ INSCRIBIR EQUIPO dentro de RELÁMPAGO.
+- El sistema usa automáticamente el club aprobado del DT.
+- Un DT no puede inscribir un club ajeno.
+- No permite inscripciones duplicadas.
+- La solicitud queda PENDIENTE.
+- El Admin ve las solicitudes en el mismo apartado RELÁMPAGO.
+- Admin puede APROBAR o RECHAZAR.
+- Al aprobar, el club entra en la lista del torneo.
+- El DT ve PENDIENTE / APROBADO / CERRADO.
+- Al iniciar el torneo se cierran las inscripciones.
+
+SUBE A GITHUB:
+app.html
+server.js
+package.json
+
+Commit changes → Railway Online.
+No necesitas rehacer Setup.exe.

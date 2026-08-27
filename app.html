@@ -338,7 +338,7 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
 </head>
 <body><div id="app" class="app">
   <header class="top">
-    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.2.3 PLATFORM</div></div></div>
+    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.2.4 PLATFORM</div></div></div>
     <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="relampago">⚡ RELÁMPAGO</button><button data-page="rules">REGLAMENTO</button><button data-page="admin">ADMIN PANEL</button></nav>
     <div class="topUser"><span id="syncBadge" class="syncBadge">● CONECTADO</span><div id="roleChip" class="roleChip"></div><button class="btn secondary" id="logout">SALIR</button></div>
   </header>
@@ -476,12 +476,25 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
     <div class="relBolt" aria-hidden="true">ϟ</div>
   </div>
 
+  <div id="relDtRegistration" class="panel body hidden" style="margin-top:12px">
+    <div class="sectionHead">
+      <div><div class="eyebrow">INSCRIPCIONES</div><h3>⚡ INSCRIBIR MI EQUIPO</h3></div>
+      <span id="relRegStatusBadge" class="tag">DT</span>
+    </div>
+    <div id="relRegMessage" class="muted">Inscríbete con el club que tienes asignado como DT.</div>
+    <button class="btn primary" id="relRegisterTeamBtn" style="margin-top:12px">⚡ INSCRIBIR EQUIPO</button>
+  </div>
+
   <div id="relChampionBox" class="relChampion panel body hidden"></div>
 
   <div id="relAdminSetup" class="panel body hidden" style="margin-top:12px">
     <div class="sectionHead">
       <div><div class="eyebrow">CONTROL ADMIN</div><h3>CONFIGURAR TORNEO</h3></div>
       <span class="tag">SOLO ADMIN</span>
+    </div>
+    <div id="relRegistrationAdmin" style="margin-bottom:16px">
+      <div class="sectionHead"><h3>SOLICITUDES DE INSCRIPCIÓN</h3><span class="tag">DTs</span></div>
+      <div id="relRegistrationList"></div>
     </div>
     <div id="relSetupFields">
       <label class="ruleLabel">Nombre del torneo</label>
@@ -1066,8 +1079,69 @@ function relPhaseText(r){
   if(r.phase==="league")return "FASE LIGA";
   return "ESPERA";
 }
+
+function renderRelRegistration(){
+  const r=relData(), box=document.getElementById("relDtRegistration");
+  if(!box)return;
+  const isDt=currentUser?.role==="dt";
+  box.classList.toggle("hidden",!isDt);
+  if(isDt){
+    const tid=currentAccountTeamId();
+    const club=relTeam(tid);
+    const reg=(r.registrations||[]).find(x=>Number(x.teamId)===Number(tid)&&x.status!=="rejected");
+    const btn=document.getElementById("relRegisterTeamBtn");
+    const msg=document.getElementById("relRegMessage");
+    const badge=document.getElementById("relRegStatusBadge");
+    if(!club){
+      msg.textContent="Tu cuenta DT todavía no tiene un club aprobado.";
+      btn.classList.add("hidden");badge.textContent="SIN CLUB";
+    }else if(r.status!=="not_started"&&r.phase!=="registration"){
+      msg.textContent="Las inscripciones para este Relámpago ya están cerradas.";
+      btn.classList.add("hidden");badge.textContent="CERRADO";
+    }else if(reg){
+      btn.classList.add("hidden");
+      badge.textContent=reg.status==="approved"?"APROBADO":"PENDIENTE";
+      msg.textContent=reg.status==="approved"?`${club.name} ya está inscrito en el Relámpago.`:`Solicitud enviada para ${club.name}. Esperando aprobación del Admin.`;
+    }else{
+      btn.classList.remove("hidden");badge.textContent="ABIERTO";
+      msg.textContent=`Club: ${club.name}. Envía la inscripción al torneo.`;
+    }
+  }
+  if(isAdmin()){
+    const list=document.getElementById("relRegistrationList");
+    if(list){
+      const regs=(r.registrations||[]);
+      list.innerHTML=regs.length?regs.map(x=>{
+        const club=relTeam(x.teamId);
+        return `<div class="relMatch" style="grid-template-columns:1fr auto">
+          <div><b>${club?.name||"Club"}</b><div class="muted">DT: ${x.dtUsername||"—"} • ${x.status.toUpperCase()}</div></div>
+          <div>${x.status==="pending"?`<button class="btn primary" data-reg-approve="${x.id}">APROBAR</button> <button class="btn danger" data-reg-reject="${x.id}">RECHAZAR</button>`:""}</div>
+        </div>`;
+      }).join(""):'<div class="muted">Todavía no hay solicitudes de DT.</div>';
+      document.querySelectorAll("[data-reg-approve]").forEach(b=>b.onclick=()=>reviewRelRegistration(b.dataset.regApprove,"approve"));
+      document.querySelectorAll("[data-reg-reject]").forEach(b=>b.onclick=()=>reviewRelRegistration(b.dataset.regReject,"reject"));
+    }
+  }
+}
+async function registerRelTeam(){
+  const r=await fetch("/api/relampago/register",{method:"POST",headers:authHeaders()});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){
+    const m={already_registered:"Tu equipo ya tiene una inscripción.",registration_closed:"Las inscripciones están cerradas.",club_not_approved:"Tu club todavía no está aprobado.",no_club:"No tienes un club asignado.",dt_only:"Solo los DT pueden inscribir equipos."};
+    alert(m[j.error]||"No se pudo enviar la inscripción.");return;
+  }
+  await fetchServerState();
+}
+async function reviewRelRegistration(id,action){
+  const r=await fetch(`/api/admin/relampago/registrations/${id}/${action}`,{method:"POST",headers:authHeaders()});
+  if(!r.ok){alert("No se pudo procesar la solicitud.");return}
+  await fetchServerState();
+}
+document.getElementById("relRegisterTeamBtn")?.addEventListener("click",registerRelTeam);
+
 function renderRelampago(){
   const r=relData(),matches=r.matches||[],teamId=currentAccountTeamId();
+  renderRelRegistration();
   const teamCount=document.getElementById("relTeamCount");
   if(!teamCount)return;
   teamCount.textContent=(r.teamIds||[]).length;

@@ -195,13 +195,14 @@ function fixtureById(st,id){return (st.fixtures||[]).find(m=>String(m.id)===Stri
 function defaultRelampago(){
   return {
     name:"RELÁMPAGO FC26-27",status:"not_started",phase:"registration",
-    teamIds:[],leagueRounds:5,qualifiers:8,matches:[],
+    teamIds:[],registrations:[],leagueRounds:5,qualifiers:8,matches:[],
     championTeamId:null,startedAt:null,completedAt:null
   };
 }
 function ensureRelampago(st){
   if(!st.relampago || typeof st.relampago!=="object")st.relampago=defaultRelampago();
   if(!Array.isArray(st.relampago.teamIds))st.relampago.teamIds=[];
+  if(!Array.isArray(st.relampago.registrations))st.relampago.registrations=[];
   if(!Array.isArray(st.relampago.matches))st.relampago.matches=[];
   return st.relampago;
 }
@@ -588,6 +589,54 @@ app.put("/api/admin/rulebook",auth,adminOnly,async(req,res)=>{
 });
 
 
+
+app.post("/api/relampago/register",auth,async(req,res)=>{
+  try{
+    if(req.user.role!=="dt")return res.status(403).json({error:"dt_only"});
+    const st=(await getStore()).state;
+    const teamId=accountTeamId(req.user,st);
+    if(!teamId)return res.status(400).json({error:"no_club"});
+    const club=(st.teams||[]).find(t=>Number(t.id)===Number(teamId)&&t.approved);
+    if(!club)return res.status(400).json({error:"club_not_approved"});
+    const rr=ensureRelampago(st);
+    if(rr.status!=="not_started"&&rr.phase!=="registration")return res.status(400).json({error:"registration_closed"});
+    if((rr.registrations||[]).some(x=>Number(x.teamId)===Number(teamId)&&x.status!=="rejected"))
+      return res.status(409).json({error:"already_registered"});
+    await mutate(x=>{
+      const r=ensureRelampago(x);
+      r.registrations=r.registrations||[];
+      r.registrations.push({
+        id:`RREG-${Date.now()}-${teamId}`,teamId:Number(teamId),dtUserId:req.user.id,
+        dtUsername:req.user.username,status:"pending",createdAt:new Date().toISOString()
+      });
+      x.log.unshift(`⚡ ${club.name} solicitó inscripción al Relámpago`);
+    });
+    res.json({ok:true});
+  }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.post("/api/admin/relampago/registrations/:id/:action",auth,adminOnly,async(req,res)=>{
+  try{
+    const action=req.params.action;
+    if(!["approve","reject"].includes(action))return res.status(400).json({error:"invalid_action"});
+    await mutate(x=>{
+      const r=ensureRelampago(x);
+      const reg=(r.registrations||[]).find(v=>String(v.id)===String(req.params.id));
+      if(!reg)throw new Error("not_found");
+      reg.status=action==="approve"?"approved":"rejected";
+      reg.reviewedAt=new Date().toISOString();reg.reviewedBy=req.user.username;
+      if(action==="approve"&&!r.teamIds.some(id=>Number(id)===Number(reg.teamId)))r.teamIds.push(Number(reg.teamId));
+      if(action==="reject")r.teamIds=r.teamIds.filter(id=>Number(id)!==Number(reg.teamId));
+      const club=(x.teams||[]).find(t=>Number(t.id)===Number(reg.teamId));
+      x.log.unshift(`⚡ Inscripción ${action==="approve"?"aprobada":"rechazada"}: ${club?.name||"Club"}`);
+    });
+    res.json({ok:true});
+  }catch(e){
+    if(e.message==="not_found")return res.status(404).json({error:"not_found"});
+    res.status(500).json({error:"server_error"})
+  }
+});
+
 app.post("/api/admin/relampago/start",auth,adminOnly,async(req,res)=>{
   try{
     const st=(await getStore()).state;
@@ -731,4 +780,4 @@ app.put("/api/state",auth,async(req,res)=>{
 app.get("/app.html",(req,res)=>res.sendFile(path.join(ROOT,"app.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"index.html")));
 
-initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.2.3 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
+initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.2.4 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});

@@ -1,8 +1,8 @@
 {
   "name": "pinto-fc26-v10-online",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "private": true,
-  "description": "PINTO FC26 1.2.3 iOS independent mobile navigation hard fix",
+  "description": "PINTO FC26 1.2.4 DT Relampago team registration",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
