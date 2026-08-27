@@ -5,114 +5,364 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>PINTO FC26 — Acceso</title>
 <style>
-:root{--g:#3cff67;--m:#8ea1ac}*{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 20% 10%,rgba(60,255,103,.10),transparent 28%),linear-gradient(#020609,#06100b);color:#fff;font-family:Segoe UI,Arial}
-.shell{width:min(1050px,100%);display:grid;grid-template-columns:1.05fr .95fr;border:1px solid #183844;border-radius:18px;overflow:hidden;background:#061017;box-shadow:0 25px 80px rgba(0,0,0,.45)}
-.hero{padding:46px;background:#050d11}.brand{font-size:32px;font-weight:950;font-style:italic}.brand span{color:var(--g)}.hero h1{font-size:52px;line-height:.96;margin:70px 0 16px}.hero h1 em{color:var(--g)}.hero p{color:#bcc9cf;line-height:1.55}.card{padding:34px}
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#040c10;padding:5px;border-radius:9px}.tabs button{border:0;background:transparent;color:#91a2ac;padding:12px;border-radius:6px;font-weight:850;cursor:pointer}.tabs button.active{background:#0c3719;color:#fff}
-.hidden{display:none!important}.form{margin-top:22px}label{display:block;font-size:11px;color:#a8b8c0;font-weight:800;margin:12px 0 5px}input,select{width:100%;padding:12px;background:#06121a;border:1px solid #21404c;border-radius:7px;color:#fff}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btn{width:100%;margin-top:18px;padding:13px;border-radius:7px;border:1px solid var(--g);background:#15983a;color:#fff;font-weight:900;cursor:pointer}.msg{margin-top:12px;padding:11px;border-radius:7px;background:#09171e}.ok{background:#092013}.err{background:#210b0f}.small{font-size:12px;color:var(--m);margin-top:12px}
-@media(max-width:800px){.shell{grid-template-columns:1fr}.hero{display:none}}
-
-/* ===== MOBILE 1.0.6 ===== */
-@media(max-width:800px){
-  body{padding:0!important;display:block!important;min-height:100dvh!important;background:#020609!important}
-  .shell{display:block!important;width:100%!important;min-height:100dvh!important;border:0!important;border-radius:0!important;box-shadow:none!important;background:#040c10!important}
-  .hero{display:block!important;padding:22px 20px 8px!important;background:linear-gradient(180deg,#06100b,#040c10)!important}
-  .hero h1{font-size:34px!important;line-height:1!important;margin:22px 0 8px!important}
-  .hero p{font-size:13px!important;margin:0!important;color:#9eb0b8!important}
-  .brand{font-size:25px!important}
-  .card{padding:18px 16px 100px!important}
-  .tabs{position:sticky!important;top:0!important;z-index:5!important}
-  .tabs button{min-height:48px!important;font-size:12px!important}
-  .form{margin-top:18px!important}
-  .form h2{font-size:24px!important}
-  .two{grid-template-columns:1fr!important;gap:0!important}
-  label{font-size:12px!important;margin-top:14px!important}
-  input,select{min-height:48px!important;font-size:16px!important;border-radius:9px!important}
-  .btn{min-height:52px!important;font-size:15px!important;border-radius:9px!important}
-  .msg{font-size:13px!important;line-height:1.45!important}
+:root{
+  --bg:#020507;
+  --panel:#070b0e;
+  --panel2:#0a1015;
+  --line:#20323b;
+  --green:#85ff19;
+  --green2:#35ff59;
+  --text:#f7f9fa;
+  --muted:#98a5ac;
+  --danger:#ff5a61;
 }
-
-
-/* ===== MOBILE PRO ANIMATED 1.0.7 ===== */
-@keyframes floatGlow{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(12px,-10px,0) scale(1.06)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(60,255,103,.08)}50%{box-shadow:0 0 30px 0 rgba(60,255,103,.16)}}
-@keyframes shimmer{0%{background-position:-180% 0}100%{background-position:180% 0}}
-body::before,body::after{content:"";position:fixed;border-radius:50%;filter:blur(60px);pointer-events:none;z-index:-1}
-body::before{width:260px;height:260px;background:rgba(60,255,103,.08);top:-80px;right:-60px;animation:floatGlow 7s ease-in-out infinite}
-body::after{width:220px;height:220px;background:rgba(65,125,255,.05);bottom:-70px;left:-60px;animation:floatGlow 9s ease-in-out infinite reverse}
-.shell{animation:fadeUp .55s ease both}
-.hero,.card{position:relative;overflow:hidden}
-.hero::after{content:"";position:absolute;inset:auto -30% -45% 15%;height:180px;background:linear-gradient(110deg,transparent,rgba(60,255,103,.08),transparent);transform:rotate(-8deg);animation:shimmer 6s linear infinite;background-size:220% 100%}
-.tabs button,.btn,input,select{transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
-.tabs button:active,.btn:active{transform:scale(.98)}
-.btn{animation:pulseGlow 3.2s ease-in-out infinite}
-input:focus,select:focus{transform:translateY(-1px);box-shadow:0 0 0 3px rgba(60,255,103,.07)}
-.form:not(.hidden){animation:fadeUp .28s ease both}
-@media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Segoe UI,Inter,Arial,sans-serif;background:#020507;color:var(--text)}
+body{
+  min-height:100dvh;
+  overflow-x:hidden;
+  background:
+    radial-gradient(circle at 18% 44%,rgba(113,255,28,.16),transparent 25%),
+    radial-gradient(circle at 84% 18%,rgba(113,255,28,.06),transparent 20%),
+    linear-gradient(180deg,#020507 0%,#04090c 50%,#020507 100%);
 }
-
+body::before{
+  content:"";
+  position:fixed;inset:0;pointer-events:none;opacity:.28;
+  background:
+    linear-gradient(122deg,transparent 0 17%,rgba(115,255,30,.08) 17.2% 17.5%,transparent 17.7% 100%),
+    linear-gradient(154deg,transparent 0 42%,rgba(115,255,30,.05) 42.2% 42.4%,transparent 42.6% 100%),
+    repeating-linear-gradient(90deg,rgba(255,255,255,.015) 0 1px,transparent 1px 5px);
+}
+body::after{
+  content:"";
+  position:fixed;left:-8%;right:-8%;bottom:-80px;height:320px;pointer-events:none;
+  background:
+    radial-gradient(ellipse at center,rgba(93,255,30,.12),transparent 62%),
+    repeating-linear-gradient(8deg,transparent 0 22px,rgba(113,255,28,.025) 23px 24px);
+  filter:blur(.2px);
+}
+.stage{
+  min-height:100dvh;
+  display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(430px,.85fr);
+  gap:42px;
+  align-items:center;
+  max-width:1500px;
+  margin:auto;
+  padding:42px 60px;
+  position:relative;
+  z-index:1;
+}
+.visual{
+  min-height:720px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  position:relative;
+  padding:36px 20px 24px 10px;
+}
+.visual::before{
+  content:"";
+  position:absolute;
+  width:620px;height:620px;
+  left:-110px;top:48%;
+  transform:translateY(-50%);
+  border-radius:50%;
+  border:1px solid rgba(117,255,32,.08);
+  box-shadow:
+    0 0 80px rgba(114,255,28,.06),
+    inset 0 0 80px rgba(114,255,28,.03);
+}
+.logoMark{
+  position:relative;
+  width:min(590px,90%);
+  margin:0 auto;
+  text-align:center;
+  z-index:2;
+}
+.crown{
+  width:118px;height:46px;margin:0 auto -10px;
+  position:relative;
+  filter:drop-shadow(0 0 18px rgba(128,255,27,.42));
+}
+.crown::before{
+  content:"♛";
+  display:block;
+  font-size:68px;
+  color:var(--green);
+  line-height:.75;
+}
+.shield{
+  width:230px;height:230px;
+  margin:0 auto 20px;
+  clip-path:polygon(50% 0,92% 16%,84% 74%,50% 100%,16% 74%,8% 16%);
+  background:linear-gradient(145deg,#baff2a,#2fa90d 46%,#06130a 47% 100%);
+  padding:4px;
+  filter:drop-shadow(0 0 25px rgba(125,255,25,.35));
+  position:relative;
+}
+.shieldInner{
+  width:100%;height:100%;
+  clip-path:inherit;
+  background:
+    radial-gradient(circle at 50% 34%,rgba(129,255,28,.3),transparent 25%),
+    linear-gradient(160deg,#07110b,#050809 70%);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  border:1px solid rgba(173,255,94,.3);
+}
+.shieldIcon{font-size:62px;line-height:1;color:#baff2a}
+.shieldText{font-size:24px;font-weight:1000;letter-spacing:-1px}
+.shieldText span{color:var(--green)}
+.mainLogo{
+  margin-top:-24px;
+  font-size:clamp(74px,8vw,142px);
+  font-weight:1000;
+  line-height:.8;
+  letter-spacing:-8px;
+  font-style:italic;
+  text-transform:uppercase;
+  color:#fff;
+  text-shadow:
+    0 5px 0 #7a7f82,
+    0 10px 0 #22282b,
+    0 0 30px rgba(255,255,255,.1);
+}
+.mainLogo span{display:block;color:var(--green);font-size:.36em;letter-spacing:-1px;margin-top:20px;text-shadow:0 0 22px rgba(123,255,22,.55)}
+.tagline{
+  max-width:620px;
+  margin:32px auto 0;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  border:1px solid rgba(132,255,34,.42);
+  border-radius:12px;
+  overflow:hidden;
+  background:rgba(4,9,11,.78);
+  backdrop-filter:blur(10px);
+}
+.tagline div{
+  padding:18px 14px;
+  text-align:center;
+  border-right:1px solid rgba(132,255,34,.16);
+  font-size:11px;
+  letter-spacing:.5px;
+  color:#c8d2d6;
+}
+.tagline div:last-child{border-right:0}
+.tagline b{display:block;color:#fff;font-size:13px;margin-bottom:4px}
+.tagline small{color:#8cff1a;font-size:10px}
+.loginCard{
+  position:relative;
+  border:1px solid rgba(138,255,43,.65);
+  border-radius:26px;
+  background:
+    linear-gradient(180deg,rgba(9,13,16,.95),rgba(4,7,9,.97)),
+    #06090b;
+  padding:48px 44px 38px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.5),
+    0 0 40px rgba(113,255,28,.07),
+    inset 0 1px 0 rgba(255,255,255,.03);
+  overflow:hidden;
+}
+.loginCard::before{
+  content:"";
+  position:absolute;left:12%;right:12%;top:0;height:1px;
+  background:linear-gradient(90deg,transparent,#b8ff4b,transparent);
+  box-shadow:0 0 14px #9bff27;
+}
+.loginCard::after{
+  content:"";
+  position:absolute;width:170px;height:170px;right:-60px;top:-60px;
+  border-radius:50%;background:rgba(126,255,31,.06);filter:blur(12px);
+}
+.loginBadge{
+  width:88px;height:88px;margin:-92px auto 22px;
+  border-radius:22px 22px 34px 34px;
+  background:linear-gradient(160deg,#121a1f,#05090b);
+  border:2px solid var(--green);
+  display:grid;place-items:center;
+  font-size:40px;
+  box-shadow:0 0 25px rgba(125,255,25,.3);
+  position:relative;z-index:2;
+}
+.welcome{text-align:center;color:#97ff28;font-size:12px;letter-spacing:7px;text-transform:uppercase;margin-top:8px}
+h1{text-align:center;font-size:48px;margin:18px 0 8px;letter-spacing:-2px;text-transform:uppercase}
+h1 span{color:var(--green)}
+.neonLine{width:68px;height:5px;border-radius:9px;background:var(--green);margin:18px auto 34px;box-shadow:0 0 15px rgba(129,255,25,.7)}
+.tabs{
+  display:grid;grid-template-columns:1fr 1fr;gap:5px;
+  background:#050a0d;padding:5px;border-radius:12px;margin-bottom:24px;
+}
+.tabs button{
+  border:0;background:transparent;color:#8fa0a9;padding:12px;
+  border-radius:8px;font-weight:900;cursor:pointer;transition:.2s;
+}
+.tabs button.active{background:#0e3b15;color:#fff;box-shadow:inset 0 0 0 1px #1b7b2c}
+.form.hidden{display:none}
+.form{animation:fadeUp .28s ease both}
+.field{position:relative;margin-bottom:18px}
+.field input,.field select{
+  width:100%;min-height:72px;padding:0 18px 0 58px;
+  background:linear-gradient(180deg,#0b1115,#080d10);
+  border:1px solid #26343b;border-radius:11px;color:#fff;font-size:16px;
+  outline:none;transition:.18s;
+}
+.field select{padding-left:18px}
+.field input:focus,.field select:focus{
+  border-color:#81ff1f;
+  box-shadow:0 0 0 3px rgba(129,255,31,.06),0 0 25px rgba(129,255,31,.05);
+  transform:translateY(-1px);
+}
+.fieldIcon{position:absolute;left:20px;top:50%;transform:translateY(-50%);font-size:22px;color:#8cff1b;z-index:2}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.label{display:block;font-size:11px;color:#a8b4ba;font-weight:800;margin:11px 0 6px}
+.input,.form input,.form select{
+  width:100%;min-height:48px;padding:12px 13px;
+  background:#091015;border:1px solid #25343b;border-radius:8px;color:#fff;outline:none;
+}
+.primaryBtn{
+  width:100%;min-height:66px;margin-top:20px;border:1px solid #c5ff57;
+  border-radius:9px;background:linear-gradient(180deg,#a9ff1f,#66dd09);
+  color:#061006;font-size:18px;font-weight:1000;cursor:pointer;
+  box-shadow:0 0 26px rgba(139,255,24,.25);transition:.18s;
+}
+.primaryBtn:hover{filter:brightness(1.06);box-shadow:0 0 36px rgba(139,255,24,.34)}
+.primaryBtn:active{transform:scale(.99)}
+.msg{margin-top:14px;padding:12px;border-radius:8px;background:#0b151b;border:1px solid #243943;font-size:13px}
+.msg.hidden{display:none}
+.msg.ok{background:#0a2210;border-color:#246d32}.msg.err{background:#260d11;border-color:#68323a}
+.formNote{text-align:center;color:#8998a0;font-size:12px;margin-top:16px}
+.formNote b{color:#8cff1a}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{filter:drop-shadow(0 0 12px rgba(128,255,25,.25))}50%{filter:drop-shadow(0 0 26px rgba(128,255,25,.5))}}
+.shield{animation:pulse 3s ease-in-out infinite}
+@media(max-width:980px){
+  .stage{grid-template-columns:1fr;padding:20px 16px 44px;gap:22px}
+  .visual{min-height:auto;padding:12px 0}
+  .visual::before{display:none}
+  .shield{width:150px;height:150px}.shieldIcon{font-size:42px}.shieldText{font-size:17px}
+  .mainLogo{font-size:72px;letter-spacing:-4px}.mainLogo span{margin-top:15px}
+  .tagline{display:none}
+  .loginCard{padding:42px 18px 28px;border-radius:20px}
+  .loginBadge{display:none}
+  h1{font-size:36px}.welcome{letter-spacing:4px}
+  .two{grid-template-columns:1fr}
+  .field input{min-height:58px}
+}
+@media(max-width:560px){
+  .visual{display:none}
+  .stage{display:block;padding:0}
+  .loginCard{min-height:100dvh;border:0;border-radius:0;padding:34px 16px 100px}
+  .loginCard::before{left:0;right:0}
+  .welcome{margin-top:12px}
+  h1{font-size:32px;margin-top:14px}
+  .tabs{position:sticky;top:0;z-index:20}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
-<div class="shell">
-<section class="hero">
-  <div class="brand">PINTO <span>FC26</span></div>
-  <h1>Tu liga.<br><em>Una sola cuenta.</em></h1>
-  <p>Jugador, DT o espectador se registra una vez. El Comisionado aprueba la cuenta y luego siempre se entra con usuario y contraseña.</p>
-</section>
-<section class="card">
-  <div class="tabs"><button id="tabLogin" class="active">INICIAR SESIÓN</button><button id="tabRegister">CREAR CUENTA</button></div>
-
-  <div id="loginForm" class="form">
-    <h2>Iniciar sesión</h2>
-    <label>Usuario</label><input id="loginUser">
-    <label>Contraseña</label><input id="loginPass" type="password">
-    <button id="loginBtn" class="btn">ENTRAR</button>
-    <div id="loginMsg" class="msg hidden"></div>
-  </div>
-
-  <div id="registerForm" class="form hidden">
-    <h2>Crear cuenta</h2>
-    <label>Tipo</label>
-    <select id="role"><option value="player">Jugador</option><option value="dt">DT</option><option value="viewer">Espectador</option></select>
-    <div class="two">
-      <div><label>Usuario único</label><input id="user"></div>
-      <div><label>Contraseña</label><input id="pass" type="password" placeholder="Mínimo 8 caracteres"></div>
-    </div>
-    <label>Nombre / apodo</label><input id="name">
-
-    <div id="playerFields">
-      <div class="two"><div><label>EA ID</label><input id="ea"></div><div><label>País</label><input id="country"></div></div>
-      <div class="two">
-        <div><label>Posición</label><select id="position"><option>POR</option><option>DFC</option><option>LI</option><option>LD</option><option>MCD</option><option>MC</option><option>MCO</option><option>EI</option><option>ED</option><option>DC</option></select></div>
-        <div><label>Secundaria</label><input id="secondary"></div>
+<main class="stage">
+  <section class="visual">
+    <div class="logoMark">
+      <div class="crown"></div>
+      <div class="shield">
+        <div class="shieldInner">
+          <div class="shieldIcon">♟</div>
+          <div class="shieldText">DRAFT <span>FC26</span></div>
+        </div>
       </div>
-      <label>Plataforma</label><select id="platform"><option>PC</option><option>PlayStation</option><option>Xbox</option></select>
+      <div class="mainLogo">PINTO<span>DRAFT FC26</span></div>
+    </div>
+    <div class="tagline">
+      <div><b>⚔ COMPITE</b><small>EN DRAFTS 11V11</small></div>
+      <div><b>🏆 DEMUESTRA</b><small>TU NIVEL</small></div>
+      <div><b>👥 FORMA PARTE</b><small>DE LA ÉLITE</small></div>
+    </div>
+  </section>
+
+  <section class="loginCard">
+    <div class="loginBadge">♟</div>
+    <div class="welcome">BIENVENIDO DE NUEVO</div>
+    <h1>INICIAR <span>SESIÓN</span></h1>
+    <div class="neonLine"></div>
+
+    <div class="tabs">
+      <button id="tabLogin" class="active">INICIAR SESIÓN</button>
+      <button id="tabRegister">CREAR CUENTA</button>
     </div>
 
-    <div id="dtFields" class="hidden">
-      <div class="two"><div><label>Club</label><input id="club"></div><div><label>Abreviatura</label><input id="abbr"></div></div>
-      <label>Región</label><input id="region">
+    <div id="loginForm" class="form">
+      <div class="field">
+        <span class="fieldIcon">👤</span>
+        <input id="loginUser" autocomplete="username" placeholder="Usuario">
+      </div>
+      <div class="field">
+        <span class="fieldIcon">🔒</span>
+        <input id="loginPass" type="password" autocomplete="current-password" placeholder="Contraseña">
+      </div>
+      <button id="loginBtn" class="primaryBtn">INICIAR SESIÓN →</button>
+      <div id="loginMsg" class="msg hidden"></div>
+      <div class="formNote">¿No tienes cuenta? <b>Regístrate aquí</b></div>
     </div>
 
-    <label>Discord</label><input id="discord">
-    <button id="registerBtn" class="btn">CREAR CUENTA</button>
-    <div id="registerMsg" class="msg hidden"></div>
-    <div class="small">La cuenta queda pendiente hasta aprobación.</div>
-  </div>
-</section>
-</div>
+    <div id="registerForm" class="form hidden">
+      <label class="label">Tipo de cuenta</label>
+      <select id="role" class="input"><option value="player">Jugador</option><option value="dt">DT</option><option value="viewer">Espectador</option></select>
+
+      <div class="two">
+        <div><label class="label">Usuario único</label><input id="user" class="input"></div>
+        <div><label class="label">Contraseña</label><input id="pass" class="input" type="password" placeholder="Mínimo 8 caracteres"></div>
+      </div>
+
+      <label class="label">Nombre / apodo</label>
+      <input id="name" class="input">
+
+      <div id="playerFields">
+        <div class="two">
+          <div><label class="label">EA ID</label><input id="ea" class="input"></div>
+          <div><label class="label">País</label><input id="country" class="input"></div>
+        </div>
+        <div class="two">
+          <div><label class="label">Posición</label>
+            <select id="position" class="input"><option>POR</option><option>DFC</option><option>LI</option><option>LD</option><option>MCD</option><option>MC</option><option>MCO</option><option>EI</option><option>ED</option><option>DC</option></select>
+          </div>
+          <div><label class="label">Secundaria</label><input id="secondary" class="input"></div>
+        </div>
+        <label class="label">Plataforma</label>
+        <select id="platform" class="input"><option>PC</option><option>PlayStation</option><option>Xbox</option></select>
+      </div>
+
+      <div id="dtFields" class="hidden">
+        <div class="two">
+          <div><label class="label">Club</label><input id="club" class="input"></div>
+          <div><label class="label">Abreviatura</label><input id="abbr" class="input" maxlength="4"></div>
+        </div>
+        <label class="label">Región</label><input id="region" class="input">
+      </div>
+
+      <label class="label">Discord</label><input id="discord" class="input">
+      <button id="registerBtn" class="primaryBtn">CREAR CUENTA →</button>
+      <div id="registerMsg" class="msg hidden"></div>
+      <div class="formNote">Tu cuenta quedará <b>pendiente de aprobación</b>.</div>
+    </div>
+  </section>
+</main>
 
 <script>
 const $=id=>document.getElementById(id);
 function msg(el,t,c=""){el.textContent=t;el.classList.remove("hidden","ok","err");if(c)el.classList.add(c)}
-function showLogin(v){$("loginForm").classList.toggle("hidden",!v);$("registerForm").classList.toggle("hidden",v);$("tabLogin").classList.toggle("active",v);$("tabRegister").classList.toggle("active",!v)}
+function showLogin(v){
+  $("loginForm").classList.toggle("hidden",!v);
+  $("registerForm").classList.toggle("hidden",v);
+  $("tabLogin").classList.toggle("active",v);
+  $("tabRegister").classList.toggle("active",!v);
+  document.querySelector("h1").innerHTML=v?'INICIAR <span>SESIÓN</span>':'CREAR <span>CUENTA</span>';
+}
 $("tabLogin").onclick=()=>showLogin(true);
 $("tabRegister").onclick=()=>showLogin(false);
+document.querySelector(".formNote")?.addEventListener("click",()=>showLogin(false));
 
 function fields(){
   const r=$("role").value;
@@ -122,19 +372,33 @@ function fields(){
 $("role").onchange=fields; fields();
 
 $("registerBtn").onclick=async()=>{
-  const m=$("registerMsg"); msg(m,"Enviando...");
-  const b={role:$("role").value,username:$("user").value.trim(),password:$("pass").value,display_name:$("name").value.trim(),ea_id:$("ea").value.trim(),country:$("country").value.trim(),platform:$("platform").value,position:$("position").value,secondary_position:$("secondary").value.trim(),club:$("club").value.trim(),abbr:$("abbr").value.trim(),region:$("region").value.trim(),discord:$("discord").value.trim()};
+  const m=$("registerMsg");msg(m,"Creando cuenta...");
+  const b={
+    role:$("role").value,
+    username:$("user").value.trim(),
+    password:$("pass").value,
+    display_name:$("name").value.trim(),
+    ea_id:$("ea").value.trim(),
+    country:$("country").value.trim(),
+    platform:$("platform").value,
+    position:$("position").value,
+    secondary_position:$("secondary").value.trim(),
+    club:$("club").value.trim(),
+    abbr:$("abbr").value.trim(),
+    region:$("region").value.trim(),
+    discord:$("discord").value.trim()
+  };
   try{
     const r=await fetch("/api/auth/register",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});
     const j=await r.json();
     if(r.status===409)throw new Error("Ese usuario ya existe.");
     if(!r.ok)throw new Error(j.error||"No se pudo crear la cuenta.");
-    msg(m,"✅ Cuenta creada. Espera aprobación.","ok");
+    msg(m,"✅ Cuenta creada. Espera aprobación del Comisionado.","ok");
   }catch(e){msg(m,"❌ "+e.message,"err")}
 };
 
 $("loginBtn").onclick=async()=>{
-  const m=$("loginMsg"); msg(m,"Comprobando...");
+  const m=$("loginMsg");msg(m,"Comprobando...");
   try{
     const r=await fetch("/api/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("loginUser").value.trim(),password:$("loginPass").value})});
     const j=await r.json();
@@ -158,4 +422,5 @@ $("loginBtn").onclick=async()=>{
   }catch{}
 })();
 </script>
-</body></html>
+</body>
+</html>

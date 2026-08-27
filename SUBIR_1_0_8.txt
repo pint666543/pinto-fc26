@@ -1,0 +1,21 @@
+PINTO FC26 1.0.8 — PRO LOGIN DESIGN
+
+CAMBIO PRINCIPAL:
+- Login real rediseñado al estilo negro + verde neón de la referencia.
+- No usa la foto enviada como fondo.
+- Fondo tipo estadio/competición hecho con CSS.
+- Logo visual PINTO DRAFT FC26 hecho en HTML/CSS.
+- Panel de login premium.
+- Registro mantiene Jugador / DT / Espectador.
+- Animaciones y versión móvil adaptada.
+- Backend, Admin Panel, clubes y jugadores no cambian.
+
+SUBE A GITHUB:
+index.html
+server.js
+package.json
+
+app.html puede quedarse como está, pero también puedes subirlo si quieres mantener todos los archivos de la 1.0.8 juntos.
+
+Después Commit changes y Railway hará el Deploy.
+No necesitas crear otro Setup.exe.
