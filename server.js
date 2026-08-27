@@ -118,6 +118,54 @@ async function pendingUsers(){
  return r.rows;
 }
 
+
+function makeRoundRobin(teams){
+  const ids=teams.map(t=>Number(t.id));
+  if(ids.length<2)return [];
+  if(ids.length%2===1)ids.push(null);
+  let arr=[...ids],out=[],matchNo=1;
+  const n=arr.length,half=n/2;
+  for(let round=1;round<n;round++){
+    for(let i=0;i<half;i++){
+      let home=arr[i],away=arr[n-1-i];
+      if(home==null||away==null)continue;
+      if((round+i)%2===0)[home,away]=[away,home];
+      out.push({
+        id:`M${matchNo++}`,round,homeTeamId:home,awayTeamId:away,
+        homeScore:null,awayScore:null,status:"scheduled",
+        submittedByTeamId:null,submittedByUserId:null,submittedAt:null,
+        confirmedByTeamId:null,confirmedAt:null,disputeNote:null
+      });
+    }
+    arr=[arr[0],arr[n-1],...arr.slice(1,n-1)];
+  }
+  return out;
+}
+function fixturesLocked(st){
+  return (st.fixtures||[]).some(m=>m.status!=="scheduled");
+}
+function refreshFixturesIfSafe(st){
+  const teams=(st.teams||[]).filter(t=>t.approved);
+  if(teams.length<2){st.fixtures=[];return}
+  if(!fixturesLocked(st))st.fixtures=makeRoundRobin(teams);
+}
+function accountTeamId(user,st){
+  if(!user)return null;
+  if(user.role==="dt")return Number(user.teamId)||null;
+  if(user.role==="player"){
+    const p=(st.players||[]).find(x=>String(x.accountId)===String(user.id));
+    if(!p)return null;
+    const pick=(st.picks||[]).find(x=>String(x.playerId)===String(p.id));
+    return pick?Number(pick.teamId):null;
+  }
+  return null;
+}
+function scoreValue(v){
+  const n=Number(v);
+  return Number.isInteger(n)&&n>=0&&n<=99?n:null;
+}
+function fixtureById(st,id){return (st.fixtures||[]).find(m=>String(m.id)===String(id))}
+
 app.get("/api/info",(req,res)=>res.json({online:true,registrationUrl:`${req.protocol}://${req.get("host")}/register.html`,appUrl:`${req.protocol}://${req.get("host")}/`}));
 app.get("/api/health",(req,res)=>res.json({ok:true,db:usePostgres?"postgres":"local"}));
 
@@ -161,6 +209,7 @@ app.post("/api/admin/users/:id/:action",auth,adminOnly,async(req,res)=>{
       teamId=Math.max(0,...st.teams.map(t=>Number(t.id)||0))+1;
       if(!st.teams.some(t=>t.accountId==u.id))st.teams.push({id:teamId,accountId:u.id,name:String(u.club).toUpperCase(),abbr:(u.abbr||"FC").toUpperCase(),dt:u.display_name,approved:true});
     }
+    refreshFixturesIfSafe(st);
     st.log.unshift(`${u.role.toUpperCase()} aprobado: ${u.display_name}`);
   });
   await updateUser(id,{status:"approved",team_id:teamId});
@@ -223,7 +272,7 @@ app.delete("/api/admin/clubs/:id",auth,adminOnly,async(req,res)=>{
 app.post("/api/admin/clean-league",auth,adminOnly,async(req,res)=>{
  try{
    await mutate(x=>{
-     x.teams=[];x.players=[];x.playerRequests=[];x.dtRequests=[];x.picks=[];x.skips=[];
+     x.teams=[];x.players=[];x.playerRequests=[];x.dtRequests=[];x.picks=[];x.skips=[];x.fixtures=[];
      x.paused=false;x.scouting={};x.combine={};x.log=["Liga limpiada por administrador"];
    });
    if(!usePostgres){
@@ -267,6 +316,89 @@ app.get("/api/admin/summary",auth,adminOnly,async(req,res)=>{
  }catch(e){res.status(500).json({error:"server_error"})}
 });
 
+
+app.post("/api/matches/:id/submit",auth,async(req,res)=>{
+ try{
+   if(!["admin","dt","player"].includes(req.user.role))return res.status(403).json({error:"forbidden"});
+   const hs=scoreValue(req.body?.homeScore),as=scoreValue(req.body?.awayScore);
+   if(hs===null||as===null)return res.status(400).json({error:"invalid_score"});
+   const st=(await getStore()).state,m=fixtureById(st,req.params.id);
+   if(!m)return res.status(404).json({error:"not_found"});
+   const teamId=req.user.role==="admin"
+     ? Number(req.body?.teamId||m.homeTeamId)
+     : accountTeamId(req.user,st);
+   if(req.user.role!=="admin" && teamId!==Number(m.homeTeamId) && teamId!==Number(m.awayTeamId))
+     return res.status(403).json({error:"not_your_match"});
+   await mutate(x=>{
+     const mm=fixtureById(x,req.params.id);
+     mm.homeScore=hs;mm.awayScore=as;mm.status="pending_confirmation";
+     mm.submittedByTeamId=teamId;mm.submittedByUserId=req.user.id;mm.submittedAt=new Date().toISOString();
+     mm.confirmedByTeamId=null;mm.confirmedAt=null;mm.disputeNote=null;
+     const ht=x.teams.find(t=>Number(t.id)===Number(mm.homeTeamId))?.name||"Local";
+     const at=x.teams.find(t=>Number(t.id)===Number(mm.awayTeamId))?.name||"Visitante";
+     x.log.unshift(`Resultado enviado: ${ht} ${hs}-${as} ${at}`);
+   });
+   res.json({ok:true});
+ }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.post("/api/matches/:id/confirm",auth,async(req,res)=>{
+ try{
+   if(!["admin","dt","player"].includes(req.user.role))return res.status(403).json({error:"forbidden"});
+   const st=(await getStore()).state,m=fixtureById(st,req.params.id);
+   if(!m)return res.status(404).json({error:"not_found"});
+   if(m.status!=="pending_confirmation")return res.status(400).json({error:"not_pending"});
+   const teamId=req.user.role==="admin"?null:accountTeamId(req.user,st);
+   if(req.user.role!=="admin"){
+     if(teamId!==Number(m.homeTeamId)&&teamId!==Number(m.awayTeamId))
+       return res.status(403).json({error:"not_your_match"});
+     if(Number(teamId)===Number(m.submittedByTeamId))
+       return res.status(403).json({error:"opponent_must_confirm"});
+   }
+   await mutate(x=>{
+     const mm=fixtureById(x,req.params.id);
+     mm.status="confirmed";mm.confirmedByTeamId=teamId;mm.confirmedAt=new Date().toISOString();
+     const ht=x.teams.find(t=>Number(t.id)===Number(mm.homeTeamId))?.name||"Local";
+     const at=x.teams.find(t=>Number(t.id)===Number(mm.awayTeamId))?.name||"Visitante";
+     x.log.unshift(`Resultado confirmado: ${ht} ${mm.homeScore}-${mm.awayScore} ${at}`);
+   });
+   res.json({ok:true});
+ }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.post("/api/matches/:id/dispute",auth,async(req,res)=>{
+ try{
+   if(!["admin","dt","player"].includes(req.user.role))return res.status(403).json({error:"forbidden"});
+   const st=(await getStore()).state,m=fixtureById(st,req.params.id);
+   if(!m)return res.status(404).json({error:"not_found"});
+   const teamId=req.user.role==="admin"?null:accountTeamId(req.user,st);
+   if(req.user.role!=="admin" && teamId!==Number(m.homeTeamId) && teamId!==Number(m.awayTeamId))
+     return res.status(403).json({error:"not_your_match"});
+   await mutate(x=>{
+     const mm=fixtureById(x,req.params.id);
+     mm.status="disputed";mm.disputeNote=String(req.body?.note||"Resultado no coincide").slice(0,250);
+     x.log.unshift(`Resultado en disputa: ${mm.id}`);
+   });
+   res.json({ok:true});
+ }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.post("/api/admin/matches/:id/resolve",auth,adminOnly,async(req,res)=>{
+ try{
+   const hs=scoreValue(req.body?.homeScore),as=scoreValue(req.body?.awayScore);
+   if(hs===null||as===null)return res.status(400).json({error:"invalid_score"});
+   await mutate(x=>{
+     const mm=fixtureById(x,req.params.id);
+     if(!mm)throw new Error("not_found");
+     mm.homeScore=hs;mm.awayScore=as;mm.status="confirmed";
+     mm.confirmedByTeamId=null;mm.confirmedAt=new Date().toISOString();mm.disputeNote=null;
+     x.log.unshift(`Admin resolvió ${mm.id}: ${hs}-${as}`);
+   });
+   res.json({ok:true});
+ }catch(e){res.status(e.message==="not_found"?404:500).json({error:e.message==="not_found"?"not_found":"server_error"})}
+});
+
+
 app.get("/api/state",async(req,res)=>{try{res.json(await getStore())}catch{res.status(500).json({error:"database_error"})}});
 app.put("/api/state",auth,async(req,res)=>{
  try{
@@ -279,4 +411,4 @@ app.put("/api/state",auth,async(req,res)=>{
 app.get("/app.html",(req,res)=>res.sendFile(path.join(ROOT,"app.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"index.html")));
 
-initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.0.12 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
+initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.1.0 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});

@@ -1,0 +1,21 @@
+PINTO FC26 1.1.0 — LIVE LEAGUE
+
+FUNCIONA ASÍ:
+- Al aprobar clubes, la app genera los cruces automáticamente.
+- Mientras ningún partido haya empezado, si entra otro club los cruces se recalculan solos.
+- Cuando comienza a subirse resultados, el calendario queda bloqueado para proteger lo jugado.
+- Jugadores o DT del club pueden subir el marcador.
+- El marcador aparece EN VIVO para todos los usuarios sin recargar.
+- La web ya consulta el servidor cada ~1.5 segundos.
+- El rival confirma el resultado.
+- Al confirmar, la clasificación se actualiza sola.
+- Si el rival dice que no coincide, queda EN DISPUTA para Admin.
+
+SUBE A GITHUB:
+app.html
+server.js
+package.json
+
+index.html puede quedarse igual, pero viene incluido.
+
+Después Commit changes y espera Railway Online.
