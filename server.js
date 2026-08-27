@@ -51,7 +51,13 @@ function auth(req,res,next){
 function adminOnly(req,res,next){if(req.user?.role!=="admin")return res.status(403).json({error:"admin_only"});next()}
 
 async function initDb(){
- if(!usePostgres)return;
+ if(!usePostgres){
+   const hp=hashPassword(ADMIN_PASSWORD);
+   const a=localUsers.find(x=>x.role==="admin");
+   if(a){Object.assign(a,{username:ADMIN_USER,password_hash:hp.hash,salt:hp.salt,status:"approved",display_name:"Comisionado"})}
+   else localUsers.push({id:1,username:ADMIN_USER,password_hash:hp.hash,salt:hp.salt,role:"admin",status:"approved",display_name:"Comisionado",team_id:null});
+   saveLocal(); return;
+ }
  pool=new Pool({connectionString:DATABASE_URL,ssl:process.env.NODE_ENV==="production"?{rejectUnauthorized:false}:undefined});
  await pool.query(`CREATE TABLE IF NOT EXISTS pinto_state(id INTEGER PRIMARY KEY,revision BIGINT NOT NULL,state JSONB NOT NULL,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
  await pool.query(`CREATE TABLE IF NOT EXISTS pinto_users(
@@ -63,11 +69,15 @@ async function initDb(){
  )`);
  const s=await pool.query("SELECT id FROM pinto_state WHERE id=1");
  if(!s.rowCount)await pool.query("INSERT INTO pinto_state(id,revision,state) VALUES(1,1,$1::jsonb)",[JSON.stringify(cleanState)]);
- const a=await pool.query("SELECT id FROM pinto_users WHERE role='admin' LIMIT 1");
+ const hp=hashPassword(ADMIN_PASSWORD);
+ const a=await pool.query("SELECT id FROM pinto_users WHERE role='admin' ORDER BY id LIMIT 1");
  if(!a.rowCount){
-   const hp=hashPassword(ADMIN_PASSWORD);
    await pool.query(`INSERT INTO pinto_users(username,password_hash,salt,role,status,display_name)
                      VALUES($1,$2,$3,'admin','approved','Comisionado')`,[ADMIN_USER,hp.hash,hp.salt]);
+ }else{
+   await pool.query(`UPDATE pinto_users
+                     SET username=$1,password_hash=$2,salt=$3,status='approved',display_name='Comisionado'
+                     WHERE id=$4`,[ADMIN_USER,hp.hash,hp.salt,a.rows[0].id]);
  }
 }
 async function getStore(){if(!usePostgres)return localStore;const r=await pool.query("SELECT revision,state FROM pinto_state WHERE id=1");return {revision:Number(r.rows[0].revision),state:r.rows[0].state}}

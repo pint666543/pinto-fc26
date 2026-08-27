@@ -93,47 +93,76 @@ button{cursor:pointer}
 </head>
 <body>
 
+
 <div id="auth" class="auth">
   <section class="authHero">
     <div class="brand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">PRO CLUBS PLATFORM</div></div></div>
     <h1>Tu liga. Tu draft. <em>Tu plataforma.</em></h1>
-    <p>Registro de jugadores y DTs, aprobación del comisionado, picks en vivo, draft por turnos y una interfaz diseñada para sentirse como una experiencia de fútbol competitivo.</p>
-    <div class="authPills"><span class="pill">LIVE DRAFT</span><span class="pill">PLAYER REGISTRATION</span><span class="pill">DT ACCOUNTS</span><span class="pill">COMMISSIONER CONTROL</span></div>
+    <p>Una sola cuenta por persona. Jugadores, DTs y espectadores se registran una vez, esperan aprobación y después siempre entran con su usuario y contraseña.</p>
+    <div class="authPills"><span class="pill">ONLINE</span><span class="pill">REGISTRO ÚNICO</span><span class="pill">APROBACIÓN ADMIN</span><span class="pill">LIVE DRAFT</span></div>
   </section>
   <aside class="authSide">
     <div class="panel authCard">
-      <div class="authTabs"><button class="active" data-auth-tab="login">INICIAR</button><button data-auth-tab="player">JUGADOR</button><button data-auth-tab="dt">DT</button></div>
+      <div class="authTabs">
+        <button class="active" data-auth-tab="login">INICIAR SESIÓN</button>
+        <button data-auth-tab="create">CREAR CUENTA</button>
+      </div>
 
       <div class="authForm" id="auth-login">
         <h2>Iniciar sesión</h2>
-        <label>Tipo de acceso</label>
-        <select id="loginRole" class="input"><option value="admin">Comisionado / Admin</option><option value="viewer">Espectador</option><option value="1">DT Real Bakardi</option><option value="2">DT Titans X</option><option value="3">DT Relámpagos</option><option value="4">DT Invictus</option></select>
-        <label>Usuario</label><input class="input" id="loginUser" placeholder="Usuario">
-        <label>Contraseña</label><input class="input" id="loginPass" type="password" placeholder="••••••••">
+        <label>Usuario</label>
+        <input class="input" id="loginUser" autocomplete="username" placeholder="Tu usuario">
+        <label>Contraseña</label>
+        <input class="input" id="loginPass" type="password" autocomplete="current-password" placeholder="••••••••">
         <button class="btn primary" style="width:100%;margin-top:18px" id="loginBtn">ENTRAR</button>
-        <div class="note">Demo: puedes entrar sin contraseña. En la versión online real se conectará a autenticación segura.</div>
+        <div id="loginMsg" class="note hidden" style="margin-top:12px"></div>
       </div>
 
-      <div class="authForm hidden" id="auth-player">
-        <h2>Inscripción de jugador</h2>
-        <div class="two"><div><label>Nombre / apodo</label><input id="rpName" class="input" placeholder="LV_Pint0"></div><div><label>EA ID</label><input id="rpEa" class="input" placeholder="EA ID"></div></div>
-        <div class="two"><div><label>Posición principal</label><select id="rpPos" class="input"><option>POR</option><option>DFC</option><option>LI</option><option>LD</option><option>MCD</option><option>MC</option><option>MCO</option><option>EI</option><option>ED</option><option>DC</option></select></div><div><label>Secundaria</label><select id="rpSec" class="input"><option>-</option><option>POR</option><option>DFC</option><option>LI</option><option>LD</option><option>MCD</option><option>MC</option><option>MCO</option><option>EI</option><option>ED</option><option>DC</option></select></div></div>
-        <div class="two"><div><label>País</label><input id="rpCountry" class="input" placeholder="Cuba"></div><div><label>Plataforma</label><select id="rpPlatform" class="input"><option>PC</option><option>PlayStation</option><option>Xbox</option></select></div></div>
-        <label>Discord</label><input id="rpDiscord" class="input" placeholder="usuario">
-        <label>Disponibilidad</label><input id="rpAvail" class="input" placeholder="Ej. Lun-Jue después de 9 PM">
-        <label>Experiencia / comentario</label><textarea id="rpNotes" class="input" rows="3" placeholder="Experiencia en Clubes..."></textarea>
-        <button class="btn primary" style="width:100%;margin-top:16px" id="submitPlayer">ENVIAR INSCRIPCIÓN</button>
-      </div>
+      <div class="authForm hidden" id="auth-create">
+        <h2>Crear cuenta</h2>
+        <label>Tipo de cuenta</label>
+        <select class="input" id="regRole">
+          <option value="player">Jugador</option>
+          <option value="dt">DT</option>
+          <option value="viewer">Espectador</option>
+        </select>
 
-      <div class="authForm hidden" id="auth-dt">
-        <h2>Solicitud de DT</h2>
-        <div class="two"><div><label>Nombre del DT</label><input id="rdName" class="input"></div><div><label>EA ID</label><input id="rdEa" class="input"></div></div>
-        <label>Nombre del club</label><input id="rdClub" class="input">
-        <div class="two"><div><label>Abreviatura</label><input id="rdAbbr" class="input" maxlength="4"></div><div><label>Región</label><input id="rdRegion" class="input" placeholder="NA / LATAM / EU"></div></div>
-        <div class="two"><div><label>Capitán</label><input id="rdCaptain" class="input"></div><div><label>Subcapitán</label><input id="rdVice" class="input"></div></div>
-        <label>Discord</label><input id="rdDiscord" class="input">
-        <label>Experiencia como DT</label><textarea id="rdNotes" class="input" rows="3"></textarea>
-        <button class="btn primary" style="width:100%;margin-top:16px" id="submitDt">SOLICITAR REGISTRO</button>
+        <div class="two">
+          <div><label>Usuario único</label><input class="input" id="regUser" placeholder="Ej. pint0"></div>
+          <div><label>Contraseña</label><input class="input" id="regPass" type="password" placeholder="Mínimo 8 caracteres"></div>
+        </div>
+
+        <label>Nombre / apodo</label>
+        <input class="input" id="regName">
+
+        <div id="playerFields">
+          <div class="two">
+            <div><label>EA ID</label><input class="input" id="regEa"></div>
+            <div><label>País</label><input class="input" id="regCountry"></div>
+          </div>
+          <div class="two">
+            <div><label>Posición</label>
+              <select class="input" id="regPos">
+                <option>POR</option><option>DFC</option><option>LI</option><option>LD</option><option>MCD</option><option>MC</option><option>MCO</option><option>EI</option><option>ED</option><option>DC</option>
+              </select>
+            </div>
+            <div><label>Secundaria</label><input class="input" id="regSec"></div>
+          </div>
+          <label>Plataforma</label>
+          <select class="input" id="regPlatform"><option>PC</option><option>PlayStation</option><option>Xbox</option></select>
+        </div>
+
+        <div id="dtFields" class="hidden">
+          <div class="two">
+            <div><label>Club</label><input class="input" id="regClub"></div>
+            <div><label>Abreviatura</label><input class="input" id="regAbbr" maxlength="4"></div>
+          </div>
+          <label>Región</label><input class="input" id="regRegion">
+        </div>
+
+        <label>Discord</label><input class="input" id="regDiscord">
+        <button class="btn primary" style="width:100%;margin-top:18px" id="registerBtn">CREAR CUENTA</button>
+        <div id="registerMsg" class="note hidden" style="margin-top:12px"></div>
       </div>
     </div>
   </aside>
@@ -154,14 +183,14 @@ button{cursor:pointer}
     <button data-page="clubs">🛡 &nbsp; CLUBS</button><button data-page="warroom">⌂ &nbsp; WAR ROOM</button><button data-page="board">▦ &nbsp; DRAFT BOARD</button><button data-page="combine">◈ &nbsp; COMBINE</button><button data-page="formation">⚽ &nbsp; XI BUILDER</button>
     <button data-page="requests" class="adminOnly">✦ &nbsp; REGISTRATION</button>
     <button data-page="admin" class="adminOnly">⚙ &nbsp; COMMISSIONER</button>
-    <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">RELEASE 1.0 • LOCAL DEMO</div></div></div>
+    <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">RELEASE 1.0 • ONLINE</div></div></div>
   </aside>
 
   <main class="main">
     <section class="page active" id="page-home">
       <div class="heroGrid">
         <div class="panel hero"><small>PINTO FC26 • SEASON 1</small><h2>PRO CLUBS</h2><h1>LIVE DRAFT</h1><p>Jugadores inscritos, DTs aprobados, selección por turnos y seguimiento completo del draft en una sola plataforma.</p><button class="btn primary" data-page="draft">ENTRAR AL DRAFT ROOM</button></div>
-        <div class="panel clockCard"><h3>ON THE CLOCK</h3><div class="teamLine"><div class="badge" id="homeBadge">RB</div><div><b id="homeTeam">REAL BAKARDI FC</b><div class="muted" id="homeMeta">ROUND 1 • PICK #01</div></div></div><div class="timer" id="homeTimer">00:45</div><div class="muted" style="text-align:center">TIEMPO RESTANTE</div></div>
+        <div class="panel clockCard"><h3>ON THE CLOCK</h3><div class="teamLine"><div class="badge" id="homeBadge">—</div><div><b id="homeTeam">ESPERANDO CLUBES</b><div class="muted" id="homeMeta">ROUND 1 • PICK #01</div></div></div><div class="timer" id="homeTimer">00:45</div><div class="muted" style="text-align:center">TIEMPO RESTANTE</div></div>
         <div class="panel needCard"><b>NECESIDADES • 4-3-3</b><div class="pitch" style="margin-top:10px"><span class="pos" style="left:10%;top:13%">EI</span><span class="pos" style="left:45%;top:7%">DC</span><span class="pos" style="right:10%;top:13%">ED</span><span class="pos" style="left:22%;top:45%">MC</span><span class="pos" style="left:45%;top:50%">MC</span><span class="pos" style="right:22%;top:45%">MCO</span><span class="pos" style="left:8%;bottom:11%">LI</span><span class="pos" style="left:32%;bottom:10%">DFC</span><span class="pos" style="right:32%;bottom:10%">DFC</span><span class="pos" style="right:8%;bottom:11%">LD</span><span class="pos" style="left:45%;bottom:-5%">POR</span></div></div>
       </div>
       <div class="metrics"><div class="panel metric"><span>JUGADORES</span><b id="mPlayers">0</b></div><div class="panel metric"><span>DTs / CLUBES</span><b id="mTeams">0</b></div><div class="panel metric"><span>PICKS</span><b id="mPicks">0</b></div><div class="panel metric"><span>PENDIENTES</span><b id="mRequests">0</b></div><div class="panel metric"><span>RONDA</span><b id="mRound">1</b></div></div>
@@ -350,11 +379,18 @@ function updateRole(){roleChip.textContent=isAdmin()?"COMISIONADO":role==="playe
 document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById("page-"+b.dataset.page)?.classList.add("active");document.querySelectorAll("[data-page]").forEach(x=>x.classList.toggle("active",x.dataset.page===b.dataset.page))}));
 
 function currentInfo(offset=0){
- const teams=state.teams.filter(t=>t.approved),n=teams.length;let effective=state.picks.length+state.skips.length+1+offset;
- const round=Math.floor((effective-1)/n)+1,slot=(effective-1)%n,idx=(state.settings.draftType==="Snake"&&round%2===0)?n-1-slot:slot;
+ const teams=state.teams.filter(t=>t.approved),n=teams.length;
+ const effective=state.picks.length+state.skips.length+1+offset;
+ if(!n) return {team:null,round:1,pick:effective};
+ const round=Math.floor((effective-1)/n)+1,slot=(effective-1)%n;
+ const idx=(state.settings.draftType==="Snake"&&round%2===0)?n-1-slot:slot;
  return {team:teams[idx],round,pick:effective}
 }
-function canPick(){if(state.paused||isViewer())return false;if(isAdmin())return true;return currentInfo().team.id===role}
+function canPick(){
+ if(state.paused||isViewer())return false;
+ if(isAdmin())return true;
+ const i=currentInfo(); return !!i.team && i.team.id===role;
+}
 function fmt(){const m=Math.floor(remaining/60),s=remaining%60;return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`}
 function updateTimer(){homeTimer.textContent=fmt();draftTimer.textContent=fmt()}
 timerStart.addEventListener("click",()=>{if(timer||state.paused)return;timer=setInterval(()=>{remaining--;if(remaining<=0){remaining=0;clearInterval(timer);timer=null}updateTimer()},1000)});
@@ -386,7 +422,7 @@ function combineFor(p){
 }
 function renderV8(){
  const team=(typeof role==="number"?myTeam():currentInfo().team);
- warRoleNote.innerHTML=isViewer()?"Espectador: War Room en modo lectura.":isAdmin()?"Comisionado: viendo tablero global de scouting.":`War Room privado de <b>${team?.name||""}</b>. Tus favoritos y notas no aparecen en el Draft Board público.`;
+ warRoleNote.innerHTML=isViewer()?"Espectador: War Room en modo lectura.":isAdmin()?"Comisionado: viendo tablero global de scouting.":`War Room privado de <b>${team?.name||"Sin club"}</b>. Tus favoritos y notas no aparecen en el Draft Board público.`;
  const sd=scoutData();
  const favPlayers=sd.favorites.map(id=>state.players.find(p=>p.id===id)).filter(Boolean);
  scoutingBoard.innerHTML=favPlayers.map(p=>`<div class="scoutRow"><div><b class="green">★ ${p.name}</b><div class="muted">${p.pos} • ${p.ovr} OVR • ${p.country}</div></div><input class="input" data-note="${p.id}" value="${(sd.notes[p.id]||"").replace(/"/g,"&quot;")}" placeholder="Nota privada"><button class="btn secondary" data-unfav="${p.id}">QUITAR</button></div>`).join("")||'<div class="muted">Marca ★ jugadores desde el Draft Room para agregarlos aquí.</div>';
@@ -445,11 +481,22 @@ function rejectDt(id){const r=state.dtRequests.find(x=>x.id===id);state.dtReques
 function render(){
  if(app.classList.contains("hidden"))return;
  const i=currentInfo(),mine=myTeam();
- homeBadge.textContent=i.team.abbr;homeTeam.textContent=i.team.name;homeMeta.textContent=`ROUND ${i.round} • PICK #${String(i.pick).padStart(2,"0")}`;
- draftTeam.textContent=`${i.team.dt} • ${i.team.name}`;draftMeta.textContent=`ROUND ${i.round} • PICK #${String(i.pick).padStart(2,"0")}`;
+ if(i.team){
+   homeBadge.textContent=i.team.abbr||"FC"; homeTeam.textContent=i.team.name; homeMeta.textContent=`ROUND ${i.round} • PICK #${String(i.pick).padStart(2,"0")}`;
+   draftTeam.textContent=`${i.team.dt||"DT"} • ${i.team.name}`; draftMeta.textContent=`ROUND ${i.round} • PICK #${String(i.pick).padStart(2,"0")}`;
+ }else{
+   homeBadge.textContent="—"; homeTeam.textContent="ESPERANDO CLUBES"; homeMeta.textContent="EL COMISIONADO DEBE APROBAR UN DT";
+   draftTeam.textContent="DRAFT AÚN NO DISPONIBLE"; draftMeta.textContent="Aprueba al menos un DT para comenzar.";
+ }
  mPlayers.textContent=state.players.length;mTeams.textContent=state.teams.filter(t=>t.approved).length;mPicks.textContent=state.picks.length;mRequests.textContent=state.playerRequests.length+state.dtRequests.length;mRound.textContent=i.round;
- turnNotice.innerHTML=isAdmin()?'<div class="note">Modo Comisionado: puedes seleccionar por cualquier club.</div>':isViewer()?'<div class="note">Modo Espectador: solo lectura.</div>':mine&&mine.id===i.team.id?`<div class="note"><b>ES TU TURNO:</b> ${mine.name}</div>`:`<div class="note" style="background:#0d1820;border-color:#28404c"><b>${mine?.name||"DT"}:</b> esperando turno. Ahora selecciona ${i.team.name}.</div>`;
- const tracker=[0,1,2,3,4,5].map(o=>{const n=currentInfo(o);return `<div class="row ${o===0?"on":""}"><b>#${n.pick}</b><span>${n.team.dt} • ${n.team.name}</span><span>R${n.round}</span></div>`}).join("");
+ turnNotice.innerHTML=!i.team
+ ? '<div class="note">Aún no hay clubes aprobados. Aprueba una cuenta DT para iniciar el Draft.</div>'
+ : isAdmin()?'<div class="note">Modo Comisionado: puedes seleccionar por cualquier club.</div>'
+ : role==="player"?'<div class="note">Modo Jugador: puedes consultar la plataforma, pero no hacer picks.</div>'
+ : isViewer()?'<div class="note">Modo Espectador: solo lectura.</div>'
+ : mine&&mine.id===i.team.id?`<div class="note"><b>ES TU TURNO:</b> ${mine.name}</div>`
+ : `<div class="note" style="background:#0d1820;border-color:#28404c"><b>${mine?.name||"DT"}:</b> esperando turno. ${i.team?`Ahora selecciona ${i.team.name}.`:""}</div>`;border-color:#28404c"><b>${mine?.name||"DT"}:</b> esperando turno. Ahora selecciona ${i.team.name}.</div>`;
+ const tracker=i.team?[0,1,2,3,4,5].map(o=>{const n=currentInfo(o);return `<div class="row ${o===0?"on":""}"><b>#${n.pick}</b><span>${n.team.dt||"DT"} • ${n.team.name}</span><span>R${n.round}</span></div>`}).join(""):'<div class="muted">Esperando clubes aprobados.</div>';
  homeTracker.innerHTML=tracker;fullTracker.innerHTML=tracker;nextTurns.innerHTML=tracker;
  const picks=state.picks.slice(-6).reverse().map(pk=>{const t=state.teams.find(x=>x.id===pk.teamId),p=state.players.find(x=>x.id===pk.playerId);return `<div class="row"><b>#${pk.no}</b><span>${t.name} → ${p.name}</span><span>${p.pos}</span></div>`}).join("")||'<div class="muted">Sin picks todavía.</div>';homePicks.innerHTML=picks;recentPicks.innerHTML=picks;
  homeRequests.innerHTML=[...state.playerRequests.map(r=>`<div class="row"><b>JUG</b><span>${r.name} • ${r.pos}</span><span>PEND.</span></div>`),...state.dtRequests.map(r=>`<div class="row"><b>DT</b><span>${r.name} • ${r.club}</span><span>PEND.</span></div>`)].slice(0,6).join("")||'<div class="muted">Sin registros pendientes.</div>';

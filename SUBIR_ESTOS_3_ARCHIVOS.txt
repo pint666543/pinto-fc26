@@ -1,0 +1,38 @@
+PINTO FC26 — HOTFIX 1.0.1
+=========================
+
+CORRIGE
+-------
+- Login que no respondía.
+- Pantalla vieja de roles de prueba eliminada.
+- Crear cuenta: Jugador / DT / Espectador.
+- Admin se sincroniza SIEMPRE con ADMIN_USER y ADMIN_PASSWORD de Railway.
+- Si cambias ADMIN_PASSWORD en Railway, el siguiente Deploy cambia también la contraseña real del Comisionado.
+- Liga vacía ya no rompe el Dashboard cuando todavía no existen clubes.
+- Quita referencias visuales de Real Bakardi en la pantalla vacía.
+
+SUBIR A GITHUB
+--------------
+Solo necesitas reemplazar estos archivos:
+1. index.html
+2. server.js
+3. package.json
+
+Después haz Commit. Railway desplegará automáticamente.
+
+VARIABLES RAILWAY
+-----------------
+En pinto-fc26 > Variables asegúrate de tener:
+DATABASE_URL = ${{Postgres.DATABASE_URL}}
+NODE_ENV = production
+ADMIN_KEY = tu secreto largo
+ADMIN_USER = el usuario que quieras usar
+ADMIN_PASSWORD = la contraseña que quieras usar
+
+Después del Deploy:
+- espera que diga Online
+- abre la app
+- inicia sesión usando exactamente ADMIN_USER y ADMIN_PASSWORD.
+
+NO necesitas crear otro Setup.exe para este hotfix.
+Tu app de escritorio carga la web de Railway, así que recibirá el cambio automáticamente.
