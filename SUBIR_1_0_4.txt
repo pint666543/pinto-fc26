@@ -1,0 +1,34 @@
+PINTO FC26 1.0.4 — PANEL ADMIN DENTRO DE LA APP
+
+NUEVO:
+- Panel del Comisionado dentro de la app.
+- Solo aparece para cuentas Admin.
+- Soporta 3 cuentas Admin con permisos completos.
+- Solicitudes pendientes.
+- Lista completa de usuarios.
+- Jugadores / DTs / espectadores / admins.
+- Aprobar o rechazar cuentas.
+- Métricas de clubes y picks.
+- Controles del Draft.
+- Actividad administrativa.
+
+SUBIR A GITHUB:
+index.html
+app.html
+server.js
+package.json
+
+VARIABLES DE RAILWAY PARA 3 ADMINS:
+ADMIN_USER_1
+ADMIN_PASSWORD_1
+ADMIN_USER_2
+ADMIN_PASSWORD_2
+ADMIN_USER_3
+ADMIN_PASSWORD_3
+
+Mantén también:
+DATABASE_URL
+ADMIN_KEY
+NODE_ENV=production
+
+No necesitas generar otro Setup.exe.

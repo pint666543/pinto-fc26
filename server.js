@@ -9,8 +9,11 @@ const ROOT = __dirname;
 const PORT = Number(process.env.PORT || 8787);
 const DATABASE_URL = process.env.DATABASE_URL || "";
 const ADMIN_KEY = process.env.ADMIN_KEY || "CHANGE_ME";
-const ADMIN_USER = (process.env.ADMIN_USER || "commissioner").toLowerCase();
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "CHANGE_ME_NOW";
+const ADMIN_ACCOUNTS = [
+  { username:(process.env.ADMIN_USER_1 || process.env.ADMIN_USER || "commissioner").toLowerCase(), password:process.env.ADMIN_PASSWORD_1 || process.env.ADMIN_PASSWORD || "CHANGE_ME_NOW", name:"Admin 1" },
+  { username:(process.env.ADMIN_USER_2 || "").toLowerCase(), password:process.env.ADMIN_PASSWORD_2 || "", name:"Admin 2" },
+  { username:(process.env.ADMIN_USER_3 || "").toLowerCase(), password:process.env.ADMIN_PASSWORD_3 || "", name:"Admin 3" }
+].filter(a=>a.username && a.password);
 const usePostgres = Boolean(DATABASE_URL);
 
 app.use(express.json({limit:"1mb"}));
@@ -52,10 +55,12 @@ function adminOnly(req,res,next){if(req.user?.role!=="admin")return res.status(4
 
 async function initDb(){
  if(!usePostgres){
-   const hp=hashPassword(ADMIN_PASSWORD);
-   const a=localUsers.find(x=>x.role==="admin");
-   if(a){Object.assign(a,{username:ADMIN_USER,password_hash:hp.hash,salt:hp.salt,status:"approved",display_name:"Comisionado"})}
-   else localUsers.push({id:1,username:ADMIN_USER,password_hash:hp.hash,salt:hp.salt,role:"admin",status:"approved",display_name:"Comisionado",team_id:null});
+   for(const adm of ADMIN_ACCOUNTS){
+     const hp=hashPassword(adm.password);
+     let a=localUsers.find(x=>x.username===adm.username);
+     if(a)Object.assign(a,{password_hash:hp.hash,salt:hp.salt,role:"admin",status:"approved",display_name:adm.name});
+     else localUsers.push({id:Date.now()+Math.random(),username:adm.username,password_hash:hp.hash,salt:hp.salt,role:"admin",status:"approved",display_name:adm.name,team_id:null});
+   }
    saveLocal(); return;
  }
  pool=new Pool({connectionString:DATABASE_URL,ssl:process.env.NODE_ENV==="production"?{rejectUnauthorized:false}:undefined});
@@ -69,15 +74,16 @@ async function initDb(){
  )`);
  const s=await pool.query("SELECT id FROM pinto_state WHERE id=1");
  if(!s.rowCount)await pool.query("INSERT INTO pinto_state(id,revision,state) VALUES(1,1,$1::jsonb)",[JSON.stringify(cleanState)]);
- const hp=hashPassword(ADMIN_PASSWORD);
- const a=await pool.query("SELECT id FROM pinto_users WHERE role='admin' ORDER BY id LIMIT 1");
- if(!a.rowCount){
-   await pool.query(`INSERT INTO pinto_users(username,password_hash,salt,role,status,display_name)
-                     VALUES($1,$2,$3,'admin','approved','Comisionado')`,[ADMIN_USER,hp.hash,hp.salt]);
- }else{
-   await pool.query(`UPDATE pinto_users
-                     SET username=$1,password_hash=$2,salt=$3,status='approved',display_name='Comisionado'
-                     WHERE id=$4`,[ADMIN_USER,hp.hash,hp.salt,a.rows[0].id]);
+ for (const adm of ADMIN_ACCOUNTS){
+   const hp=hashPassword(adm.password);
+   const existing=await pool.query("SELECT id FROM pinto_users WHERE username=$1",[adm.username]);
+   if(!existing.rowCount){
+     await pool.query(`INSERT INTO pinto_users(username,password_hash,salt,role,status,display_name)
+                       VALUES($1,$2,$3,'admin','approved',$4)`,[adm.username,hp.hash,hp.salt,adm.name]);
+   }else{
+     await pool.query(`UPDATE pinto_users SET password_hash=$1,salt=$2,role='admin',status='approved',display_name=$3 WHERE id=$4`,
+                      [hp.hash,hp.salt,adm.name,existing.rows[0].id]);
+   }
  }
 }
 async function getStore(){if(!usePostgres)return localStore;const r=await pool.query("SELECT revision,state FROM pinto_state WHERE id=1");return {revision:Number(r.rows[0].revision),state:r.rows[0].state}}
@@ -162,6 +168,39 @@ app.post("/api/admin/users/:id/:action",auth,adminOnly,async(req,res)=>{
  }catch(e){res.status(500).json({error:"server_error"})}
 });
 
+
+app.get("/api/admin/users",auth,adminOnly,async(req,res)=>{
+ try{
+   let users;
+   if(!usePostgres){
+     users=localUsers.map(({password_hash,salt,...u})=>u);
+   }else{
+     const r=await pool.query(`SELECT id,username,role,status,display_name,ea_id,country,platform,position,secondary_position,discord,availability,club,abbr,region,team_id,created_at
+                               FROM pinto_users ORDER BY created_at DESC`);
+     users=r.rows;
+   }
+   res.json({users});
+ }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.get("/api/admin/summary",auth,adminOnly,async(req,res)=>{
+ try{
+   const st=(await getStore()).state;
+   let users;
+   if(!usePostgres) users=localUsers;
+   else { const r=await pool.query("SELECT role,status FROM pinto_users"); users=r.rows; }
+   res.json({
+     pending:users.filter(u=>u.status==="pending").length,
+     players:users.filter(u=>u.role==="player"&&u.status==="approved").length,
+     dts:users.filter(u=>u.role==="dt"&&u.status==="approved").length,
+     viewers:users.filter(u=>u.role==="viewer"&&u.status==="approved").length,
+     admins:users.filter(u=>u.role==="admin"&&u.status==="approved").length,
+     teams:(st.teams||[]).length,
+     picks:(st.picks||[]).length
+   });
+ }catch(e){res.status(500).json({error:"server_error"})}
+});
+
 app.get("/api/state",async(req,res)=>{try{res.json(await getStore())}catch{res.status(500).json({error:"database_error"})}});
 app.put("/api/state",auth,async(req,res)=>{
  try{
@@ -174,4 +213,4 @@ app.put("/api/state",auth,async(req,res)=>{
 app.get("/app.html",(req,res)=>res.sendFile(path.join(ROOT,"app.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"index.html")));
 
-initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.0.3 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
+initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.0.4 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});

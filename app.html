@@ -89,12 +89,20 @@ button{cursor:pointer}
 .mobileLink{font-family:Consolas,monospace;color:var(--green);word-break:break-all}
 
 .pendingUser{padding:12px;border:1px solid #173540;border-radius:8px;background:#07141b;margin:8px 0}.pendingUser .actions{display:flex;gap:7px;margin-top:9px}.hidden{display:none!important}
+
+.adminStats{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin-bottom:12px}
+.adminStat{padding:14px}.adminStat b{display:block;font-size:29px;color:var(--green)}.adminStat span{font-size:10px;color:var(--muted);font-weight:850}
+.adminTabs{display:flex;gap:7px;margin-bottom:12px;flex-wrap:wrap}.adminTabs button{padding:9px 12px;border:1px solid #25414d;border-radius:6px;background:#0a1921;color:white;font-weight:850}.adminTabs button.active{border-color:var(--green);background:#0d3619}
+.adminUserRow{display:grid;grid-template-columns:1.1fr .8fr .7fr .8fr auto;gap:8px;align-items:center;padding:10px;border-bottom:1px solid #17303a;font-size:12px}
+.adminUserRow .uRole{font-weight:900;color:var(--green)}
+.adminOnlyPanel.hidden{display:none!important}
+
 </style>
 </head>
 <body><div id="app" class="app">
   <header class="top">
     <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.0.2 PLATFORM</div></div></div>
-    <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="admin">ADMIN</button></nav>
+    <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="admin">ADMIN PANEL</button></nav>
     <div class="topUser"><span id="syncBadge" class="syncBadge">● CONECTADO</span><div id="roleChip" class="roleChip"></div><button class="btn secondary" id="logout">SALIR</button></div>
   </header>
 
@@ -105,7 +113,7 @@ button{cursor:pointer}
     <button data-page="players">♟ &nbsp; PLAYERS</button>
     <button data-page="clubs">🛡 &nbsp; CLUBS</button><button data-page="warroom">⌂ &nbsp; WAR ROOM</button><button data-page="board">▦ &nbsp; DRAFT BOARD</button><button data-page="combine">◈ &nbsp; COMBINE</button><button data-page="formation">⚽ &nbsp; XI BUILDER</button>
     <button data-page="requests" class="adminOnly">✦ &nbsp; REGISTRATION</button>
-    <button data-page="admin" class="adminOnly">⚙ &nbsp; COMMISSIONER</button>
+    <button data-page="admin" class="adminOnly">⚙ &nbsp; PANEL ADMIN</button>
     <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">RELEASE 1.0.2 • ONLINE</div></div></div>
   </aside>
 
@@ -181,19 +189,57 @@ button{cursor:pointer}
       </div>
     </section>
 
-    <section class="page" id="page-admin">
-      <div class="pageTitle">COMMISSIONER CONTROL</div>
-      <div class="mobileLinkBox adminOnly">
-        <b>🌎 INSCRIPCIÓN ONLINE</b>
-        <div class="muted" style="margin-top:5px">Comparte este enlace con jugadores y DTs conectados a tu cualquier país.</div>
-        <div id="mobileRegistrationUrl" class="mobileLink" style="margin-top:8px">Tu enlace público aparecerá aquí al desplegar la V10</div>
-        <button class="btn secondary" id="openRegistrationPage" style="margin-top:10px">ABRIR FORMULARIO</button>
+    
+<section class="page" id="page-admin">
+  <div class="pageTitle">PANEL DEL COMISIONADO — PINTO</div>
+  <div id="adminDenied" class="panel body hidden">Solo las cuentas Admin pueden entrar a este panel.</div>
+  <div id="adminPanel" class="adminOnlyPanel">
+    <div class="adminStats">
+      <div class="panel adminStat"><span>PENDIENTES</span><b id="aPending">0</b></div>
+      <div class="panel adminStat"><span>JUGADORES</span><b id="aPlayers">0</b></div>
+      <div class="panel adminStat"><span>DTs</span><b id="aDts">0</b></div>
+      <div class="panel adminStat"><span>ESPECTADORES</span><b id="aViewers">0</b></div>
+      <div class="panel adminStat"><span>CLUBES</span><b id="aTeams">0</b></div>
+      <div class="panel adminStat"><span>PICKS</span><b id="aPicks">0</b></div>
+    </div>
+
+    <div class="panel body">
+      <div class="adminTabs">
+        <button class="active" data-admin-tab="pending">SOLICITUDES</button>
+        <button data-admin-tab="users">TODOS LOS USUARIOS</button>
+        <button data-admin-tab="draft">CONTROL DEL DRAFT</button>
+        <button data-admin-tab="logs">ACTIVIDAD</button>
       </div>
-      <div class="panel body adminOnly">
-        <div class="command"><button class="btn primary" id="pauseBtn">PAUSAR DRAFT</button><button class="btn secondary" id="skipBtn">SALTAR TURNO</button><button class="btn danger" id="undoBtn">DESHACER PICK</button><button class="btn secondary" id="addTimeBtn">+60 SEG</button><button class="btn secondary" id="resetDraftBtn">REINICIAR</button><button class="btn secondary" id="exportBtn">BACKUP JSON</button></div>
-        <h3 style="margin-top:18px">ADMIN LOG</h3><div id="adminLog"></div>
+
+      <div id="admin-pending">
+        <h3>CUENTAS PENDIENTES</h3>
+        <div id="adminPendingList"></div>
       </div>
-    </section>
+
+      <div id="admin-users" class="hidden">
+        <h3>USUARIOS REGISTRADOS</h3>
+        <div id="adminUsersList"></div>
+      </div>
+
+      <div id="admin-draft" class="hidden">
+        <h3>CONTROL DEL DRAFT</h3>
+        <div class="command">
+          <button class="btn primary" id="adminPauseBtn">PAUSAR / REANUDAR</button>
+          <button class="btn secondary" id="adminSkipBtn">SALTAR TURNO</button>
+          <button class="btn danger" id="adminUndoBtn">DESHACER PICK</button>
+          <button class="btn secondary" id="adminTimeBtn">+60 SEGUNDOS</button>
+          <button class="btn secondary" id="adminResetBtn">REINICIAR DRAFT</button>
+          <button class="btn secondary" id="adminBackupBtn">BACKUP JSON</button>
+        </div>
+      </div>
+
+      <div id="admin-logs" class="hidden">
+        <h3>ACTIVIDAD ADMINISTRATIVA</h3>
+        <div id="adminActivityList"></div>
+      </div>
+    </div>
+  </div>
+</section>
   </main>
 </div>
 
@@ -446,6 +492,57 @@ setInterval(()=>{if(isAdmin())renderPendingAccounts()},2500);
 
 
 
-updateRole();fetchServerState().then(()=>render());
+updateRole();setupAdminPanel();fetchServerState().then(()=>{render();setupAdminPanel();});
+
+function setupAdminPanel(){
+  const isA=isAdmin();
+  const panel=document.getElementById("adminPanel"),denied=document.getElementById("adminDenied");
+  if(panel)panel.classList.toggle("hidden",!isA);
+  if(denied)denied.classList.toggle("hidden",isA);
+  document.querySelectorAll("[data-admin-tab]").forEach(btn=>btn.onclick=()=>{
+    document.querySelectorAll("[data-admin-tab]").forEach(x=>x.classList.toggle("active",x===btn));
+    ["pending","users","draft","logs"].forEach(n=>{
+      const el=document.getElementById("admin-"+n); if(el)el.classList.toggle("hidden",n!==btn.dataset.adminTab);
+    });
+  });
+  if(!isA)return;
+
+  const pause=document.getElementById("adminPauseBtn"); if(pause)pause.onclick=()=>document.getElementById("pauseBtn")?.click();
+  const skip=document.getElementById("adminSkipBtn"); if(skip)skip.onclick=()=>document.getElementById("skipBtn")?.click();
+  const undo=document.getElementById("adminUndoBtn"); if(undo)undo.onclick=()=>document.getElementById("undoBtn")?.click();
+  const time=document.getElementById("adminTimeBtn"); if(time)time.onclick=()=>document.getElementById("addTimeBtn")?.click();
+  const reset=document.getElementById("adminResetBtn"); if(reset)reset.onclick=()=>document.getElementById("resetDraftBtn")?.click();
+  const backup=document.getElementById("adminBackupBtn"); if(backup)backup.onclick=()=>document.getElementById("exportBtn")?.click();
+
+  loadAdminPanel();
+}
+async function loadAdminPanel(){
+  if(!isAdmin())return;
+  try{
+    const [sr,ur,pr]=await Promise.all([
+      fetch("/api/admin/summary",{headers:authHeaders()}),
+      fetch("/api/admin/users",{headers:authHeaders()}),
+      fetch("/api/admin/pending",{headers:authHeaders()})
+    ]);
+    if(!sr.ok||!ur.ok||!pr.ok)return;
+    const s=await sr.json(),u=await ur.json(),p=await pr.json();
+    const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+    set("aPending",s.pending||0);set("aPlayers",s.players||0);set("aDts",s.dts||0);set("aViewers",s.viewers||0);set("aTeams",s.teams||0);set("aPicks",s.picks||0);
+
+    const pending=document.getElementById("adminPendingList");
+    if(pending)pending.innerHTML=(p.users||[]).map(x=>`<div class="pendingUser"><b>${x.display_name}</b> <span class="tag">${String(x.role).toUpperCase()}</span><div class="muted">@${x.username}${x.club?" • "+x.club:""}${x.position?" • "+x.position:""}</div><div class="actions"><button class="btn primary" data-aapprove="${x.id}">APROBAR</button><button class="btn danger" data-areject="${x.id}">RECHAZAR</button></div></div>`).join("")||'<div class="muted">No hay solicitudes pendientes.</div>';
+
+    const users=document.getElementById("adminUsersList");
+    if(users)users.innerHTML=(u.users||[]).map(x=>`<div class="adminUserRow"><b>${x.display_name}</b><span>@${x.username}</span><span class="uRole">${String(x.role).toUpperCase()}</span><span>${String(x.status).toUpperCase()}</span><span>${x.club||x.position||"—"}</span></div>`).join("")||'<div class="muted">Todavía no hay usuarios.</div>';
+
+    document.querySelectorAll("[data-aapprove]").forEach(b=>b.onclick=async()=>{await accountAction(b.dataset.aapprove,"approve");await loadAdminPanel()});
+    document.querySelectorAll("[data-areject]").forEach(b=>b.onclick=async()=>{await accountAction(b.dataset.areject,"reject");await loadAdminPanel()});
+
+    const logs=document.getElementById("adminActivityList");
+    if(logs)logs.innerHTML=(state.log||[]).slice(0,50).map((x,i)=>`<div class="row"><b>${i+1}</b><span>${x}</span><span></span></div>`).join("")||'<div class="muted">Sin actividad.</div>';
+  }catch(e){}
+}
+setInterval(()=>{if(isAdmin())loadAdminPanel()},3000);
+
 </script>
 </body></html>
