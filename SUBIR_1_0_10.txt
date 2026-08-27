@@ -1,0 +1,22 @@
+PINTO FC26 1.0.10 — LOGO REAL ANIMADO
+
+NUEVO:
+- Tu logo real PINTO DRAFT FC26 integrado en la página.
+- Animación de flotación suave.
+- Glow verde pulsante.
+- Aura detrás del logo.
+- Anillos/escudo luminosos animados.
+- Adaptado también a móvil.
+- No se usa como foto de fondo: es un elemento real de la interfaz.
+
+SUBE A GITHUB:
+index.html
+server.js
+package.json
+assets/pinto-draft-logo.png
+
+IMPORTANTE:
+También debes subir la carpeta assets con pinto-draft-logo.png.
+
+Después Commit changes y espera Railway Online.
+No necesitas rehacer Setup.exe.
