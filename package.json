@@ -1,8 +1,8 @@
 {
   "name": "pinto-fc26-v10-online",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
-  "description": "PINTO FC26 1.1.0 live automatic league fixtures and player-submitted results",
+  "description": "PINTO FC26 1.2.0 Relampago Champions tournament system",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

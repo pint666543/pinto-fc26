@@ -1,0 +1,35 @@
+PINTO FC26 1.2.0 — ⚡ RELÁMPAGO CHAMPIONS
+
+NUEVO APARTADO:
+⚡ RELÁMPAGO FC26-27
+
+FUNCIONAMIENTO:
+- El Admin elige los clubes participantes.
+- El Admin elige 3 a 8 jornadas de fase liga.
+- El Admin elige cuántos avanzan: Top 2 / 4 / 8 / 16.
+- La app genera automáticamente los cruces de la fase liga.
+- Jugadores/DT de los clubes suben sus propios resultados.
+- El rival confirma el marcador.
+- La tabla se actualiza automáticamente.
+- Al terminar todos los partidos de fase liga, el sistema crea automáticamente las eliminatorias.
+- Los cruces se siembran por clasificación.
+- En eliminatorias no se permiten empates.
+- Al terminar una ronda, la siguiente se genera sola.
+- Semifinal y final se crean automáticamente.
+- Al confirmar la final, aparece el CAMPEÓN.
+- Todo se sincroniza en web y app mediante el servidor existente.
+- Las disputas siguen quedando disponibles para control administrativo.
+
+PARA ACTUALIZAR GITHUB:
+Sube:
+1. app.html
+2. server.js
+3. package.json
+
+index.html también está incluido, pero para este módulo puede quedarse como está.
+
+Después:
+Commit changes → Railway hace el deploy automáticamente.
+
+NO borres DATABASE_URL, ADMIN_KEY, NODE_ENV ni las variables ADMIN.
+NO necesitas rehacer Setup.exe porque la app de escritorio abre la URL online.

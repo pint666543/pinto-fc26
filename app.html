@@ -226,12 +226,75 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
  .fixtureActions input{flex:0 0 58px}
 }
 
+
+/* ===== RULEBOOK FC26-27 ===== */
+.rulesHero{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 22px;margin-bottom:12px;background:radial-gradient(circle at 92% 30%,rgba(60,255,103,.12),transparent 25%),linear-gradient(180deg,#0a1820,#061017)}
+.rulesHero h2{font-size:34px;margin:5px 0 7px}
+.rulesBadge{width:74px;height:84px;border:2px solid var(--green);border-radius:14px 14px 24px 24px;display:grid;place-items:center;font-size:29px;line-height:.65;font-weight:1000;color:#fff;background:#07110b;box-shadow:0 0 25px rgba(60,255,103,.13)}
+.rulesBadge span{color:var(--green)}
+.rulesLayout{display:grid;grid-template-columns:250px 1fr;gap:12px}
+.rulesIndex button{display:block;width:100%;text-align:left;border:0;border-left:2px solid #183744;background:transparent;color:#aebbc1;padding:9px 10px;margin-bottom:3px;font-weight:800;font-size:11px;cursor:pointer}
+.rulesIndex button:hover{border-left-color:var(--green);color:#fff;background:#0a1a20}
+.ruleSection{padding:18px 0;border-bottom:1px solid #17303a;scroll-margin-top:90px}
+.ruleSection:first-child{padding-top:4px}.ruleSection:last-child{border-bottom:0}
+.ruleSection h3{color:var(--green);font-size:18px;margin:0 0 9px}
+.ruleSection p{margin:0;color:#c5d0d5;line-height:1.7;white-space:pre-wrap}
+.ruleLabel{display:block;color:#aebcc3;font-size:11px;font-weight:900;margin:12px 0 5px}
+.ruleEditCard{border:1px solid #1d3944;border-radius:8px;padding:12px;margin-bottom:9px;background:#07131a}
+.ruleEditCard textarea{width:100%;min-height:120px;resize:vertical}
+.ruleEditTop{display:grid;grid-template-columns:1fr auto;gap:8px}
+@media(max-width:760px){
+  .rulesHero{padding:16px}.rulesHero h2{font-size:25px}.rulesBadge{width:58px;height:66px;font-size:23px}
+  .rulesLayout{grid-template-columns:1fr}
+  .rulesIndex{overflow-x:auto;white-space:nowrap;padding:8px!important}
+  .rulesIndex>b{display:none}
+  .rulesIndex #rulesIndexList{display:flex;gap:5px;margin-top:0!important}
+  .rulesIndex button{display:inline-block;width:auto;border:1px solid #1e3a45;border-left:1px solid #1e3a45;border-radius:999px;padding:8px 10px;margin:0}
+  .ruleSection{padding:14px 0}.ruleSection h3{font-size:16px}
+}
+
+
+/* ===== RELÁMPAGO CHAMPIONS 1.2.0 ===== */
+.relHero{position:relative;overflow:hidden;display:flex;justify-content:space-between;align-items:center;gap:18px;padding:28px;background:
+  radial-gradient(circle at 82% 35%,rgba(60,255,103,.11),transparent 23%),
+  linear-gradient(135deg,#07151c 0%,#061017 55%,#09170c 100%);border-color:#245234}
+.relHero:before,.relHero:after{content:"";position:absolute;right:90px;top:-50px;width:1px;height:220px;background:linear-gradient(transparent,var(--green),transparent);transform:rotate(28deg);opacity:.18}
+.relHero:after{right:145px;top:-15px;height:170px;opacity:.09}
+.relKicker{font-size:9px;letter-spacing:2.2px;color:var(--green);font-weight:1000}
+.relHero h2{margin:5px 0 8px;font-size:38px;letter-spacing:-1.5px}.relHero h2 span{color:var(--green)}
+.relHeroCopy{min-width:0;position:relative;z-index:1}.relBolt{font-size:120px;line-height:.8;font-weight:1000;color:var(--green);opacity:.82;text-shadow:0 0 24px rgba(60,255,103,.2);transform:skew(-8deg)}
+.relHeroStats{display:flex;gap:22px;flex-wrap:wrap;margin-top:18px}
+.relHeroStats div{display:flex;flex-direction:column}.relHeroStats b{font-size:18px;color:#fff}.relHeroStats span{font-size:8px;letter-spacing:1.5px;color:#7f929b;font-weight:900}
+.relChampion{text-align:center;border-color:#3c7748;background:radial-gradient(circle at 50% 0,rgba(60,255,103,.12),transparent 45%),#07120b}
+.relChampion .cup{font-size:42px}.relChampion h2{margin:4px 0;color:var(--green);font-size:27px}
+.relConfigGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.relTeamSelector{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.relTeamChoice{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #1d3944;border-radius:8px;background:#07131a;min-width:0}
+.relTeamChoice input{width:18px;height:18px;accent-color:var(--green)}.relTeamChoice span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:850;font-size:11px}
+.relMatchRound{margin:17px 0 7px;color:var(--green);font-size:10px;font-weight:1000;letter-spacing:1.8px}
+.relMatch{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto;gap:9px;align-items:center;border:1px solid #19343e;border-radius:9px;background:#071219;padding:12px;margin-bottom:7px}
+.relMatch .home{font-weight:900}.relMatch .away{font-weight:900;text-align:right}.relScore{font-size:20px;font-weight:1000;min-width:75px;text-align:center}
+.relMatchActions{grid-column:1/-1;display:flex;gap:7px;justify-content:flex-end;align-items:center;flex-wrap:wrap;border-top:1px solid #122a34;padding-top:9px}
+.relMatchActions input{width:55px;min-height:40px;text-align:center;font-weight:900;font-size:16px;background:#061117;border:1px solid #28434d;border-radius:6px;color:#fff}
+.relBracket{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(220px,1fr);gap:12px;overflow-x:auto;padding-bottom:5px}
+.relStage{min-width:220px}.relStageTitle{font-size:10px;color:var(--green);letter-spacing:1.5px;font-weight:1000;margin-bottom:8px}
+.relBracketGame{border:1px solid #1a3943;border-radius:8px;background:#07131a;padding:10px;margin-bottom:10px}
+.relBracketLine{display:flex;justify-content:space-between;gap:8px;padding:7px 2px;font-size:11px;font-weight:850}.relBracketLine+.relBracketLine{border-top:1px solid #122b34}
+.relBracketWinner{color:var(--green)}.relEmpty{padding:18px;text-align:center;color:#748790;border:1px dashed #1d3944;border-radius:8px}
+@media(max-width:760px){
+ .relHero{padding:18px}.relHero h2{font-size:28px}.relBolt{font-size:76px}.relHeroStats{gap:15px}
+ .relConfigGrid{grid-template-columns:1fr}.relTeamSelector{grid-template-columns:1fr 1fr}
+ .relMatch{grid-template-columns:1fr auto 1fr}.relMatch .fixtureStatus{grid-column:1/-1;justify-self:center}
+ .relMatchActions{justify-content:stretch}.relMatchActions .btn{flex:1;min-height:44px}
+}
+@media(max-width:420px){.relTeamSelector{grid-template-columns:1fr}.relBolt{font-size:60px}}
+
 </style>
 </head>
 <body><div id="app" class="app">
   <header class="top">
-    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.0.2 PLATFORM</div></div></div>
-    <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="admin">ADMIN PANEL</button></nav>
+    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.2.0 PLATFORM</div></div></div>
+    <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="relampago">⚡ RELÁMPAGO</button><button data-page="rules">REGLAMENTO</button><button data-page="admin">ADMIN PANEL</button></nav>
     <div class="topUser"><span id="syncBadge" class="syncBadge">● CONECTADO</span><div id="roleChip" class="roleChip"></div><button class="btn secondary" id="logout">SALIR</button></div>
   </header>
 
@@ -240,7 +303,7 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
     <button data-page="draft">⚽ &nbsp; DRAFT ROOM</button>
     <button data-page="tracker">◉ &nbsp; LIVE TRACKER</button>
     <button data-page="players">♟ &nbsp; PLAYERS</button>
-    <button data-page="clubs">🛡 &nbsp; CLUBS</button><button data-page="warroom">⌂ &nbsp; WAR ROOM</button><button data-page="board">▦ &nbsp; DRAFT BOARD</button><button data-page="combine">◈ &nbsp; COMBINE</button><button data-page="formation">⚽ &nbsp; XI BUILDER</button>
+    <button data-page="clubs">🛡 &nbsp; CLUBS</button><button data-page="warroom">⌂ &nbsp; WAR ROOM</button><button data-page="board">▦ &nbsp; DRAFT BOARD</button><button data-page="combine">◈ &nbsp; COMBINE</button><button data-page="formation">⚽ &nbsp; XI BUILDER</button><button data-page="relampago">⚡ &nbsp; RELÁMPAGO FC26-27</button><button data-page="rules">📘 &nbsp; REGLAMENTO 26-27</button>
     <button data-page="requests" class="adminOnly">✦ &nbsp; REGISTRATION</button>
     <button data-page="admin" class="adminOnly">⚙ &nbsp; PANEL ADMIN</button>
     <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">RELEASE 1.0.2 • ONLINE</div></div></div>
@@ -349,6 +412,130 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
     </section>
 
     
+
+
+<section class="page" id="page-relampago">
+  <div class="pageTitle">⚡ RELÁMPAGO FC26-27</div>
+
+  <div class="relHero panel">
+    <div class="relHeroCopy">
+      <div class="relKicker">PINTO • CLUBES PRO • TORNEO CHAMPIONS</div>
+      <h2>RELÁMPAGO <span>FC26-27</span></h2>
+      <div class="muted">Fase liga, clasificación y eliminatorias automáticas hasta coronar al campeón.</div>
+      <div class="relHeroStats">
+        <div><b id="relTeamCount">0</b><span>CLUBES</span></div>
+        <div><b id="relMatchCount">0</b><span>PARTIDOS</span></div>
+        <div><b id="relPhaseLabel">ESPERA</b><span>FASE</span></div>
+      </div>
+    </div>
+    <div class="relBolt" aria-hidden="true">ϟ</div>
+  </div>
+
+  <div id="relChampionBox" class="relChampion panel body hidden"></div>
+
+  <div id="relAdminSetup" class="panel body hidden" style="margin-top:12px">
+    <div class="sectionHead">
+      <div><div class="eyebrow">CONTROL ADMIN</div><h3>CONFIGURAR TORNEO</h3></div>
+      <span class="tag">SOLO ADMIN</span>
+    </div>
+    <div id="relSetupFields">
+      <label class="ruleLabel">Nombre del torneo</label>
+      <input id="relNameInput" class="input" value="RELÁMPAGO FC26-27" style="width:100%">
+      <div class="relConfigGrid">
+        <div>
+          <label class="ruleLabel">Jornadas de fase liga</label>
+          <select id="relRoundsInput" class="input" style="width:100%">
+            <option value="3">3 jornadas</option>
+            <option value="4">4 jornadas</option>
+            <option value="5" selected>5 jornadas</option>
+            <option value="6">6 jornadas</option>
+            <option value="7">7 jornadas</option>
+            <option value="8">8 jornadas</option>
+          </select>
+        </div>
+        <div>
+          <label class="ruleLabel">Clubes que avanzan</label>
+          <select id="relQualifiersInput" class="input" style="width:100%">
+            <option value="2">Top 2</option>
+            <option value="4">Top 4</option>
+            <option value="8" selected>Top 8</option>
+            <option value="16">Top 16</option>
+          </select>
+        </div>
+      </div>
+      <label class="ruleLabel">Clubes participantes</label>
+      <div id="relTeamSelector" class="relTeamSelector"></div>
+      <div class="actions" style="margin-top:12px">
+        <button class="btn primary" id="relStartBtn">⚡ INICIAR RELÁMPAGO</button>
+      </div>
+    </div>
+    <div id="relActiveAdmin" class="hidden">
+      <div class="note">El torneo está activo. Los resultados y las fases avanzan automáticamente.</div>
+      <button class="btn danger" id="relResetBtn" style="margin-top:10px">REINICIAR RELÁMPAGO</button>
+    </div>
+  </div>
+
+  <div class="bottomGrid" style="margin-top:12px">
+    <div class="panel body">
+      <div class="sectionHead"><h3>CLASIFICACIÓN</h3><span class="tag">FASE LIGA</span></div>
+      <div class="tableWrap"><table class="table" id="relStandings"></table></div>
+    </div>
+    <div class="panel body">
+      <div class="sectionHead"><h3>ESTADO</h3><span id="relLiveBadge" class="livePill">● ESPERA</span></div>
+      <div id="relStatusSummary" class="metrics"></div>
+    </div>
+  </div>
+
+  <div class="panel body" style="margin-top:12px">
+    <div class="sectionHead"><h3>FASE LIGA</h3><span class="tag">CRUCES</span></div>
+    <div id="relLeagueMatches"></div>
+  </div>
+
+  <div class="panel body" style="margin-top:12px">
+    <div class="sectionHead"><h3>ELIMINATORIAS</h3><span class="tag">BRACKET AUTOMÁTICO</span></div>
+    <div id="relKnockoutBracket" class="relBracket"></div>
+  </div>
+</section>
+
+<section class="page" id="page-rules">
+  <div class="pageTitle">REGLAMENTO FC26-27</div>
+  <div class="rulesHero panel">
+    <div>
+      <div class="eyebrow">PINTO FC26 • COMPETICIÓN OFICIAL</div>
+      <h2 id="rulebookTitle">REGLAMENTO FC26-27</h2>
+      <div class="muted" id="rulebookUpdated">Versión oficial de la competición.</div>
+    </div>
+    <div class="rulesBadge">26<br><span>27</span></div>
+  </div>
+
+  <div class="rulesLayout">
+    <aside class="panel body rulesIndex">
+      <b>CONTENIDO</b>
+      <div id="rulesIndexList" style="margin-top:10px"></div>
+    </aside>
+
+    <div class="panel body">
+      <div id="rulesPublicView"></div>
+
+      <div id="rulesAdminEditor" class="hidden">
+        <div class="note" style="margin-bottom:12px">Modo Admin: edita el reglamento y publícalo para todos.</div>
+        <label class="ruleLabel">Título</label>
+        <input id="ruleTitleInput" class="input" style="width:100%">
+
+        <div id="ruleSectionsEditor" style="margin-top:12px"></div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn secondary" id="addRuleSectionBtn">+ AGREGAR SECCIÓN</button>
+          <button class="btn primary" id="saveRulebookBtn">PUBLICAR REGLAMENTO</button>
+          <button class="btn secondary" id="cancelRuleEditBtn">CANCELAR</button>
+        </div>
+      </div>
+
+      <button class="btn primary hidden" id="editRulebookBtn" style="margin-top:12px">EDITAR REGLAMENTO</button>
+    </div>
+  </div>
+</section>
+
 <section class="page" id="page-admin">
   <div class="pageTitle">PANEL DEL COMISIONADO — PINTO</div>
   <div id="adminDenied" class="panel body hidden">Solo las cuentas Admin pueden entrar a este panel.</div>
@@ -686,6 +873,265 @@ async function disputeMatch(id){
   await fetchServerState();
 }
 
+
+let rulebookCache=null;
+async function loadRulebook(){
+  try{
+    const r=await fetch("/api/rulebook",{cache:"no-store"});
+    if(!r.ok)return;
+    const j=await r.json();
+    rulebookCache=j.rulebook;
+    renderRulebook();
+  }catch{}
+}
+function renderRulebook(){
+  const rb=rulebookCache||state.rulebook||{title:"REGLAMENTO FC26-27",sections:[]};
+  const title=document.getElementById("rulebookTitle");
+  const upd=document.getElementById("rulebookUpdated");
+  const view=document.getElementById("rulesPublicView");
+  const idx=document.getElementById("rulesIndexList");
+  if(!view||!idx)return;
+  if(title)title.textContent=rb.title||"REGLAMENTO FC26-27";
+  if(upd)upd.textContent=rb.updatedAt?`Actualizado ${new Date(rb.updatedAt).toLocaleString()}${rb.updatedBy?" por "+rb.updatedBy:""}`:"Versión oficial de la competición.";
+  idx.innerHTML=(rb.sections||[]).map((s,i)=>`<button data-rule-jump="${s.id||"r"+i}">${s.title||"Sección "+(i+1)}</button>`).join("");
+  view.innerHTML=(rb.sections||[]).map((s,i)=>`<section class="ruleSection" id="rule-${s.id||"r"+i}"><h3>${s.title||"Sección "+(i+1)}</h3><p>${escapeRuleHtml(s.body||"")}</p></section>`).join("")||'<div class="muted">El reglamento todavía no ha sido publicado.</div>';
+  document.querySelectorAll("[data-rule-jump]").forEach(b=>b.onclick=()=>document.getElementById("rule-"+b.dataset.ruleJump)?.scrollIntoView({behavior:"smooth",block:"start"}));
+  const edit=document.getElementById("editRulebookBtn");
+  if(edit)edit.classList.toggle("hidden",!isAdmin());
+}
+function escapeRuleHtml(v){
+  return String(v).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+}
+function openRuleEditor(){
+  if(!isAdmin())return;
+  const rb=JSON.parse(JSON.stringify(rulebookCache||state.rulebook||{title:"REGLAMENTO FC26-27",sections:[]}));
+  document.getElementById("rulesPublicView").classList.add("hidden");
+  document.getElementById("rulesAdminEditor").classList.remove("hidden");
+  document.getElementById("editRulebookBtn").classList.add("hidden");
+  document.getElementById("ruleTitleInput").value=rb.title||"REGLAMENTO FC26-27";
+  renderRuleEditorSections(rb.sections||[]);
+}
+function renderRuleEditorSections(sections){
+  const box=document.getElementById("ruleSectionsEditor");
+  box.dataset.sections=JSON.stringify(sections);
+  box.innerHTML=sections.map((s,i)=>`<div class="ruleEditCard" data-rule-edit="${i}">
+    <div class="ruleEditTop"><input class="input ruleEditTitle" value="${String(s.title||"").replace(/"/g,"&quot;")}"><button class="btn danger" data-remove-rule="${i}">ELIMINAR</button></div>
+    <label class="ruleLabel">Contenido</label><textarea class="input ruleEditBody">${escapeRuleHtml(s.body||"")}</textarea>
+  </div>`).join("");
+  document.querySelectorAll("[data-remove-rule]").forEach(b=>b.onclick=()=>removeRuleSection(Number(b.dataset.removeRule)));
+}
+function collectRuleSections(){
+  return [...document.querySelectorAll("[data-rule-edit]")].map((el,i)=>({
+    id:"sec-"+(i+1),
+    title:el.querySelector(".ruleEditTitle").value.trim()||`Sección ${i+1}`,
+    body:el.querySelector(".ruleEditBody").value.trim()
+  }));
+}
+function removeRuleSection(i){
+  const arr=collectRuleSections();arr.splice(i,1);renderRuleEditorSections(arr);
+}
+function addRuleSection(){
+  const arr=collectRuleSections();arr.push({id:"sec-"+(arr.length+1),title:`${arr.length+1}. NUEVA SECCIÓN`,body:""});renderRuleEditorSections(arr);
+}
+async function saveRulebook(){
+  const rulebook={title:document.getElementById("ruleTitleInput").value.trim()||"REGLAMENTO FC26-27",sections:collectRuleSections()};
+  const r=await fetch("/api/admin/rulebook",{method:"PUT",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({rulebook})});
+  if(!r.ok){alert("No se pudo guardar el reglamento.");return}
+  const j=await r.json();rulebookCache=j.rulebook;
+  closeRuleEditor();renderRulebook();await fetchServerState();
+}
+function closeRuleEditor(){
+  document.getElementById("rulesPublicView").classList.remove("hidden");
+  document.getElementById("rulesAdminEditor").classList.add("hidden");
+  document.getElementById("editRulebookBtn").classList.toggle("hidden",!isAdmin());
+}
+document.getElementById("editRulebookBtn")?.addEventListener("click",openRuleEditor);
+document.getElementById("addRuleSectionBtn")?.addEventListener("click",addRuleSection);
+document.getElementById("saveRulebookBtn")?.addEventListener("click",saveRulebook);
+document.getElementById("cancelRuleEditBtn")?.addEventListener("click",closeRuleEditor);
+setInterval(loadRulebook,5000);
+
+
+function relData(){
+  return state.relampago||{name:"RELÁMPAGO FC26-27",status:"not_started",phase:"registration",teamIds:[],matches:[],qualifiers:8,leagueRounds:5};
+}
+function relTeam(id){return (state.teams||[]).find(t=>Number(t.id)===Number(id))}
+function relStandingsCalc(){
+  const r=relData();
+  const rows=(r.teamIds||[]).map(id=>({id:Number(id),name:relTeam(id)?.name||"Club",pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0}));
+  const by=Object.fromEntries(rows.map(x=>[x.id,x]));
+  (r.matches||[]).filter(m=>m.phase==="league"&&m.status==="confirmed").forEach(m=>{
+    const a=by[Number(m.homeTeamId)],b=by[Number(m.awayTeamId)];if(!a||!b)return;
+    const x=Number(m.homeScore),y=Number(m.awayScore);a.pj++;b.pj++;a.gf+=x;a.gc+=y;b.gf+=y;b.gc+=x;
+    if(x>y){a.pg++;b.pp++;a.pts+=3}else if(y>x){b.pg++;a.pp++;b.pts+=3}else{a.pe++;b.pe++;a.pts++;b.pts++}
+  });
+  return rows.sort((a,b)=>b.pts-a.pts||((b.gf-b.gc)-(a.gf-a.gc))||b.gf-a.gf||a.name.localeCompare(b.name));
+}
+function relStatusText(status){
+  return {scheduled:"POR JUGAR",pending_confirmation:"ESPERA CONFIRMACIÓN",confirmed:"CONFIRMADO",disputed:"EN DISPUTA"}[status]||status;
+}
+function relPhaseText(r){
+  if(r.status==="completed")return "CAMPEÓN";
+  if(r.phase==="knockout")return "ELIMINATORIAS";
+  if(r.phase==="league")return "FASE LIGA";
+  return "ESPERA";
+}
+function renderRelampago(){
+  const r=relData(),matches=r.matches||[],teamId=currentAccountTeamId();
+  const teamCount=document.getElementById("relTeamCount");
+  if(!teamCount)return;
+  teamCount.textContent=(r.teamIds||[]).length;
+  document.getElementById("relMatchCount").textContent=matches.length;
+  document.getElementById("relPhaseLabel").textContent=relPhaseText(r);
+  const badge=document.getElementById("relLiveBadge");
+  badge.textContent=r.status==="active"?"● LIVE":r.status==="completed"?"● FINALIZADO":"● ESPERA";
+
+  const champ=document.getElementById("relChampionBox");
+  if(r.championTeamId){
+    const t=relTeam(r.championTeamId);
+    champ.classList.remove("hidden");
+    champ.innerHTML=`<div class="cup">🏆</div><div class="eyebrow">CAMPEÓN OFICIAL</div><h2>${t?.name||"CAMPEÓN"}</h2><div class="muted">${r.name||"RELÁMPAGO FC26-27"}</div>`;
+  }else champ.classList.add("hidden");
+
+  // Admin setup
+  const setup=document.getElementById("relAdminSetup");
+  setup.classList.toggle("hidden",!isAdmin());
+  if(isAdmin()){
+    const active=r.status==="active"||r.status==="completed";
+    document.getElementById("relSetupFields").classList.toggle("hidden",active);
+    document.getElementById("relActiveAdmin").classList.toggle("hidden",!active);
+    if(!active){
+      const approved=(state.teams||[]).filter(t=>t.approved);
+      document.getElementById("relTeamSelector").innerHTML=approved.map(t=>`<label class="relTeamChoice"><input type="checkbox" value="${t.id}" checked><span>${t.name}</span></label>`).join("")||'<div class="muted">Primero aprueba clubes.</div>';
+      const q=document.getElementById("relQualifiersInput");
+      [...q.options].forEach(o=>o.disabled=Number(o.value)>approved.length);
+      const allowed=[16,8,4,2].find(n=>n<=approved.length);
+      if(allowed)q.value=String(allowed);
+    }
+  }
+
+  // standings
+  const standings=relStandingsCalc();
+  const qn=Number(r.qualifiers)||0;
+  document.getElementById("relStandings").innerHTML=
+    '<tr><th>#</th><th>Club</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>PTS</th></tr>'+
+    standings.map((x,i)=>`<tr><td>${i+1}${r.status!=="not_started"&&i<qn?' <span class="green">●</span>':''}</td><td>${x.name}</td><td>${x.pj}</td><td>${x.pg}</td><td>${x.pe}</td><td>${x.pp}</td><td>${x.gf}</td><td>${x.gc}</td><td>${x.gf-x.gc}</td><td><b>${x.pts}</b></td></tr>`).join("");
+
+  const confirmed=matches.filter(m=>m.status==="confirmed").length;
+  const disputed=matches.filter(m=>m.status==="disputed").length;
+  const pending=matches.filter(m=>m.status==="pending_confirmation").length;
+  document.getElementById("relStatusSummary").innerHTML=`
+    <div class="metric"><span>CONFIRMADOS</span><b>${confirmed}</b></div>
+    <div class="metric"><span>PENDIENTES</span><b>${pending}</b></div>
+    <div class="metric"><span>DISPUTAS</span><b>${disputed}</b></div>
+    <div class="metric"><span>CLASIFICAN</span><b>${r.qualifiers||0}</b></div>`;
+
+  // League matches
+  const league=matches.filter(m=>m.phase==="league");
+  const leagueBox=document.getElementById("relLeagueMatches");
+  if(!league.length){
+    leagueBox.innerHTML='<div class="relEmpty">Los cruces aparecerán cuando el Admin inicie el torneo.</div>';
+  }else{
+    let last=0,html="";
+    league.forEach(m=>{
+      if(m.round!==last){last=m.round;html+=`<div class="relMatchRound">JORNADA ${m.round}</div>`}
+      html+=relMatchCard(m,teamId);
+    });
+    leagueBox.innerHTML=html;
+  }
+
+  // Knockout bracket
+  const ko=matches.filter(m=>m.phase==="knockout");
+  const bracket=document.getElementById("relKnockoutBracket");
+  if(!ko.length){
+    bracket.innerHTML='<div class="relEmpty">El bracket se genera automáticamente al terminar la fase liga.</div>';
+  }else{
+    const rounds=[...new Set(ko.map(m=>Number(m.round)))].sort((a,b)=>a-b);
+    bracket.innerHTML=rounds.map(round=>{
+      const games=ko.filter(m=>Number(m.round)===round),stage=games[0]?.stage||"ELIMINATORIA";
+      return `<div class="relStage"><div class="relStageTitle">${stage}</div>${games.map(m=>{
+        const ht=relTeam(m.homeTeamId),at=relTeam(m.awayTeamId),hs=m.homeScore,as=m.awayScore;
+        const hw=m.status==="confirmed"&&Number(m.winnerTeamId)===Number(m.homeTeamId);
+        const aw=m.status==="confirmed"&&Number(m.winnerTeamId)===Number(m.awayTeamId);
+        return `<div class="relBracketGame" data-open-rel-match="${m.id}">
+          <div class="relBracketLine ${hw?"relBracketWinner":""}"><span>${ht?.name||"TBD"}</span><b>${hs??"–"}</b></div>
+          <div class="relBracketLine ${aw?"relBracketWinner":""}"><span>${at?.name||"TBD"}</span><b>${as??"–"}</b></div>
+          <div class="fixtureStatus ${m.status}" style="margin-top:7px;display:inline-block">${relStatusText(m.status)}</div>
+          ${relMatchActions(m,teamId)}
+        </div>`;
+      }).join("")}</div>`;
+    }).join("");
+  }
+  bindRelMatchButtons();
+}
+function relMatchActions(m,teamId){
+  const involved=isAdmin()||teamId===Number(m.homeTeamId)||teamId===Number(m.awayTeamId);
+  if(!involved||m.status==="confirmed")return "";
+  const opponentCanConfirm=m.status==="pending_confirmation"&&(isAdmin()||teamId!==Number(m.submittedByTeamId));
+  const canSubmit=m.status!=="pending_confirmation"||isAdmin();
+  return `<div class="relMatchActions">
+    ${canSubmit?`<input type="number" min="0" max="99" id="rhs-${m.id}" value="${m.homeScore??""}" placeholder="0"><span>-</span><input type="number" min="0" max="99" id="ras-${m.id}" value="${m.awayScore??""}" placeholder="0"><button class="btn primary" data-rel-submit="${m.id}">SUBIR</button>`:""}
+    ${opponentCanConfirm?`<button class="btn primary" data-rel-confirm="${m.id}">CONFIRMAR</button><button class="btn danger" data-rel-dispute="${m.id}">NO COINCIDE</button>`:""}
+  </div>`;
+}
+function relMatchCard(m,teamId){
+  const ht=relTeam(m.homeTeamId),at=relTeam(m.awayTeamId);
+  const score=m.homeScore==null?"VS":`${m.homeScore} - ${m.awayScore}`;
+  return `<div class="relMatch">
+    <div class="home">${ht?.name||"LOCAL"}</div><div class="relScore">${score}</div><div class="away">${at?.name||"VISITANTE"}</div>
+    <div class="fixtureStatus ${m.status}">${relStatusText(m.status)}</div>
+    ${relMatchActions(m,teamId)}
+  </div>`;
+}
+function bindRelMatchButtons(){
+  document.querySelectorAll("[data-rel-submit]").forEach(b=>b.onclick=()=>submitRelMatch(b.dataset.relSubmit));
+  document.querySelectorAll("[data-rel-confirm]").forEach(b=>b.onclick=()=>confirmRelMatch(b.dataset.relConfirm));
+  document.querySelectorAll("[data-rel-dispute]").forEach(b=>b.onclick=()=>disputeRelMatch(b.dataset.relDispute));
+}
+async function submitRelMatch(id){
+  const hs=Number(document.getElementById("rhs-"+id)?.value),as=Number(document.getElementById("ras-"+id)?.value);
+  if(!Number.isInteger(hs)||!Number.isInteger(as)||hs<0||as<0){alert("Escribe un marcador válido.");return}
+  const m=(relData().matches||[]).find(x=>String(x.id)===String(id));
+  if(m?.phase==="knockout"&&hs===as){alert("En eliminatorias tiene que haber un ganador.");return}
+  const r=await fetch(`/api/relampago/matches/${id}/submit`,{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({homeScore:hs,awayScore:as})});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){alert(j.error==="knockout_draw_not_allowed"?"En eliminatorias no se permiten empates.":"No se pudo subir el resultado.");return}
+  await fetchServerState();
+}
+async function confirmRelMatch(id){
+  const r=await fetch(`/api/relampago/matches/${id}/confirm`,{method:"POST",headers:authHeaders()});
+  if(!r.ok){alert("No se pudo confirmar el resultado.");return}
+  await fetchServerState();
+}
+async function disputeRelMatch(id){
+  const note=prompt("¿Qué no coincide?","El marcador no coincide");
+  if(note===null)return;
+  const r=await fetch(`/api/relampago/matches/${id}/dispute`,{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({note})});
+  if(!r.ok){alert("No se pudo abrir la disputa.");return}
+  await fetchServerState();
+}
+async function startRelampago(){
+  const teamIds=[...document.querySelectorAll("#relTeamSelector input:checked")].map(x=>Number(x.value));
+  const qualifiers=Number(document.getElementById("relQualifiersInput").value);
+  const leagueRounds=Number(document.getElementById("relRoundsInput").value);
+  const name=document.getElementById("relNameInput").value.trim()||"RELÁMPAGO FC26-27";
+  if(teamIds.length<4){alert("Selecciona al menos 4 clubes.");return}
+  if(qualifiers>teamIds.length){alert("No pueden clasificar más clubes de los que participan.");return}
+  if(!confirm(`¿Iniciar ${name} con ${teamIds.length} clubes?`))return;
+  const res=await fetch("/api/admin/relampago/start",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({name,teamIds,leagueRounds,qualifiers})});
+  const j=await res.json().catch(()=>({}));
+  if(!res.ok){alert(j.error==="invalid_qualifiers"?"Elige Top 2, 4, 8 o 16 según la cantidad de clubes.":"No se pudo iniciar el torneo.");return}
+  await fetchServerState();
+}
+async function resetRelampago(){
+  if(!confirm("¿Reiniciar completamente el Relámpago? Se borrarán sus resultados y bracket."))return;
+  const r=await fetch("/api/admin/relampago/reset",{method:"POST",headers:authHeaders()});
+  if(!r.ok){alert("No se pudo reiniciar.");return}
+  await fetchServerState();
+}
+document.getElementById("relStartBtn")?.addEventListener("click",startRelampago);
+document.getElementById("relResetBtn")?.addEventListener("click",resetRelampago);
+
 function render(){
  
  const i=currentInfo(),mine=myTeam();
@@ -715,7 +1161,7 @@ function render(){
  leagueBody.innerHTML=state.teams.filter(t=>t.approved).map((t,idx)=>`<tr><td>${idx+1}</td><td>${t.name}</td><td>${t.dt}</td><td>${state.picks.filter(p=>p.teamId===t.id).length}</td><td class="green">ACTIVO</td></tr>`).join("");
  if(isAdmin()) renderPendingAccounts();
  adminLog.innerHTML=state.log.slice(0,25).map((l,idx)=>`<div class="row"><b>${idx+1}</b><span>${l}</span><span></span></div>`).join("")||'<div class="muted">Sin actividad.</div>';
- pauseBtn.textContent=state.paused?"REANUDAR DRAFT":"PAUSAR DRAFT";renderCards();renderV8();renderLeague();updateTimer();if(isAdmin())renderPendingAccounts()
+ pauseBtn.textContent=state.paused?"REANUDAR DRAFT":"PAUSAR DRAFT";renderCards();renderV8();renderLeague();renderRelampago();renderRulebook();updateTimer();if(isAdmin())renderPendingAccounts()
 }
 
 pauseBtn.addEventListener("click",()=>{if(!isAdmin())return;state.paused=!state.paused;state.log.unshift(state.paused?"Draft pausado":"Draft reanudado");persist()});
@@ -759,7 +1205,7 @@ setInterval(()=>{if(isAdmin())renderPendingAccounts()},2500);
 
 
 
-updateRole();setupAdminPanel();fetchServerState().then(()=>{render();setupAdminPanel();});
+updateRole();setupAdminPanel();loadRulebook();fetchServerState().then(()=>{render();setupAdminPanel();});
 
 function setupAdminPanel(){
   const isA=isAdmin();

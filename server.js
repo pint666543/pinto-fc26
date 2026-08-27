@@ -22,7 +22,32 @@ app.use(express.static(ROOT));
 const cleanState = {
   teams:[], players:[], playerRequests:[], dtRequests:[],
   picks:[], skips:[], paused:false, scouting:{}, combine:{},
-  settings:{seconds:45,draftType:"Snake"}, log:[]
+  settings:{seconds:45,draftType:"Snake"},
+  relampago:{
+    name:"RELÁMPAGO FC26-27",
+    status:"not_started",
+    phase:"registration",
+    teamIds:[],
+    leagueRounds:5,
+    qualifiers:8,
+    matches:[],
+    championTeamId:null,
+    startedAt:null,
+    completedAt:null
+  },
+  rulebook:{
+    title:"REGLAMENTO FC26-27",
+    updatedAt:null,
+    updatedBy:null,
+    sections:[
+      {id:"general",title:"1. REGLAS GENERALES",body:"Respeto obligatorio entre jugadores, DTs y administradores. El uso de exploits, trampas o conductas antideportivas puede resultar en sanción."},
+      {id:"rosters",title:"2. PLANTILLAS",body:"Cada club deberá utilizar únicamente jugadores registrados y aprobados dentro de la plataforma."},
+      {id:"matches",title:"3. PARTIDOS",body:"Los partidos deben jugarse en la fecha acordada. El resultado será cargado por uno de los clubes y confirmado por el rival."},
+      {id:"disconnects",title:"4. DESCONEXIONES",body:"En caso de desconexión, los clubes deberán seguir el procedimiento establecido por la administración antes de reiniciar o abandonar el partido."},
+      {id:"discipline",title:"5. DISCIPLINA",body:"Insultos, amenazas, discriminación, manipulación de resultados o suplantación de identidad pueden resultar en suspensión o expulsión."}
+    ]
+  },
+  log:[]
 };
 
 let pool=null;
@@ -166,6 +191,136 @@ function scoreValue(v){
 }
 function fixtureById(st,id){return (st.fixtures||[]).find(m=>String(m.id)===String(id))}
 
+
+function defaultRelampago(){
+  return {
+    name:"RELÁMPAGO FC26-27",status:"not_started",phase:"registration",
+    teamIds:[],leagueRounds:5,qualifiers:8,matches:[],
+    championTeamId:null,startedAt:null,completedAt:null
+  };
+}
+function ensureRelampago(st){
+  if(!st.relampago || typeof st.relampago!=="object")st.relampago=defaultRelampago();
+  if(!Array.isArray(st.relampago.teamIds))st.relampago.teamIds=[];
+  if(!Array.isArray(st.relampago.matches))st.relampago.matches=[];
+  return st.relampago;
+}
+function isPowerOfTwo(n){return n>=2 && (n&(n-1))===0}
+function relampagoLeagueSchedule(teamIds,maxRounds){
+  let ids=teamIds.map(Number);
+  if(ids.length%2===1)ids.push(null);
+  const n=ids.length,half=n/2;
+  let arr=[...ids],out=[],matchNo=1;
+  const rounds=Math.max(1,Math.min(Number(maxRounds)||5,n-1));
+  for(let round=1;round<=rounds;round++){
+    for(let i=0;i<half;i++){
+      let home=arr[i],away=arr[n-1-i];
+      if(home==null||away==null)continue;
+      if((round+i)%2===0)[home,away]=[away,home];
+      out.push({
+        id:`RLG-${matchNo++}`,competition:"relampago",phase:"league",stage:"FASE LIGA",round,
+        homeTeamId:home,awayTeamId:away,homeScore:null,awayScore:null,status:"scheduled",
+        submittedByTeamId:null,submittedByUserId:null,submittedAt:null,
+        confirmedByTeamId:null,confirmedAt:null,disputeNote:null,winnerTeamId:null
+      });
+    }
+    arr=[arr[0],arr[n-1],...arr.slice(1,n-1)];
+  }
+  return out;
+}
+function relampagoStandings(st){
+  const r=ensureRelampago(st);
+  const rows=r.teamIds.map(id=>{
+    const t=(st.teams||[]).find(x=>Number(x.id)===Number(id));
+    return {id:Number(id),name:t?.name||"Club",pj:0,pg:0,pe:0,pp:0,gf:0,gc:0,pts:0};
+  });
+  const by=Object.fromEntries(rows.map(x=>[x.id,x]));
+  r.matches.filter(m=>m.phase==="league"&&m.status==="confirmed").forEach(m=>{
+    const a=by[Number(m.homeTeamId)],b=by[Number(m.awayTeamId)];
+    if(!a||!b)return;
+    const x=Number(m.homeScore),y=Number(m.awayScore);
+    a.pj++;b.pj++;a.gf+=x;a.gc+=y;b.gf+=y;b.gc+=x;
+    if(x>y){a.pg++;b.pp++;a.pts+=3}
+    else if(y>x){b.pg++;a.pp++;b.pts+=3}
+    else{a.pe++;b.pe++;a.pts++;b.pts++}
+  });
+  return rows.sort((a,b)=>b.pts-a.pts||((b.gf-b.gc)-(a.gf-a.gc))||b.gf-a.gf||a.name.localeCompare(b.name));
+}
+function knockoutStageName(teamCount){
+  if(teamCount===16)return "OCTAVOS";
+  if(teamCount===8)return "CUARTOS";
+  if(teamCount===4)return "SEMIFINAL";
+  if(teamCount===2)return "FINAL";
+  return `TOP ${teamCount}`;
+}
+function createKnockoutStage(teamIds,stageNo){
+  const n=teamIds.length,stage=knockoutStageName(n),out=[];
+  for(let i=0;i<n/2;i++){
+    out.push({
+      id:`RKO-${stageNo}-${i+1}`,competition:"relampago",phase:"knockout",stage,round:stageNo,
+      homeTeamId:Number(teamIds[i]),awayTeamId:Number(teamIds[n-1-i]),
+      homeScore:null,awayScore:null,status:"scheduled",
+      submittedByTeamId:null,submittedByUserId:null,submittedAt:null,
+      confirmedByTeamId:null,confirmedAt:null,disputeNote:null,winnerTeamId:null
+    });
+  }
+  return out;
+}
+function maybeAdvanceRelampago(st){
+  const r=ensureRelampago(st);
+  if(r.status!=="active")return;
+  const league=r.matches.filter(m=>m.phase==="league");
+  const kos=r.matches.filter(m=>m.phase==="knockout");
+  if(!kos.length){
+    if(league.length && league.every(m=>m.status==="confirmed")){
+      const standings=relampagoStandings(st);
+      const q=Math.min(Number(r.qualifiers)||8,standings.length);
+      const seeded=standings.slice(0,q).map(x=>x.id);
+      if(seeded.length>=2 && isPowerOfTwo(seeded.length)){
+        const first=createKnockoutStage(seeded,1);
+        r.matches.push(...first);
+        r.phase="knockout";
+        st.log.unshift(`⚡ Relámpago: ${knockoutStageName(seeded.length)} generados automáticamente`);
+      }
+    }
+    return;
+  }
+  const maxRound=Math.max(...kos.map(m=>Number(m.round)||1));
+  const current=kos.filter(m=>Number(m.round)===maxRound);
+  if(!current.length || !current.every(m=>m.status==="confirmed"))return;
+  if(current.length===1){
+    const final=current[0];
+    r.championTeamId=Number(final.winnerTeamId);
+    r.status="completed";
+    r.phase="champion";
+    r.completedAt=new Date().toISOString();
+    const club=(st.teams||[]).find(t=>Number(t.id)===Number(r.championTeamId));
+    st.log.unshift(`🏆 ${club?.name||"Club"} campeón de ${r.name}`);
+    return;
+  }
+  const nextAlready=kos.some(m=>Number(m.round)===maxRound+1);
+  if(nextAlready)return;
+  const winners=current.map(m=>Number(m.winnerTeamId));
+  // Keep bracket path stable: winners remain in the order of their source matches.
+  const next=[];
+  const stageName=knockoutStageName(winners.length);
+  for(let i=0;i<winners.length;i+=2){
+    next.push({
+      id:`RKO-${maxRound+1}-${i/2+1}`,competition:"relampago",phase:"knockout",stage:stageName,round:maxRound+1,
+      homeTeamId:winners[i],awayTeamId:winners[i+1],
+      homeScore:null,awayScore:null,status:"scheduled",
+      submittedByTeamId:null,submittedByUserId:null,submittedAt:null,
+      confirmedByTeamId:null,confirmedAt:null,disputeNote:null,winnerTeamId:null
+    });
+  }
+  r.matches.push(...next);
+  st.log.unshift(`⚡ Relámpago: ${stageName} generado automáticamente`);
+}
+function relampagoMatch(st,id){
+  const r=ensureRelampago(st);
+  return r.matches.find(m=>String(m.id)===String(id));
+}
+
 app.get("/api/info",(req,res)=>res.json({online:true,registrationUrl:`${req.protocol}://${req.get("host")}/register.html`,appUrl:`${req.protocol}://${req.get("host")}/`}));
 app.get("/api/health",(req,res)=>res.json({ok:true,db:usePostgres?"postgres":"local"}));
 
@@ -273,7 +428,9 @@ app.post("/api/admin/clean-league",auth,adminOnly,async(req,res)=>{
  try{
    await mutate(x=>{
      x.teams=[];x.players=[];x.playerRequests=[];x.dtRequests=[];x.picks=[];x.skips=[];x.fixtures=[];
-     x.paused=false;x.scouting={};x.combine={};x.log=["Liga limpiada por administrador"];
+     x.paused=false;x.scouting={};x.combine={};
+     if(!x.rulebook)x.rulebook={title:"REGLAMENTO FC26-27",updatedAt:null,updatedBy:null,sections:[]};
+     x.log=["Liga limpiada por administrador"];
    });
    if(!usePostgres){
      localUsers=localUsers.filter(u=>u.role==="admin"); saveLocal();
@@ -399,6 +556,169 @@ app.post("/api/admin/matches/:id/resolve",auth,adminOnly,async(req,res)=>{
 });
 
 
+
+app.get("/api/rulebook",async(req,res)=>{
+  try{
+    const st=(await getStore()).state;
+    res.json({rulebook:st.rulebook||{title:"REGLAMENTO FC26-27",sections:[]}});
+  }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.put("/api/admin/rulebook",auth,adminOnly,async(req,res)=>{
+  try{
+    const rb=req.body?.rulebook;
+    if(!rb||typeof rb!=="object"||!Array.isArray(rb.sections))
+      return res.status(400).json({error:"invalid_rulebook"});
+    const safe={
+      title:String(rb.title||"REGLAMENTO FC26-27").slice(0,80),
+      updatedAt:new Date().toISOString(),
+      updatedBy:req.user.username||"admin",
+      sections:rb.sections.slice(0,30).map((sec,i)=>({
+        id:String(sec.id||`section-${i+1}`).slice(0,60),
+        title:String(sec.title||`Sección ${i+1}`).slice(0,120),
+        body:String(sec.body||"").slice(0,10000)
+      }))
+    };
+    await mutate(x=>{
+      x.rulebook=safe;
+      x.log.unshift(`Reglamento actualizado por ${safe.updatedBy}`);
+    });
+    res.json({ok:true,rulebook:safe});
+  }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+
+app.post("/api/admin/relampago/start",auth,adminOnly,async(req,res)=>{
+  try{
+    const st=(await getStore()).state;
+    const approved=new Set((st.teams||[]).filter(t=>t.approved).map(t=>Number(t.id)));
+    const teamIds=[...new Set((req.body?.teamIds||[]).map(Number))].filter(id=>approved.has(id));
+    const leagueRounds=Math.max(1,Math.min(Number(req.body?.leagueRounds)||5,Math.max(1,teamIds.length-1)));
+    const qualifiers=Number(req.body?.qualifiers)||8;
+    if(teamIds.length<4)return res.status(400).json({error:"minimum_4_teams"});
+    if(!isPowerOfTwo(qualifiers)||qualifiers>teamIds.length||qualifiers<2)
+      return res.status(400).json({error:"invalid_qualifiers"});
+    await mutate(x=>{
+      const r=ensureRelampago(x);
+      r.name=String(req.body?.name||"RELÁMPAGO FC26-27").slice(0,80);
+      r.status="active";r.phase="league";r.teamIds=teamIds;
+      r.leagueRounds=leagueRounds;r.qualifiers=qualifiers;
+      r.matches=relampagoLeagueSchedule(teamIds,leagueRounds);
+      r.championTeamId=null;r.startedAt=new Date().toISOString();r.completedAt=null;
+      x.log.unshift(`⚡ ${r.name} iniciado con ${teamIds.length} clubes`);
+    });
+    res.json({ok:true});
+  }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.post("/api/admin/relampago/reset",auth,adminOnly,async(req,res)=>{
+  try{
+    await mutate(x=>{
+      const old=ensureRelampago(x);
+      const name=old.name||"RELÁMPAGO FC26-27";
+      x.relampago=defaultRelampago();
+      x.relampago.name=name;
+      x.log.unshift("⚡ Relámpago reiniciado por administrador");
+    });
+    res.json({ok:true});
+  }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.post("/api/relampago/matches/:id/submit",auth,async(req,res)=>{
+  try{
+    if(!["admin","dt","player"].includes(req.user.role))return res.status(403).json({error:"forbidden"});
+    const hs=scoreValue(req.body?.homeScore),as=scoreValue(req.body?.awayScore);
+    if(hs===null||as===null)return res.status(400).json({error:"invalid_score"});
+    const st=(await getStore()).state,m=relampagoMatch(st,req.params.id);
+    if(!m)return res.status(404).json({error:"not_found"});
+    if(m.phase==="knockout"&&hs===as)return res.status(400).json({error:"knockout_draw_not_allowed"});
+    const teamId=req.user.role==="admin"?Number(req.body?.teamId||m.homeTeamId):accountTeamId(req.user,st);
+    if(req.user.role!=="admin"&&teamId!==Number(m.homeTeamId)&&teamId!==Number(m.awayTeamId))
+      return res.status(403).json({error:"not_your_match"});
+    await mutate(x=>{
+      const mm=relampagoMatch(x,req.params.id);
+      mm.homeScore=hs;mm.awayScore=as;mm.status="pending_confirmation";
+      mm.submittedByTeamId=teamId;mm.submittedByUserId=req.user.id;mm.submittedAt=new Date().toISOString();
+      mm.confirmedByTeamId=null;mm.confirmedAt=null;mm.disputeNote=null;mm.winnerTeamId=null;
+      const ht=x.teams.find(t=>Number(t.id)===Number(mm.homeTeamId))?.name||"Local";
+      const at=x.teams.find(t=>Number(t.id)===Number(mm.awayTeamId))?.name||"Visitante";
+      x.log.unshift(`⚡ Resultado enviado: ${ht} ${hs}-${as} ${at}`);
+    });
+    res.json({ok:true});
+  }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.post("/api/relampago/matches/:id/confirm",auth,async(req,res)=>{
+  try{
+    if(!["admin","dt","player"].includes(req.user.role))return res.status(403).json({error:"forbidden"});
+    const st=(await getStore()).state,m=relampagoMatch(st,req.params.id);
+    if(!m)return res.status(404).json({error:"not_found"});
+    if(m.status!=="pending_confirmation")return res.status(400).json({error:"not_pending"});
+    const teamId=req.user.role==="admin"?null:accountTeamId(req.user,st);
+    if(req.user.role!=="admin"){
+      if(teamId!==Number(m.homeTeamId)&&teamId!==Number(m.awayTeamId))
+        return res.status(403).json({error:"not_your_match"});
+      if(Number(teamId)===Number(m.submittedByTeamId))
+        return res.status(403).json({error:"opponent_must_confirm"});
+    }
+    await mutate(x=>{
+      const mm=relampagoMatch(x,req.params.id);
+      if(mm.phase==="knockout"&&Number(mm.homeScore)===Number(mm.awayScore))throw new Error("knockout_draw_not_allowed");
+      mm.status="confirmed";mm.confirmedByTeamId=teamId;mm.confirmedAt=new Date().toISOString();
+      if(mm.phase==="knockout")mm.winnerTeamId=Number(mm.homeScore)>Number(mm.awayScore)?Number(mm.homeTeamId):Number(mm.awayTeamId);
+      const ht=x.teams.find(t=>Number(t.id)===Number(mm.homeTeamId))?.name||"Local";
+      const at=x.teams.find(t=>Number(t.id)===Number(mm.awayTeamId))?.name||"Visitante";
+      x.log.unshift(`⚡ Resultado confirmado: ${ht} ${mm.homeScore}-${mm.awayScore} ${at}`);
+      maybeAdvanceRelampago(x);
+    });
+    res.json({ok:true});
+  }catch(e){
+    if(e.message==="knockout_draw_not_allowed")return res.status(400).json({error:e.message});
+    res.status(500).json({error:"server_error"})
+  }
+});
+
+app.post("/api/relampago/matches/:id/dispute",auth,async(req,res)=>{
+  try{
+    if(!["admin","dt","player"].includes(req.user.role))return res.status(403).json({error:"forbidden"});
+    const st=(await getStore()).state,m=relampagoMatch(st,req.params.id);
+    if(!m)return res.status(404).json({error:"not_found"});
+    const teamId=req.user.role==="admin"?null:accountTeamId(req.user,st);
+    if(req.user.role!=="admin"&&teamId!==Number(m.homeTeamId)&&teamId!==Number(m.awayTeamId))
+      return res.status(403).json({error:"not_your_match"});
+    await mutate(x=>{
+      const mm=relampagoMatch(x,req.params.id);
+      mm.status="disputed";mm.disputeNote=String(req.body?.note||"El marcador no coincide").slice(0,250);
+      mm.confirmedByTeamId=null;mm.confirmedAt=null;mm.winnerTeamId=null;
+      x.log.unshift(`⚡ Resultado en disputa: ${mm.id}`);
+    });
+    res.json({ok:true});
+  }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.post("/api/admin/relampago/matches/:id/resolve",auth,adminOnly,async(req,res)=>{
+  try{
+    const hs=scoreValue(req.body?.homeScore),as=scoreValue(req.body?.awayScore);
+    if(hs===null||as===null)return res.status(400).json({error:"invalid_score"});
+    await mutate(x=>{
+      const mm=relampagoMatch(x,req.params.id);
+      if(!mm)throw new Error("not_found");
+      if(mm.phase==="knockout"&&hs===as)throw new Error("knockout_draw_not_allowed");
+      mm.homeScore=hs;mm.awayScore=as;mm.status="confirmed";
+      mm.confirmedByTeamId=null;mm.confirmedAt=new Date().toISOString();mm.disputeNote=null;
+      mm.winnerTeamId=mm.phase==="knockout"?(hs>as?Number(mm.homeTeamId):Number(mm.awayTeamId)):null;
+      x.log.unshift(`⚡ Admin resolvió ${mm.id}: ${hs}-${as}`);
+      maybeAdvanceRelampago(x);
+    });
+    res.json({ok:true});
+  }catch(e){
+    if(e.message==="not_found")return res.status(404).json({error:"not_found"});
+    if(e.message==="knockout_draw_not_allowed")return res.status(400).json({error:e.message});
+    res.status(500).json({error:"server_error"})
+  }
+});
+
+
 app.get("/api/state",async(req,res)=>{try{res.json(await getStore())}catch{res.status(500).json({error:"database_error"})}});
 app.put("/api/state",auth,async(req,res)=>{
  try{
@@ -411,4 +731,4 @@ app.put("/api/state",auth,async(req,res)=>{
 app.get("/app.html",(req,res)=>res.sendFile(path.join(ROOT,"app.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"index.html")));
 
-initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.1.0 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
+initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.2.0 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
