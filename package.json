@@ -1,8 +1,8 @@
 {
   "name": "pinto-fc26-v10-online",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
-  "description": "PINTO FC26 1.4.0 Relampago Pro: check-in, draw, two legs, penalties and champions history",
+  "description": "PINTO FC26 1.4.1 Relampago mobile admin panel",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

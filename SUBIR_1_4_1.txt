@@ -1,0 +1,16 @@
+PINTO FC26 1.4.1 — RELÁMPAGO ADMIN MÓVIL
+
+CORRECCIÓN:
+- En celular, la cuenta Admin ahora ve un panel propio dentro de RELÁMPAGO.
+- Accesos rápidos: Inscripciones, Equipos, Sorteo y Bracket.
+- Resumen móvil: estado, cantidad de equipos, check-ins y fase.
+- Botón móvil de Realizar Sorteo.
+- Botón móvil de Iniciar Relámpago.
+- El panel no depende del menú de escritorio.
+- Mantiene todas las funciones de 1.4.0.
+
+ACTUALIZA EN GITHUB:
+1. Reemplaza app.html, server.js y package.json.
+2. Commit changes.
+3. Espera Railway Online.
+4. En celular, cierra y vuelve a abrir la página para evitar caché.

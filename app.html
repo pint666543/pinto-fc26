@@ -363,6 +363,21 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
 .relTrophyBadge{display:inline-flex;align-items:center;gap:5px;border:1px solid #5d4d17;background:#1b1705;border-radius:999px;padding:4px 8px;color:#ffd95a;font-size:10px;font-weight:900;margin-left:6px}
 @media(max-width:760px){.relDrawBox{align-items:stretch;flex-direction:column}.relHistoryGrid{grid-template-columns:1fr}.relDrawBox .btn{width:100%}}
 
+
+.relMobileAdminPanel{display:none}
+@media(max-width:760px){
+  .relMobileAdminPanel:not(.hidden){display:block!important}
+  .relMobileAdminGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .relMobileAdminGrid .btn{width:100%}
+  .relMobileStatusCard{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .relMobileStatusCard>div{border:1px solid #213d47;background:#071219;border-radius:10px;padding:10px}
+  .relMobileStatusCard span{display:block;font-size:9px;color:#7f929a;text-transform:uppercase;letter-spacing:.08em}
+  .relMobileStatusCard b{display:block;margin-top:3px;font-size:14px}
+  .relMobileAdminPanel .actions{display:grid;grid-template-columns:1fr;gap:8px}
+  .relMobileAdminPanel .actions .btn{width:100%}
+  .relMobileAdminDetails{margin-top:10px}
+}
+
 </style>
 </head>
 <body><div id="app" class="app">
@@ -519,7 +534,39 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
 
   <div id="relChampionBox" class="relChampion panel body hidden"></div>
 
-  <div id="relAdminSetup" class="panel body hidden" style="margin-top:12px">
+  
+  <div id="relMobileAdminPanel" class="panel body hidden relMobileAdminPanel" style="margin-top:12px">
+    <div class="sectionHead">
+      <div>
+        <div class="eyebrow">ADMIN MÓVIL</div>
+        <h3>CONTROL RELÁMPAGO</h3>
+      </div>
+      <span class="tag">ADMIN</span>
+    </div>
+
+    <div class="relMobileAdminGrid">
+      <button class="btn secondary" type="button" id="relMobileShowRegistrations">📋 INSCRIPCIONES</button>
+      <button class="btn secondary" type="button" id="relMobileShowTeams">🛡 EQUIPOS</button>
+      <button class="btn secondary" type="button" id="relMobileShowDraw">🎲 SORTEO</button>
+      <button class="btn secondary" type="button" id="relMobileShowBracket">⚔ BRACKET</button>
+    </div>
+
+    <div class="relMobileStatusCard">
+      <div><span>Estado</span><b id="relMobileStatus">—</b></div>
+      <div><span>Equipos</span><b id="relMobileTeamsCount">0</b></div>
+      <div><span>Check-in</span><b id="relMobileCheckinCount">0</b></div>
+      <div><span>Fase</span><b id="relMobilePhase">—</b></div>
+    </div>
+
+    <div class="actions" style="margin-top:10px">
+      <button class="btn secondary" type="button" id="relMobileDrawBtn">🎲 REALIZAR SORTEO</button>
+      <button class="btn primary" type="button" id="relMobileStartBtn">⚡ INICIAR RELÁMPAGO</button>
+    </div>
+
+    <div id="relMobileAdminDetails" class="relMobileAdminDetails"></div>
+  </div>
+
+<div id="relAdminSetup" class="panel body hidden" style="margin-top:12px">
     <div class="sectionHead">
       <div><div class="eyebrow">CONTROL ADMIN</div><h3>CONFIGURAR TORNEO</h3></div>
       <span class="tag">SOLO ADMIN</span>
@@ -1270,9 +1317,77 @@ document.getElementById("relRegisterTeamBtn")?.addEventListener("click",register
 document.getElementById("relCheckinBtn")?.addEventListener("click",checkinRelTeam);
 document.getElementById("relDrawBtn")?.addEventListener("click",runRelDraw);
 
+
+function relMobileAdminDetails(mode){
+  const box=document.getElementById("relMobileAdminDetails");
+  if(!box)return;
+  const r=relData();
+  if(mode==="registrations"){
+    const regs=r.registrations||[];
+    box.innerHTML=regs.length?regs.map(x=>{
+      const club=relTeam(x.teamId);
+      const ci=x.checkedIn?"✅ CHECK-IN":"⏳ SIN CHECK-IN";
+      return `<div class="relMatch" style="grid-template-columns:1fr auto">
+        <div><b>${club?.name||"Club"}</b><div class="muted">${x.status.toUpperCase()} • ${ci}</div></div>
+        <div>${x.status==="pending"?`<button class="btn primary" data-reg-approve="${x.id}">APROBAR</button> <button class="btn danger" data-reg-reject="${x.id}">RECHAZAR</button>`:""}</div>
+      </div>`;
+    }).join(""):'<div class="muted">No hay inscripciones todavía.</div>';
+    document.querySelectorAll("[data-reg-approve]").forEach(b=>b.onclick=()=>reviewRelRegistration(b.dataset.regApprove,"approve"));
+    document.querySelectorAll("[data-reg-reject]").forEach(b=>b.onclick=()=>reviewRelRegistration(b.dataset.regReject,"reject"));
+  }else if(mode==="teams"){
+    const ids=r.teamIds||[];
+    box.innerHTML=ids.length?ids.map(id=>{
+      const club=relTeam(id);
+      const reg=(r.registrations||[]).find(x=>Number(x.teamId)===Number(id)&&x.status==="approved");
+      return `<div class="relMatch" style="grid-template-columns:1fr auto"><div><b>${club?.name||"Club"}</b><div class="muted">${reg?.checkedIn?"✅ PRESENTE":"⏳ SIN CHECK-IN"}</div></div><span class="tag">#${id}</span></div>`;
+    }).join(""):'<div class="muted">No hay equipos seleccionados.</div>';
+  }else if(mode==="draw"){
+    const draw=r.drawOrder||[];
+    box.innerHTML=draw.length?`<div class="relDrawResult">${draw.map((id,i)=>`<span class="relDrawChip">${i+1}. ${relTeam(id)?.name||"Club"}</span>`).join("")}</div>`:'<div class="muted">Todavía no se ha realizado el sorteo.</div>';
+  }else if(mode==="bracket"){
+    const kos=(r.matches||[]).filter(m=>m.phase==="knockout");
+    box.innerHTML=kos.length?kos.map(m=>relMatchCard(m,currentAccountTeamId())).join(""):'<div class="muted">Las eliminatorias todavía no han empezado.</div>';
+    bindRelMatchButtons();
+  }
+}
+function renderRelMobileAdmin(){
+  const panel=document.getElementById("relMobileAdminPanel");
+  if(!panel)return;
+  panel.classList.toggle("hidden",!isAdmin());
+  if(!isAdmin())return;
+  const r=relData();
+  const status=document.getElementById("relMobileStatus");
+  const teams=document.getElementById("relMobileTeamsCount");
+  const checkin=document.getElementById("relMobileCheckinCount");
+  const phase=document.getElementById("relMobilePhase");
+  if(status)status.textContent=(r.status||"—").toUpperCase();
+  if(teams)teams.textContent=String((r.teamIds||[]).length);
+  if(checkin)checkin.textContent=String((r.registrations||[]).filter(x=>x.status==="approved"&&x.checkedIn).length);
+  if(phase)phase.textContent=(r.phase||"—").toUpperCase();
+
+  const startBtn=document.getElementById("relMobileStartBtn");
+  const drawBtn=document.getElementById("relMobileDrawBtn");
+  if(startBtn){
+    startBtn.disabled=r.status!=="not_started";
+    startBtn.textContent=r.status==="not_started"?"⚡ INICIAR RELÁMPAGO":"⚡ TORNEO INICIADO";
+  }
+  if(drawBtn)drawBtn.disabled=r.status!=="not_started";
+}
+document.getElementById("relMobileShowRegistrations")?.addEventListener("click",()=>relMobileAdminDetails("registrations"));
+document.getElementById("relMobileShowTeams")?.addEventListener("click",()=>relMobileAdminDetails("teams"));
+document.getElementById("relMobileShowDraw")?.addEventListener("click",()=>relMobileAdminDetails("draw"));
+document.getElementById("relMobileShowBracket")?.addEventListener("click",()=>relMobileAdminDetails("bracket"));
+document.getElementById("relMobileDrawBtn")?.addEventListener("click",runRelDraw);
+document.getElementById("relMobileStartBtn")?.addEventListener("click",()=>{
+  const btn=document.getElementById("relStartBtn");
+  if(btn){btn.click();return}
+  alert("Abre la configuración del torneo para seleccionar equipos antes de iniciarlo.");
+});
+
 function renderRelampago(){
   const r=relData(),matches=r.matches||[],teamId=currentAccountTeamId();
   renderRelRegistration();
+  renderRelMobileAdmin();
   const teamCount=document.getElementById("relTeamCount");
   if(!teamCount)return;
   teamCount.textContent=(r.teamIds||[]).length;
