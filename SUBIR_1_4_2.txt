@@ -1,0 +1,17 @@
+PINTO FC26 1.4.2 — MOBILE ADMIN HARD FIX
+
+CORRECCIÓN PRINCIPAL:
+- Se encontró el fallo real que detenía el render de Relámpago en móvil:
+  el código usaba currentUser, variable que no existía.
+- Se reemplazó por authUser, que es la sesión real de la aplicación.
+- El Panel Admin móvil ahora se renderiza ANTES del bloque DT.
+- Si la cuenta es Admin, el panel se fuerza visible en móvil.
+- Detección Admin reforzada.
+- Muestra la etiqueta ADMIN ACTIVO para confirmar que la app reconoció la sesión.
+
+ACTUALIZA EN GITHUB:
+1. Reemplaza app.html, server.js y package.json.
+2. Commit changes.
+3. Espera Railway Online.
+4. En iPhone: cierra Safari por completo y vuelve a abrir la página.
+5. Entra a RELÁMPAGO. Debes ver CONTROL RELÁMPAGO / ADMIN ACTIVO antes de Clasificación.

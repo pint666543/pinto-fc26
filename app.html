@@ -541,7 +541,7 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
         <div class="eyebrow">ADMIN MÓVIL</div>
         <h3>CONTROL RELÁMPAGO</h3>
       </div>
-      <span class="tag">ADMIN</span>
+      <span class="tag" id="relMobileAdminVerified">ADMIN ACTIVO</span>
     </div>
 
     <div class="relMobileAdminGrid">
@@ -916,7 +916,7 @@ function authHeaders(){return authToken?{"Authorization":"Bearer "+authToken}:{}
 if(!authToken||!authUser){location.replace("/");}
 role=authUser?.role==="admin"?"admin":authUser?.role==="viewer"?"viewer":authUser?.role==="dt"?Number(authUser?.teamId):"player";
 document.getElementById("logout").addEventListener("click",()=>{localStorage.removeItem("pinto_auth_token");localStorage.removeItem("pinto_auth_user");location.replace("/")});
-function isAdmin(){return role==="admin"} function isViewer(){return role==="viewer"||role==="player"} function myTeam(){return typeof role==="number"?state.teams.find(t=>t.id===role):null}
+function isAdmin(){return role==="admin"||String(authUser?.role||"").toLowerCase()==="admin"} function isViewer(){return role==="viewer"||role==="player"} function myTeam(){return typeof role==="number"?state.teams.find(t=>t.id===role):null}
 function updateRole(){document.getElementById("roleChip").textContent=isAdmin()?"COMISIONADO":role==="player"?"JUGADOR":role==="viewer"?"ESPECTADOR":myTeam()?`${myTeam().dt} • ${myTeam().name}`:"DT";document.querySelectorAll(".adminOnly").forEach(e=>e.classList.toggle("hidden",!isAdmin()))}
 
 document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>setPage(b.dataset.page)));
@@ -1239,7 +1239,7 @@ function relPhaseText(r){
 function renderRelRegistration(){
   const r=relData(), box=document.getElementById("relDtRegistration");
   if(!box)return;
-  const isDt=currentUser?.role==="dt";
+  const isDt=authUser?.role==="dt";
   box.classList.toggle("hidden",!isDt);
   const regBtn=document.getElementById("relRegisterTeamBtn");
   const checkBtn=document.getElementById("relCheckinBtn");
@@ -1353,8 +1353,11 @@ function relMobileAdminDetails(mode){
 function renderRelMobileAdmin(){
   const panel=document.getElementById("relMobileAdminPanel");
   if(!panel)return;
-  panel.classList.toggle("hidden",!isAdmin());
-  if(!isAdmin())return;
+  const adminNow=isAdmin();
+  panel.classList.toggle("hidden",!adminNow);
+  panel.style.display=adminNow?"block":"none";
+  panel.setAttribute("aria-hidden",adminNow?"false":"true");
+  if(!adminNow)return;
   const r=relData();
   const status=document.getElementById("relMobileStatus");
   const teams=document.getElementById("relMobileTeamsCount");
@@ -1386,8 +1389,8 @@ document.getElementById("relMobileStartBtn")?.addEventListener("click",()=>{
 
 function renderRelampago(){
   const r=relData(),matches=r.matches||[],teamId=currentAccountTeamId();
-  renderRelRegistration();
   renderRelMobileAdmin();
+  renderRelRegistration();
   const teamCount=document.getElementById("relTeamCount");
   if(!teamCount)return;
   teamCount.textContent=(r.teamIds||[]).length;
@@ -1610,7 +1613,7 @@ function renderClubHub(){
   if(view)view.innerHTML=`<p>${profile.bio||"Este club todavía no ha agregado una descripción."}</p><div class="muted" style="margin-top:10px">Capitán: ${profile.captain||"—"}${profile.social?" • "+profile.social:""}</div>`;
 
   const editBtn=document.getElementById("editClubProfileBtn");
-  const canEdit=isAdmin()||(currentUser?.role==="dt"&&Number(currentAccountTeamId())===selectedClubHubId);
+  const canEdit=isAdmin()||(authUser?.role==="dt"&&Number(currentAccountTeamId())===selectedClubHubId);
   if(editBtn)editBtn.classList.toggle("hidden",!canEdit);
 
   const matches=allConfirmedClubMatches(selectedClubHubId);
