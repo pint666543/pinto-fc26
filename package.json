@@ -1,8 +1,8 @@
 {
   "name": "pinto-fc26-v10-online",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "private": true,
-  "description": "PINTO FC26 1.6.0 Tournament Builder",
+  "description": "PINTO FC26 1.6.1 Unified Responsive Design for desktop, tablet and mobile",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

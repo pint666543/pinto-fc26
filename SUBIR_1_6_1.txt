@@ -1,0 +1,24 @@
+PINTO FC26 1.6.1 — UNIFIED RESPONSIVE
+
+OBJETIVO:
+PC, tablet y celular ahora comparten la misma identidad visual.
+No se modificó la base de datos ni la lógica de torneos.
+
+CAMBIOS:
+- Mismos paneles, tarjetas, bordes, colores y botones en todos los dispositivos.
+- PC usa el mismo diseño móvil aprovechando más espacio con columnas.
+- Tablet tiene navegación compacta y contenido de 2 columnas.
+- Celular conserva barra inferior y organiza los mismos componentes en 1 columna.
+- Relámpago, Organizador, Club Center, Liga y Admin mantienen el mismo estilo.
+- Tablas tienen desplazamiento horizontal en celular.
+- Barra lateral de PC modernizada.
+- Encabezado unificado.
+- Se reducen conflictos entre estilos antiguos y parches móviles.
+- Navegación ORGANIZADOR disponible tanto en escritorio como móvil según permisos.
+
+ACTUALIZA:
+1. Reemplaza index.html, app.html, server.js y package.json en GitHub.
+2. Commit changes.
+3. Espera Railway Online.
+4. Recarga PC con Ctrl+F5.
+5. En iPhone cierra Safari completamente y vuelve a abrir la página.
