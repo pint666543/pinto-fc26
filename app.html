@@ -977,11 +977,62 @@ button,input,select,textarea{
   }
 }
 
+
+/* ===== PINTO FC26 1.6.3 — MOBILE COMPONENTS FIX ===== */
+.mobileEntityCards{display:none}
+@media(max-width:760px){
+  #page-players .desktopDataTable,
+  #page-clubs .desktopDataTable{display:none!important}
+  #page-players .mobileEntityCards,
+  #page-clubs .mobileEntityCards{display:grid!important;grid-template-columns:1fr!important;gap:10px;width:100%}
+  .mobileEntityCard{
+    width:100%;
+    min-width:0;
+    border:1px solid #1c414b;
+    border-radius:12px;
+    background:linear-gradient(145deg,#07151b,#051015);
+    padding:13px;
+    overflow:hidden;
+  }
+  .mobileEntityCardHead{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+    padding-bottom:10px;margin-bottom:8px;border-bottom:1px solid #173943;
+  }
+  .mobileEntityCardHead b{font-size:17px;color:#f5fafb;overflow-wrap:anywhere}
+  .mobileEntityCardHead .tag{flex:0 0 auto}
+  .mobileEntityFields{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+  .mobileEntityField{
+    min-width:0;padding:9px 0;border-bottom:1px solid #102d35;
+  }
+  .mobileEntityField span{
+    display:block;color:#7f969f;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px
+  }
+  .mobileEntityField b{
+    display:block;color:#e9f1f3;font-size:13px;overflow-wrap:anywhere;word-break:break-word
+  }
+  .mobileEntityActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .mobileEntityActions .btn{width:100%!important;flex:1 1 100%!important}
+  .mobileEntityEmpty{padding:20px 10px;text-align:center;color:#81959d}
+  #page-players>.panel,#page-clubs>.panel{padding:10px!important}
+  .fixtureCard,.relMatch,.orgMatch,.requestCard,.row{
+    max-width:100%!important;min-width:0!important
+  }
+  .row{
+    grid-template-columns:minmax(0,.55fr) minmax(0,1.45fr) auto!important;
+  }
+  .row>*{min-width:0;overflow-wrap:anywhere}
+  .requestActions,.fixtureActions,.relMatchActions{display:flex!important;flex-wrap:wrap!important;gap:7px!important}
+  .requestActions .btn,.fixtureActions .btn,.relMatchActions .btn{flex:1 1 130px!important}
+}
+@media(max-width:374px){
+  .mobileEntityFields{grid-template-columns:1fr!important}
+}
+
 </style>
 </head>
 <body><div id="app" class="app">
   <header class="top">
-    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.6.2 PLATFORM</div></div></div>
+    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.6.3 PLATFORM</div></div></div>
     <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="relampago">⚡ RELÁMPAGO</button><button class="organizerNav hidden" data-page="organizer">🏆 ORGANIZADOR</button><button data-page="stats">STATS</button><button data-page="rules">REGLAMENTO</button><button data-page="admin">ADMIN PANEL</button></nav>
     <div class="topUser"><span id="syncBadge" class="syncBadge">● CONECTADO</span><div id="roleChip" class="roleChip"></div><button class="btn secondary" id="logout">SALIR</button></div>
   </header>
@@ -994,7 +1045,7 @@ button,input,select,textarea{
     <button data-page="clubs">🛡 &nbsp; CLUBS</button><button data-page="warroom">⌂ &nbsp; WAR ROOM</button><button data-page="board">▦ &nbsp; DRAFT BOARD</button><button data-page="combine">◈ &nbsp; COMBINE</button><button data-page="formation">⚽ &nbsp; XI BUILDER</button><button data-page="relampago">⚡ &nbsp; RELÁMPAGO FC26-27</button><button class="organizerNav hidden" data-page="organizer">🏆 &nbsp; ORGANIZADOR</button><button data-page="stats">📊 &nbsp; ESTADÍSTICAS</button><button data-page="rules">📘 &nbsp; REGLAMENTO 26-27</button>
     <button data-page="requests" class="adminOnly">✦ &nbsp; REGISTRATION</button>
     <button data-page="admin" class="adminOnly">⚙ &nbsp; PANEL ADMIN</button>
-    <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">RELEASE 1.6.2 • ONLINE</div></div></div>
+    <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">RELEASE 1.6.3 • ONLINE</div></div></div>
   </aside>
 
   <main class="main">
@@ -1027,9 +1078,15 @@ button,input,select,textarea{
 
     <section class="page" id="page-tracker"><div class="pageTitle">LIVE TRACKER</div><div class="panel body" id="fullTracker"></div></section>
 
-    <section class="page" id="page-players"><div class="pageTitle">PLAYERS</div><div class="panel body"><table class="table" id="playersTable"></table></div></section>
+    <section class="page" id="page-players"><div class="pageTitle">PLAYERS</div><div class="panel body">
+<div class="desktopDataTable tableWrap"><table class="table" id="playersTable"></table></div>
+<div id="playersMobileCards" class="mobileEntityCards"></div>
+</div></section>
 
-    <section class="page" id="page-clubs"><div class="pageTitle">CLUBS</div><div class="panel body"><table class="table" id="clubsTable"></table></div></section>
+    <section class="page" id="page-clubs"><div class="pageTitle">CLUBS</div><div class="panel body">
+<div class="desktopDataTable tableWrap"><table class="table" id="clubsTable"></table></div>
+<div id="clubsMobileCards" class="mobileEntityCards"></div>
+</div></section>
 
     
 <section class="page" id="page-league">
@@ -2335,6 +2392,51 @@ async function submitOrganizerResult(matchId){const t=selectedOrganizerTournamen
 async function deleteOrganizerTournament(){const t=selectedOrganizerTournament();if(!t||!confirm(`¿Eliminar ${t.name}?`))return;const r=await fetch(`/api/organizer/tournaments/${t.id}`,{method:"DELETE",headers:authHeaders()});if(r.ok){selectedOrganizerTournamentId=null;await loadOrganizerTournaments()}}
 document.getElementById("orgCreateTournament")?.addEventListener("click",createOrganizerTournament);document.getElementById("orgSaveTeams")?.addEventListener("click",saveOrganizerTeams);document.getElementById("orgStartTournament")?.addEventListener("click",startOrganizerTournament);document.getElementById("orgDeleteTournament")?.addEventListener("click",deleteOrganizerTournament);
 
+
+function renderMobileEntityCards(){
+  const pc=document.getElementById("playersMobileCards");
+  const cc=document.getElementById("clubsMobileCards");
+  if(pc){
+    pc.innerHTML=(state.players||[]).length?(state.players||[]).map(p=>`
+      <article class="mobileEntityCard">
+        <div class="mobileEntityCardHead"><b>${p.name||"Jugador"}</b><span class="tag">${p.status||"—"}</span></div>
+        <div class="mobileEntityFields">
+          <div class="mobileEntityField"><span>EA ID</span><b>${p.ea||"—"}</b></div>
+          <div class="mobileEntityField"><span>Posición</span><b>${p.pos||"—"}</b></div>
+          <div class="mobileEntityField"><span>2ª posición</span><b>${p.sec||"—"}</b></div>
+          <div class="mobileEntityField"><span>País</span><b>${p.country||"—"}</b></div>
+          <div class="mobileEntityField"><span>Plataforma</span><b>${p.platform||"—"}</b></div>
+          <div class="mobileEntityField"><span>Estado</span><b>${p.status||"—"}</b></div>
+        </div>
+        ${isAdmin()?`<div class="mobileEntityActions"><button type="button" class="btn danger" data-mobile-delete-player="${p.id}">ELIMINAR JUGADOR</button></div>`:""}
+      </article>`).join(""):'<div class="mobileEntityEmpty">No hay jugadores registrados.</div>';
+    document.querySelectorAll("[data-mobile-delete-player]").forEach(b=>b.onclick=()=>deletePlayerAdmin(b.dataset.mobileDeletePlayer));
+  }
+  if(cc){
+    const clubs=(state.teams||[]).filter(t=>t.approved);
+    cc.innerHTML=clubs.length?clubs.map(t=>`
+      <article class="mobileEntityCard">
+        <div class="mobileEntityCardHead"><b>${t.name||"Club"}</b><span class="tag">${t.abbr||"CLUB"}</span></div>
+        <div class="mobileEntityFields">
+          <div class="mobileEntityField"><span>DT</span><b>${t.dt||"—"}</b></div>
+          <div class="mobileEntityField"><span>Abreviatura</span><b>${t.abbr||"—"}</b></div>
+          <div class="mobileEntityField"><span>Plantilla</span><b>${(state.picks||[]).filter(p=>Number(p.teamId)===Number(t.id)).length}</b></div>
+          <div class="mobileEntityField"><span>Estado</span><b>ACTIVO</b></div>
+        </div>
+        <div class="mobileEntityActions">
+          <button type="button" class="btn secondary" data-mobile-open-club="${t.id}">VER PERFIL</button>
+          ${isAdmin()?`<button type="button" class="btn danger" data-mobile-delete-club="${t.id}">ELIMINAR CLUB</button>`:""}
+        </div>
+      </article>`).join(""):'<div class="mobileEntityEmpty">No hay clubes aprobados.</div>';
+    document.querySelectorAll("[data-mobile-delete-club]").forEach(b=>b.onclick=()=>deleteClubAdmin(b.dataset.mobileDeleteClub));
+    document.querySelectorAll("[data-mobile-open-club]").forEach(b=>b.onclick=()=>{
+      selectedClubId=Number(b.dataset.mobileOpenClub);
+      renderClubHub();
+      setPage("clubhub");
+    });
+  }
+}
+
 function render(){
  
  const i=currentInfo(),mine=myTeam();
@@ -2361,6 +2463,7 @@ function render(){
  document.querySelectorAll("[data-delete-player]").forEach(b=>b.onclick=()=>deletePlayerAdmin(b.dataset.deletePlayer));
  clubsTable.innerHTML='<tr><th>Club</th><th>DT</th><th>Abbr</th><th>Plantilla</th>'+(isAdmin()?'<th>Acción</th>':'')+'</tr>'+state.teams.filter(t=>t.approved).map(t=>`<tr><td data-label="Club">${t.name}</td><td data-label="DT">${t.dt}</td><td data-label="Abbr">${t.abbr}</td><td data-label="Plantilla">${state.picks.filter(p=>p.teamId===t.id).length}</td>${isAdmin()?`<td data-label="Acción"><button class="btn danger" data-delete-club="${t.id}">ELIMINAR</button></td>`:""}</tr>`).join("");
  document.querySelectorAll("[data-delete-club]").forEach(b=>b.onclick=()=>deleteClubAdmin(b.dataset.deleteClub));
+ renderMobileEntityCards();
  leagueBody.innerHTML=state.teams.filter(t=>t.approved).map((t,idx)=>`<tr><td>${idx+1}</td><td>${t.name}</td><td>${t.dt}</td><td>${state.picks.filter(p=>p.teamId===t.id).length}</td><td class="green">ACTIVO</td></tr>`).join("");
  if(isAdmin()) renderPendingAccounts();
  adminLog.innerHTML=state.log.slice(0,25).map((l,idx)=>`<div class="row"><b>${idx+1}</b><span>${l}</span><span></span></div>`).join("")||'<div class="muted">Sin actividad.</div>';

@@ -1,0 +1,19 @@
+PINTO FC26 1.6.3 — MOBILE COMPONENTS FIX
+
+CORREGIDO:
+- JUGADORES ya no usa la tabla de PC en celulares.
+- Cada jugador aparece como tarjeta móvil.
+- EA ID, posiciones, país, plataforma y estado se acomodan al ancho.
+- Botón ELIMINAR JUGADOR ya no se sale de la pantalla.
+- CLUBES también usa tarjetas móviles.
+- Botón VER PERFIL y ELIMINAR CLUB adaptados.
+- En PC se conserva la tabla profesional.
+- Botones de resultados/solicitudes se envuelven si no caben.
+- Teléfonos muy pequeños pasan campos a una sola columna.
+- Conserva todas las mejoras Adaptive Mobile 1.6.2.
+
+ACTUALIZA:
+1. Reemplaza index.html, app.html, server.js y package.json.
+2. Commit changes.
+3. Espera Railway Online.
+4. Cierra Safari completamente y vuelve a entrar.
