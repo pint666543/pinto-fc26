@@ -1,0 +1,14 @@
+PINTO FC26 1.6.0 — TOURNAMENT BUILDER
+
+NUEVO EN PANEL ORGANIZADOR:
+- Formato: eliminación directa o grupos + playoffs.
+- Torneo público o privado.
+- Inscripción abierta o solo invitación.
+- Código automático para torneos privados.
+- Fecha/hora de cierre de inscripción.
+- Opción ida y vuelta.
+- Opción penales.
+- Resumen visual de configuración dentro de cada torneo.
+- Compatible con torneos creados en 1.5.0.
+
+ACTUALIZA: index.html, app.html, server.js y package.json en GitHub; Commit changes; espera Railway Online.

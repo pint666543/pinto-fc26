@@ -1,8 +1,8 @@
 {
   "name": "pinto-fc26-v10-online",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "private": true,
-  "description": "PINTO FC26 1.5.0 Organizer Panel",
+  "description": "PINTO FC26 1.6.0 Tournament Builder",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

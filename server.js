@@ -925,8 +925,18 @@ function organizerMaybeAdvance(t){
 }
 app.get("/api/organizer/tournaments",auth,organizerOnly,async(req,res)=>{try{const st=(await getStore()).state,all=ensureOrganizerTournaments(st);res.json({tournaments:req.user.role==="admin"?all:all.filter(t=>String(t.ownerUserId)===String(req.user.id))})}catch{res.status(500).json({error:"server_error"})}});
 app.post("/api/organizer/tournaments",auth,organizerOnly,async(req,res)=>{try{
- const name=String(req.body?.name||"").trim().slice(0,80),size=Number(req.body?.size)||8;if(!name)return res.status(400).json({error:"name_required"});if(![4,8,16].includes(size))return res.status(400).json({error:"invalid_size"});
- const id=`T${Date.now()}`;await mutate(st=>{ensureOrganizerTournaments(st).unshift({id,name,size,status:"draft",ownerUserId:req.user.id,ownerUsername:req.user.username,createdAt:new Date().toISOString(),teamIds:[],matches:[],championTeamId:null,completedAt:null});st.log.unshift(`🏆 Torneo creado: ${name}`)});res.json({ok:true,id})
+ const name=String(req.body?.name||"").trim().slice(0,80),size=Number(req.body?.size)||8;
+ const format=["knockout","groups_playoffs"].includes(req.body?.format)?req.body.format:"knockout";
+ const visibility=["public","private"].includes(req.body?.visibility)?req.body.visibility:"public";
+ const twoLegged=!!req.body?.twoLegged,penalties=req.body?.penalties!==false;
+ const registrationMode=["open","invite"].includes(req.body?.registrationMode)?req.body.registrationMode:"open";
+ const deadline=String(req.body?.deadline||"").slice(0,32);
+ if(!name)return res.status(400).json({error:"name_required"});if(![4,8,16].includes(size))return res.status(400).json({error:"invalid_size"});
+ const id=`T${Date.now()}`,inviteCode=visibility==="private"?Math.random().toString(36).slice(2,8).toUpperCase():null;
+ await mutate(st=>{ensureOrganizerTournaments(st).unshift({id,name,size,format,visibility,twoLegged,penalties,registrationMode,deadline,inviteCode,status:"draft",ownerUserId:req.user.id,ownerUsername:req.user.username,createdAt:new Date().toISOString(),teamIds:[],applications:[],matches:[],championTeamId:null,completedAt:null});st.log.unshift(`🏆 Torneo creado: ${name}`)});res.json({ok:true,id})
+}catch{res.status(500).json({error:"server_error"})}});app.put("/api/organizer/tournaments/:id/config",auth,organizerOnly,async(req,res)=>{try{
+ const st=(await getStore()).state,t=ensureOrganizerTournaments(st).find(x=>String(x.id)===String(req.params.id));if(!t)return res.status(404).json({error:"not_found"});if(!organizerAllowed(req.user,t))return res.status(403).json({error:"forbidden"});if(t.status!=="draft")return res.status(400).json({error:"already_started"});
+ await mutate(x=>{const tt=ensureOrganizerTournaments(x).find(v=>String(v.id)===String(req.params.id));if(req.body?.name)tt.name=String(req.body.name).trim().slice(0,80);if(["knockout","groups_playoffs"].includes(req.body?.format))tt.format=req.body.format;if(["public","private"].includes(req.body?.visibility))tt.visibility=req.body.visibility;tt.twoLegged=!!req.body?.twoLegged;tt.penalties=req.body?.penalties!==false;if(["open","invite"].includes(req.body?.registrationMode))tt.registrationMode=req.body.registrationMode;tt.deadline=String(req.body?.deadline||"").slice(0,32);if(tt.visibility==="private"&&!tt.inviteCode)tt.inviteCode=Math.random().toString(36).slice(2,8).toUpperCase()});res.json({ok:true})
 }catch{res.status(500).json({error:"server_error"})}});
 app.put("/api/organizer/tournaments/:id/teams",auth,organizerOnly,async(req,res)=>{try{
  const st=(await getStore()).state,t=ensureOrganizerTournaments(st).find(x=>String(x.id)===String(req.params.id));if(!t)return res.status(404).json({error:"not_found"});if(!organizerAllowed(req.user,t))return res.status(403).json({error:"forbidden"});if(t.status!=="draft")return res.status(400).json({error:"already_started"});
@@ -959,4 +969,4 @@ app.put("/api/state",auth,async(req,res)=>{
 app.get("/app.html",(req,res)=>res.sendFile(path.join(ROOT,"app.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"index.html")));
 
-initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.5.0 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
+initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.6.0 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
