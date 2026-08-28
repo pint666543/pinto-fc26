@@ -1,0 +1,21 @@
+PINTO FC26 1.4.0 — RELÁMPAGO PRO
+
+NUEVO EN RELÁMPAGOS:
+- CHECK-IN para DT después de aprobar su inscripción.
+- Panel Admin muestra quién está presente y quién falta.
+- Sorteo oficial automático con animación y orden aleatorio.
+- Eliminatorias con IDA Y VUELTA en octavos, cuartos y semifinales.
+- Final a partido único.
+- Marcador global automático para decidir quién avanza.
+- Penales cuando el global termina empatado.
+- Bracket sigue avanzando automáticamente.
+- Historial permanente de campeones.
+- Trofeos de Relámpago visibles en Club Center.
+- Compatible con estados antiguos de la base de datos.
+
+ACTUALIZACIÓN:
+1. Abre tu repo pinto-fc26 en GitHub.
+2. Add file → Upload files.
+3. Sube/reemplaza: app.html, server.js y package.json.
+4. Commit changes.
+5. Railway se actualizará automáticamente.

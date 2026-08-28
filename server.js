@@ -198,17 +198,27 @@ function defaultRelampago(){
   return {
     name:"RELÁMPAGO FC26-27",status:"not_started",phase:"registration",
     teamIds:[],registrations:[],leagueRounds:5,qualifiers:8,matches:[],
-    championTeamId:null,startedAt:null,completedAt:null
+    championTeamId:null,startedAt:null,completedAt:null,
+    drawOrder:[],drawCompletedAt:null,twoLegged:true,history:[]
   };
 }
 function ensureRelampago(st){
   if(!st.relampago || typeof st.relampago!=="object")st.relampago=defaultRelampago();
-  if(!Array.isArray(st.relampago.teamIds))st.relampago.teamIds=[];
-  if(!Array.isArray(st.relampago.registrations))st.relampago.registrations=[];
-  if(!Array.isArray(st.relampago.matches))st.relampago.matches=[];
-  return st.relampago;
+  const r=st.relampago;
+  if(!Array.isArray(r.teamIds))r.teamIds=[];
+  if(!Array.isArray(r.registrations))r.registrations=[];
+  if(!Array.isArray(r.matches))r.matches=[];
+  if(!Array.isArray(r.drawOrder))r.drawOrder=[];
+  if(!Array.isArray(r.history))r.history=[];
+  if(typeof r.twoLegged!=="boolean")r.twoLegged=true;
+  return r;
 }
 function isPowerOfTwo(n){return n>=2 && (n&(n-1))===0}
+function shuffleIds(ids){
+  const a=[...ids];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+  return a;
+}
 function relampagoLeagueSchedule(teamIds,maxRounds){
   let ids=teamIds.map(Number);
   if(ids.length%2===1)ids.push(null);
@@ -256,18 +266,39 @@ function knockoutStageName(teamCount){
   if(teamCount===2)return "FINAL";
   return `TOP ${teamCount}`;
 }
-function createKnockoutStage(teamIds,stageNo){
+function makeKoMatch({id,tieId,stage,stageNo,leg,home,away}){
+  return {
+    id,tieId,competition:"relampago",phase:"knockout",stage,round:stageNo,leg,
+    homeTeamId:Number(home),awayTeamId:Number(away),
+    homeScore:null,awayScore:null,penaltyHome:null,penaltyAway:null,status:"scheduled",
+    submittedByTeamId:null,submittedByUserId:null,submittedAt:null,
+    confirmedByTeamId:null,confirmedAt:null,disputeNote:null,winnerTeamId:null
+  };
+}
+function createKnockoutStage(teamIds,stageNo,twoLegged=true){
   const n=teamIds.length,stage=knockoutStageName(n),out=[];
   for(let i=0;i<n/2;i++){
-    out.push({
-      id:`RKO-${stageNo}-${i+1}`,competition:"relampago",phase:"knockout",stage,round:stageNo,
-      homeTeamId:Number(teamIds[i]),awayTeamId:Number(teamIds[n-1-i]),
-      homeScore:null,awayScore:null,status:"scheduled",
-      submittedByTeamId:null,submittedByUserId:null,submittedAt:null,
-      confirmedByTeamId:null,confirmedAt:null,disputeNote:null,winnerTeamId:null
-    });
+    const a=Number(teamIds[i]),b=Number(teamIds[n-1-i]),tieId=`RTIE-${stageNo}-${i+1}`;
+    const useTwoLegs=twoLegged && n>2;
+    out.push(makeKoMatch({id:`RKO-${stageNo}-${i+1}-L1`,tieId,stage,stageNo,leg:1,home:a,away:b}));
+    if(useTwoLegs)out.push(makeKoMatch({id:`RKO-${stageNo}-${i+1}-L2`,tieId,stage,stageNo,leg:2,home:b,away:a}));
   }
   return out;
+}
+function knockoutTieResult(st,tieId){
+  const r=ensureRelampago(st);
+  const games=r.matches.filter(m=>m.phase==="knockout"&&String(m.tieId||m.id)===String(tieId));
+  if(!games.length||!games.every(m=>m.status==="confirmed"))return {ready:false};
+  const teams=[...new Set(games.flatMap(m=>[Number(m.homeTeamId),Number(m.awayTeamId)]))];
+  if(teams.length!==2)return {ready:false};
+  const agg=Object.fromEntries(teams.map(id=>[id,0]));
+  games.forEach(m=>{agg[Number(m.homeTeamId)]+=Number(m.homeScore)||0;agg[Number(m.awayTeamId)]+=Number(m.awayScore)||0});
+  if(agg[teams[0]]>agg[teams[1]])return {ready:true,winner:teams[0],aggregate:agg};
+  if(agg[teams[1]]>agg[teams[0]])return {ready:true,winner:teams[1],aggregate:agg};
+  const decider=[...games].sort((a,b)=>(Number(b.leg)||1)-(Number(a.leg)||1))[0];
+  const ph=Number(decider.penaltyHome),pa=Number(decider.penaltyAway);
+  if(!Number.isInteger(ph)||!Number.isInteger(pa)||ph<0||pa<0||ph===pa)return {ready:true,needsPenalties:true,aggregate:agg,deciderId:decider.id};
+  return {ready:true,winner:ph>pa?Number(decider.homeTeamId):Number(decider.awayTeamId),aggregate:agg,penalties:[ph,pa]};
 }
 function maybeAdvanceRelampago(st){
   const r=ensureRelampago(st);
@@ -278,10 +309,14 @@ function maybeAdvanceRelampago(st){
     if(league.length && league.every(m=>m.status==="confirmed")){
       const standings=relampagoStandings(st);
       const q=Math.min(Number(r.qualifiers)||8,standings.length);
-      const seeded=standings.slice(0,q).map(x=>x.id);
+      let seeded=standings.slice(0,q).map(x=>x.id);
+      if(r.drawOrder?.length){
+        const qset=new Set(seeded.map(Number));
+        const drawn=r.drawOrder.map(Number).filter(id=>qset.has(id));
+        seeded=[...drawn,...seeded.filter(id=>!drawn.includes(Number(id)))];
+      }
       if(seeded.length>=2 && isPowerOfTwo(seeded.length)){
-        const first=createKnockoutStage(seeded,1);
-        r.matches.push(...first);
+        r.matches.push(...createKnockoutStage(seeded,1,r.twoLegged));
         r.phase="knockout";
         st.log.unshift(`⚡ Relámpago: ${knockoutStageName(seeded.length)} generados automáticamente`);
       }
@@ -290,34 +325,25 @@ function maybeAdvanceRelampago(st){
   }
   const maxRound=Math.max(...kos.map(m=>Number(m.round)||1));
   const current=kos.filter(m=>Number(m.round)===maxRound);
-  if(!current.length || !current.every(m=>m.status==="confirmed"))return;
-  if(current.length===1){
-    const final=current[0];
-    r.championTeamId=Number(final.winnerTeamId);
-    r.status="completed";
-    r.phase="champion";
-    r.completedAt=new Date().toISOString();
+  const ties=[...new Set(current.map(m=>String(m.tieId||m.id)))];
+  const results=ties.map(id=>knockoutTieResult(st,id));
+  if(results.some(x=>!x.ready||x.needsPenalties||!x.winner))return;
+  if(ties.length===1){
+    r.championTeamId=Number(results[0].winner);
+    r.status="completed";r.phase="champion";r.completedAt=new Date().toISOString();
     const club=(st.teams||[]).find(t=>Number(t.id)===Number(r.championTeamId));
+    const already=r.history.some(x=>String(x.completedAt)===String(r.completedAt));
+    if(!already)r.history.unshift({
+      id:`RH-${Date.now()}`,name:r.name,championTeamId:r.championTeamId,
+      championName:club?.name||"Club",completedAt:r.completedAt,teamCount:r.teamIds.length
+    });
     st.log.unshift(`🏆 ${club?.name||"Club"} campeón de ${r.name}`);
     return;
   }
-  const nextAlready=kos.some(m=>Number(m.round)===maxRound+1);
-  if(nextAlready)return;
-  const winners=current.map(m=>Number(m.winnerTeamId));
-  // Keep bracket path stable: winners remain in the order of their source matches.
-  const next=[];
-  const stageName=knockoutStageName(winners.length);
-  for(let i=0;i<winners.length;i+=2){
-    next.push({
-      id:`RKO-${maxRound+1}-${i/2+1}`,competition:"relampago",phase:"knockout",stage:stageName,round:maxRound+1,
-      homeTeamId:winners[i],awayTeamId:winners[i+1],
-      homeScore:null,awayScore:null,status:"scheduled",
-      submittedByTeamId:null,submittedByUserId:null,submittedAt:null,
-      confirmedByTeamId:null,confirmedAt:null,disputeNote:null,winnerTeamId:null
-    });
-  }
-  r.matches.push(...next);
-  st.log.unshift(`⚡ Relámpago: ${stageName} generado automáticamente`);
+  if(kos.some(m=>Number(m.round)===maxRound+1))return;
+  const winners=results.map(x=>Number(x.winner));
+  r.matches.push(...createKnockoutStage(winners,maxRound+1,r.twoLegged));
+  st.log.unshift(`⚡ Relámpago: ${knockoutStageName(winners.length)} generado automáticamente`);
 }
 function relampagoMatch(st,id){
   const r=ensureRelampago(st);
@@ -684,13 +710,63 @@ app.post("/api/admin/relampago/registrations/:id/:action",auth,adminOnly,async(r
   }
 });
 
+
+app.post("/api/relampago/checkin",auth,async(req,res)=>{
+  try{
+    if(req.user.role!=="dt")return res.status(403).json({error:"dt_only"});
+    const st=(await getStore()).state,teamId=accountTeamId(req.user,st),r=ensureRelampago(st);
+    if(!teamId)return res.status(400).json({error:"no_club"});
+    if(r.status!=="not_started")return res.status(400).json({error:"checkin_closed"});
+    const reg=(r.registrations||[]).find(x=>Number(x.teamId)===Number(teamId)&&x.status==="approved");
+    if(!reg)return res.status(400).json({error:"registration_not_approved"});
+    await mutate(x=>{
+      const rr=ensureRelampago(x);
+      const rg=rr.registrations.find(v=>String(v.id)===String(reg.id));
+      rg.checkedIn=true;rg.checkedInAt=new Date().toISOString();
+      const club=(x.teams||[]).find(t=>Number(t.id)===Number(teamId));
+      x.log.unshift(`✅ Check-in Relámpago: ${club?.name||"Club"}`);
+    });
+    res.json({ok:true});
+  }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.post("/api/admin/relampago/draw",auth,adminOnly,async(req,res)=>{
+  try{
+    await mutate(x=>{
+      const r=ensureRelampago(x);
+      if(r.status!=="not_started")throw new Error("already_started");
+      const checked=(r.registrations||[]).filter(v=>v.status==="approved"&&v.checkedIn).map(v=>Number(v.teamId));
+      const source=checked.length>=4?checked:r.teamIds.map(Number);
+      if(source.length<4)throw new Error("minimum_4_teams");
+      r.drawOrder=shuffleIds([...new Set(source)]);
+      r.drawCompletedAt=new Date().toISOString();
+      x.log.unshift(`🎲 Sorteo Relámpago realizado con ${r.drawOrder.length} clubes`);
+    });
+    res.json({ok:true});
+  }catch(e){
+    if(e.message==="minimum_4_teams")return res.status(400).json({error:e.message});
+    if(e.message==="already_started")return res.status(400).json({error:e.message});
+    res.status(500).json({error:"server_error"})
+  }
+});
+
 app.post("/api/admin/relampago/start",auth,adminOnly,async(req,res)=>{
   try{
     const st=(await getStore()).state;
+    const rr=ensureRelampago(st);
     const approved=new Set((st.teams||[]).filter(t=>t.approved).map(t=>Number(t.id)));
-    const teamIds=[...new Set((req.body?.teamIds||[]).map(Number))].filter(id=>approved.has(id));
+    let teamIds=[...new Set((req.body?.teamIds||[]).map(Number))].filter(id=>approved.has(id));
+    const checked=new Set((rr.registrations||[]).filter(v=>v.status==="approved"&&v.checkedIn).map(v=>Number(v.teamId)));
+    const registeredSelected=teamIds.filter(id=>(rr.registrations||[]).some(v=>Number(v.teamId)===id&&v.status==="approved"));
+    if(registeredSelected.some(id=>!checked.has(id)))return res.status(400).json({error:"checkin_required"});
+    if(rr.drawOrder?.length){
+      const set=new Set(teamIds);
+      const ordered=rr.drawOrder.map(Number).filter(id=>set.has(id));
+      teamIds=[...ordered,...teamIds.filter(id=>!ordered.includes(id))];
+    }
     const leagueRounds=Math.max(1,Math.min(Number(req.body?.leagueRounds)||5,Math.max(1,teamIds.length-1)));
     const qualifiers=Number(req.body?.qualifiers)||8;
+    const twoLegged=req.body?.twoLegged!==false;
     if(teamIds.length<4)return res.status(400).json({error:"minimum_4_teams"});
     if(!isPowerOfTwo(qualifiers)||qualifiers>teamIds.length||qualifiers<2)
       return res.status(400).json({error:"invalid_qualifiers"});
@@ -698,7 +774,7 @@ app.post("/api/admin/relampago/start",auth,adminOnly,async(req,res)=>{
       const r=ensureRelampago(x);
       r.name=String(req.body?.name||"RELÁMPAGO FC26-27").slice(0,80);
       r.status="active";r.phase="league";r.teamIds=teamIds;
-      r.leagueRounds=leagueRounds;r.qualifiers=qualifiers;
+      r.leagueRounds=leagueRounds;r.qualifiers=qualifiers;r.twoLegged=twoLegged;
       r.matches=relampagoLeagueSchedule(teamIds,leagueRounds);
       r.championTeamId=null;r.startedAt=new Date().toISOString();r.completedAt=null;
       x.log.unshift(`⚡ ${r.name} iniciado con ${teamIds.length} clubes`);
@@ -711,9 +787,9 @@ app.post("/api/admin/relampago/reset",auth,adminOnly,async(req,res)=>{
   try{
     await mutate(x=>{
       const old=ensureRelampago(x);
-      const name=old.name||"RELÁMPAGO FC26-27";
+      const name=old.name||"RELÁMPAGO FC26-27",history=Array.isArray(old.history)?old.history:[];
       x.relampago=defaultRelampago();
-      x.relampago.name=name;
+      x.relampago.name=name;x.relampago.history=history;
       x.log.unshift("⚡ Relámpago reiniciado por administrador");
     });
     res.json({ok:true});
@@ -725,15 +801,17 @@ app.post("/api/relampago/matches/:id/submit",auth,async(req,res)=>{
     if(!["admin","dt","player"].includes(req.user.role))return res.status(403).json({error:"forbidden"});
     const hs=scoreValue(req.body?.homeScore),as=scoreValue(req.body?.awayScore);
     if(hs===null||as===null)return res.status(400).json({error:"invalid_score"});
+    const ph=req.body?.penaltyHome===""||req.body?.penaltyHome==null?null:scoreValue(req.body?.penaltyHome);
+    const pa=req.body?.penaltyAway===""||req.body?.penaltyAway==null?null:scoreValue(req.body?.penaltyAway);
+    if((ph===null)!==(pa===null))return res.status(400).json({error:"invalid_penalties"});
     const st=(await getStore()).state,m=relampagoMatch(st,req.params.id);
     if(!m)return res.status(404).json({error:"not_found"});
-    if(m.phase==="knockout"&&hs===as)return res.status(400).json({error:"knockout_draw_not_allowed"});
     const teamId=req.user.role==="admin"?Number(req.body?.teamId||m.homeTeamId):accountTeamId(req.user,st);
     if(req.user.role!=="admin"&&teamId!==Number(m.homeTeamId)&&teamId!==Number(m.awayTeamId))
       return res.status(403).json({error:"not_your_match"});
     await mutate(x=>{
       const mm=relampagoMatch(x,req.params.id);
-      mm.homeScore=hs;mm.awayScore=as;mm.status="pending_confirmation";
+      mm.homeScore=hs;mm.awayScore=as;mm.penaltyHome=ph;mm.penaltyAway=pa;mm.status="pending_confirmation";
       mm.submittedByTeamId=teamId;mm.submittedByUserId=req.user.id;mm.submittedAt=new Date().toISOString();
       mm.confirmedByTeamId=null;mm.confirmedAt=null;mm.disputeNote=null;mm.winnerTeamId=null;
       const ht=x.teams.find(t=>Number(t.id)===Number(mm.homeTeamId))?.name||"Local";
@@ -752,16 +830,19 @@ app.post("/api/relampago/matches/:id/confirm",auth,async(req,res)=>{
     if(m.status!=="pending_confirmation")return res.status(400).json({error:"not_pending"});
     const teamId=req.user.role==="admin"?null:accountTeamId(req.user,st);
     if(req.user.role!=="admin"){
-      if(teamId!==Number(m.homeTeamId)&&teamId!==Number(m.awayTeamId))
-        return res.status(403).json({error:"not_your_match"});
-      if(Number(teamId)===Number(m.submittedByTeamId))
-        return res.status(403).json({error:"opponent_must_confirm"});
+      if(teamId!==Number(m.homeTeamId)&&teamId!==Number(m.awayTeamId))return res.status(403).json({error:"not_your_match"});
+      if(Number(teamId)===Number(m.submittedByTeamId))return res.status(403).json({error:"opponent_must_confirm"});
     }
     await mutate(x=>{
       const mm=relampagoMatch(x,req.params.id);
-      if(mm.phase==="knockout"&&Number(mm.homeScore)===Number(mm.awayScore))throw new Error("knockout_draw_not_allowed");
       mm.status="confirmed";mm.confirmedByTeamId=teamId;mm.confirmedAt=new Date().toISOString();
-      if(mm.phase==="knockout")mm.winnerTeamId=Number(mm.homeScore)>Number(mm.awayScore)?Number(mm.homeTeamId):Number(mm.awayTeamId);
+      if(mm.phase==="knockout"){
+        const tie=knockoutTieResult(x,String(mm.tieId||mm.id));
+        if(tie.ready&&tie.needsPenalties)throw new Error("penalties_required");
+        if(tie.ready&&tie.winner){
+          x.relampago.matches.filter(g=>String(g.tieId||g.id)===String(mm.tieId||mm.id)).forEach(g=>g.winnerTeamId=Number(tie.winner));
+        }
+      }
       const ht=x.teams.find(t=>Number(t.id)===Number(mm.homeTeamId))?.name||"Local";
       const at=x.teams.find(t=>Number(t.id)===Number(mm.awayTeamId))?.name||"Visitante";
       x.log.unshift(`⚡ Resultado confirmado: ${ht} ${mm.homeScore}-${mm.awayScore} ${at}`);
@@ -769,7 +850,7 @@ app.post("/api/relampago/matches/:id/confirm",auth,async(req,res)=>{
     });
     res.json({ok:true});
   }catch(e){
-    if(e.message==="knockout_draw_not_allowed")return res.status(400).json({error:e.message});
+    if(e.message==="penalties_required")return res.status(400).json({error:e.message});
     res.status(500).json({error:"server_error"})
   }
 });
@@ -796,20 +877,25 @@ app.post("/api/admin/relampago/matches/:id/resolve",auth,adminOnly,async(req,res
   try{
     const hs=scoreValue(req.body?.homeScore),as=scoreValue(req.body?.awayScore);
     if(hs===null||as===null)return res.status(400).json({error:"invalid_score"});
+    const ph=req.body?.penaltyHome===""||req.body?.penaltyHome==null?null:scoreValue(req.body?.penaltyHome);
+    const pa=req.body?.penaltyAway===""||req.body?.penaltyAway==null?null:scoreValue(req.body?.penaltyAway);
     await mutate(x=>{
       const mm=relampagoMatch(x,req.params.id);
       if(!mm)throw new Error("not_found");
-      if(mm.phase==="knockout"&&hs===as)throw new Error("knockout_draw_not_allowed");
-      mm.homeScore=hs;mm.awayScore=as;mm.status="confirmed";
+      mm.homeScore=hs;mm.awayScore=as;mm.penaltyHome=ph;mm.penaltyAway=pa;mm.status="confirmed";
       mm.confirmedByTeamId=null;mm.confirmedAt=new Date().toISOString();mm.disputeNote=null;
-      mm.winnerTeamId=mm.phase==="knockout"?(hs>as?Number(mm.homeTeamId):Number(mm.awayTeamId)):null;
+      if(mm.phase==="knockout"){
+        const tie=knockoutTieResult(x,String(mm.tieId||mm.id));
+        if(tie.ready&&tie.needsPenalties)throw new Error("penalties_required");
+        if(tie.ready&&tie.winner)x.relampago.matches.filter(g=>String(g.tieId||g.id)===String(mm.tieId||mm.id)).forEach(g=>g.winnerTeamId=Number(tie.winner));
+      }
       x.log.unshift(`⚡ Admin resolvió ${mm.id}: ${hs}-${as}`);
       maybeAdvanceRelampago(x);
     });
     res.json({ok:true});
   }catch(e){
     if(e.message==="not_found")return res.status(404).json({error:"not_found"});
-    if(e.message==="knockout_draw_not_allowed")return res.status(400).json({error:e.message});
+    if(e.message==="penalties_required")return res.status(400).json({error:e.message});
     res.status(500).json({error:"server_error"})
   }
 });
@@ -827,4 +913,4 @@ app.put("/api/state",auth,async(req,res)=>{
 app.get("/app.html",(req,res)=>res.sendFile(path.join(ROOT,"app.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"index.html")));
 
-initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.3.0 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
+initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.4.0 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});

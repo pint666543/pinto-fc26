@@ -346,6 +346,23 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
 @media(max-width:760px){.clubHubGrid{grid-template-columns:1fr}.clubRosterGrid{grid-template-columns:1fr 1fr}.clubHubHero h2{font-size:25px}}
 @media(max-width:420px){.clubRosterGrid{grid-template-columns:1fr}}
 
+
+.relProToggle{display:flex;gap:10px;align-items:flex-start;border:1px solid #1b3944;background:#061218;padding:12px;border-radius:10px;cursor:pointer}
+.relProToggle input{margin-top:4px;accent-color:#31ff66}.relProToggle span{display:flex;flex-direction:column;gap:3px}.relProToggle small{color:#82949d}
+.relDrawBox{margin-top:12px;border:1px solid #2d6b3e;background:linear-gradient(135deg,#07160d,#071219);border-radius:12px;padding:13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.relDrawResult{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.relDrawChip{border:1px solid #2d6b3e;background:#081a0d;padding:7px 10px;border-radius:999px;font-size:11px}
+.relDrawResult.drawing .relDrawChip{animation:relDrawPulse .35s ease-in-out infinite alternate}
+@keyframes relDrawPulse{from{transform:translateY(0);filter:brightness(1)}to{transform:translateY(-3px);filter:brightness(1.5)}}
+.relCheckMark{color:#39ff68;font-weight:900}.relNoCheck{color:#ffbf3d;font-weight:800}
+.relLegTag{display:inline-block;font-size:9px;letter-spacing:.08em;border:1px solid #31505d;border-radius:999px;padding:3px 6px;margin-bottom:6px;color:#9db5bf}
+.relPenaltyInputs{display:flex;align-items:center;gap:5px;width:100%;margin-top:5px}.relPenaltyInputs small{font-size:9px;color:#ffce5b;font-weight:900}
+.relPenaltyInputs input{width:48px!important}
+.relHistoryGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.relHistoryCard{border:1px solid #254738;background:linear-gradient(145deg,#07150d,#07131a);border-radius:12px;padding:13px}
+.relHistoryCup{font-size:24px}.relHistoryCard b{display:block;margin-top:5px}.relHistoryCard small{color:#7f929a}
+.relTrophyBadge{display:inline-flex;align-items:center;gap:5px;border:1px solid #5d4d17;background:#1b1705;border-radius:999px;padding:4px 8px;color:#ffd95a;font-size:10px;font-weight:900;margin-left:6px}
+@media(max-width:760px){.relDrawBox{align-items:stretch;flex-direction:column}.relHistoryGrid{grid-template-columns:1fr}.relDrawBox .btn{width:100%}}
+
 </style>
 </head>
 <body><div id="app" class="app">
@@ -494,7 +511,10 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
       <span id="relRegStatusBadge" class="tag">DT</span>
     </div>
     <div id="relRegMessage" class="muted">Inscríbete con el club que tienes asignado como DT.</div>
-    <button class="btn primary" id="relRegisterTeamBtn" style="margin-top:12px">⚡ INSCRIBIR EQUIPO</button>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn primary" id="relRegisterTeamBtn">⚡ INSCRIBIR EQUIPO</button>
+      <button class="btn primary hidden" id="relCheckinBtn">✅ HACER CHECK-IN</button>
+    </div>
   </div>
 
   <div id="relChampionBox" class="relChampion panel body hidden"></div>
@@ -535,6 +555,18 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
       </div>
       <label class="ruleLabel">Clubes participantes</label>
       <div id="relTeamSelector" class="relTeamSelector"></div>
+
+      <label class="relProToggle" style="margin-top:12px">
+        <input id="relTwoLeggedInput" type="checkbox" checked>
+        <span><b>IDA Y VUELTA</b><small>Octavos, cuartos y semifinales a dos partidos. La final es a partido único.</small></span>
+      </label>
+
+      <div class="relDrawBox">
+        <div><div class="eyebrow">SORTEO OFICIAL</div><b>Generar orden aleatorio de cruces</b></div>
+        <button class="btn secondary" id="relDrawBtn" type="button">🎲 REALIZAR SORTEO</button>
+      </div>
+      <div id="relDrawResult" class="relDrawResult"></div>
+
       <div class="actions" style="margin-top:12px">
         <button class="btn primary" id="relStartBtn">⚡ INICIAR RELÁMPAGO</button>
       </div>
@@ -564,6 +596,11 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
   <div class="panel body" style="margin-top:12px">
     <div class="sectionHead"><h3>ELIMINATORIAS</h3><span class="tag">BRACKET AUTOMÁTICO</span></div>
     <div id="relKnockoutBracket" class="relBracket"></div>
+  </div>
+
+  <div class="panel body" style="margin-top:12px">
+    <div class="sectionHead"><h3>🏆 HISTORIAL DE CAMPEONES</h3><span class="tag">PALMARÉS</span></div>
+    <div id="relHistory" class="relHistoryGrid"></div>
   </div>
 </section>
 
@@ -1128,7 +1165,7 @@ setInterval(loadRulebook,5000);
 
 
 function relData(){
-  return state.relampago||{name:"RELÁMPAGO FC26-27",status:"not_started",phase:"registration",teamIds:[],matches:[],qualifiers:8,leagueRounds:5};
+  return state.relampago||{name:"RELÁMPAGO FC26-27",status:"not_started",phase:"registration",teamIds:[],registrations:[],matches:[],qualifiers:8,leagueRounds:5,drawOrder:[],twoLegged:true,history:[]};
 }
 function relTeam(id){return (state.teams||[]).find(t=>Number(t.id)===Number(id))}
 function relStandingsCalc(){
@@ -1157,26 +1194,28 @@ function renderRelRegistration(){
   if(!box)return;
   const isDt=currentUser?.role==="dt";
   box.classList.toggle("hidden",!isDt);
+  const regBtn=document.getElementById("relRegisterTeamBtn");
+  const checkBtn=document.getElementById("relCheckinBtn");
   if(isDt){
-    const tid=currentAccountTeamId();
-    const club=relTeam(tid);
+    const tid=currentAccountTeamId(),club=relTeam(tid);
     const reg=(r.registrations||[]).find(x=>Number(x.teamId)===Number(tid)&&x.status!=="rejected");
-    const btn=document.getElementById("relRegisterTeamBtn");
-    const msg=document.getElementById("relRegMessage");
-    const badge=document.getElementById("relRegStatusBadge");
+    const msg=document.getElementById("relRegMessage"),badge=document.getElementById("relRegStatusBadge");
+    regBtn?.classList.add("hidden");checkBtn?.classList.add("hidden");
     if(!club){
-      msg.textContent="Tu cuenta DT todavía no tiene un club aprobado.";
-      btn.classList.add("hidden");badge.textContent="SIN CLUB";
-    }else if(r.status!=="not_started"&&r.phase!=="registration"){
-      msg.textContent="Las inscripciones para este Relámpago ya están cerradas.";
-      btn.classList.add("hidden");badge.textContent="CERRADO";
+      msg.textContent="Tu cuenta DT todavía no tiene un club aprobado.";badge.textContent="SIN CLUB";
+    }else if(r.status!=="not_started"){
+      msg.textContent="El Relámpago ya comenzó. El check-in está cerrado.";badge.textContent="CERRADO";
     }else if(reg){
-      btn.classList.add("hidden");
-      badge.textContent=reg.status==="approved"?"APROBADO":"PENDIENTE";
-      msg.textContent=reg.status==="approved"?`${club.name} ya está inscrito en el Relámpago.`:`Solicitud enviada para ${club.name}. Esperando aprobación del Admin.`;
+      if(reg.status==="approved"&&!reg.checkedIn){
+        badge.textContent="CHECK-IN";msg.textContent=`${club.name} está aprobado. Confirma que tu equipo está presente antes del torneo.`;
+        checkBtn?.classList.remove("hidden");
+      }else if(reg.status==="approved"&&reg.checkedIn){
+        badge.textContent="✅ PRESENTE";msg.textContent=`${club.name} hizo check-in y está listo para el sorteo.`;
+      }else{
+        badge.textContent="PENDIENTE";msg.textContent=`Solicitud enviada para ${club.name}. Esperando aprobación del Admin.`;
+      }
     }else{
-      btn.classList.remove("hidden");badge.textContent="ABIERTO";
-      msg.textContent=`Club: ${club.name}. Envía la inscripción al torneo.`;
+      regBtn?.classList.remove("hidden");badge.textContent="ABIERTO";msg.textContent=`Club: ${club.name}. Envía la inscripción al torneo.`;
     }
   }
   if(isAdmin()){
@@ -1184,9 +1223,9 @@ function renderRelRegistration(){
     if(list){
       const regs=(r.registrations||[]);
       list.innerHTML=regs.length?regs.map(x=>{
-        const club=relTeam(x.teamId);
+        const club=relTeam(x.teamId),ci=x.checkedIn?'<span class="relCheckMark">✅ CHECK-IN</span>':'<span class="relNoCheck">⏳ SIN CHECK-IN</span>';
         return `<div class="relMatch" style="grid-template-columns:1fr auto">
-          <div><b>${club?.name||"Club"}</b><div class="muted">DT: ${x.dtUsername||"—"} • ${x.status.toUpperCase()}</div></div>
+          <div><b>${club?.name||"Club"}</b><div class="muted">DT: ${x.dtUsername||"—"} • ${x.status.toUpperCase()} • ${x.status==="approved"?ci:"—"}</div></div>
           <div>${x.status==="pending"?`<button class="btn primary" data-reg-approve="${x.id}">APROBAR</button> <button class="btn danger" data-reg-reject="${x.id}">RECHAZAR</button>`:""}</div>
         </div>`;
       }).join(""):'<div class="muted">Todavía no hay solicitudes de DT.</div>';
@@ -1204,12 +1243,32 @@ async function registerRelTeam(){
   }
   await fetchServerState();
 }
+async function checkinRelTeam(){
+  const r=await fetch("/api/relampago/checkin",{method:"POST",headers:authHeaders()});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){
+    const m={registration_not_approved:"Tu inscripción todavía no está aprobada.",checkin_closed:"El check-in ya está cerrado.",no_club:"No tienes un club asignado."};
+    alert(m[j.error]||"No se pudo hacer el check-in.");return;
+  }
+  await fetchServerState();
+}
 async function reviewRelRegistration(id,action){
   const r=await fetch(`/api/admin/relampago/registrations/${id}/${action}`,{method:"POST",headers:authHeaders()});
   if(!r.ok){alert("No se pudo procesar la solicitud.");return}
   await fetchServerState();
 }
+async function runRelDraw(){
+  const box=document.getElementById("relDrawResult");
+  if(box){box.classList.add("drawing");box.innerHTML='<span class="relDrawChip">🎲 SORTEANDO...</span><span class="relDrawChip">⚡ PINTO</span><span class="relDrawChip">🏆 CHAMPIONS</span>'}
+  await new Promise(r=>setTimeout(r,800));
+  const res=await fetch("/api/admin/relampago/draw",{method:"POST",headers:authHeaders()});
+  const j=await res.json().catch(()=>({}));
+  if(!res.ok){if(box)box.classList.remove("drawing");alert(j.error==="minimum_4_teams"?"Necesitas al menos 4 equipos aprobados/check-in para sortear.":"No se pudo realizar el sorteo.");return}
+  await fetchServerState();
+}
 document.getElementById("relRegisterTeamBtn")?.addEventListener("click",registerRelTeam);
+document.getElementById("relCheckinBtn")?.addEventListener("click",checkinRelTeam);
+document.getElementById("relDrawBtn")?.addEventListener("click",runRelDraw);
 
 function renderRelampago(){
   const r=relData(),matches=r.matches||[],teamId=currentAccountTeamId();
@@ -1238,7 +1297,22 @@ function renderRelampago(){
     document.getElementById("relActiveAdmin").classList.toggle("hidden",!active);
     if(!active){
       const approved=(state.teams||[]).filter(t=>t.approved);
-      document.getElementById("relTeamSelector").innerHTML=approved.map(t=>`<label class="relTeamChoice"><input type="checkbox" value="${t.id}" checked><span>${t.name}</span></label>`).join("")||'<div class="muted">Primero aprueba clubes.</div>';
+      const draw=(r.drawOrder||[]).map(Number);
+      const ordered=[...approved].sort((a,b)=>{
+        const ia=draw.indexOf(Number(a.id)),ib=draw.indexOf(Number(b.id));
+        return (ia<0?999:ia)-(ib<0?999:ib);
+      });
+      document.getElementById("relTeamSelector").innerHTML=ordered.map(t=>{
+        const reg=(r.registrations||[]).find(x=>Number(x.teamId)===Number(t.id)&&x.status==="approved");
+        const ready=!reg||reg.checkedIn;
+        return `<label class="relTeamChoice"><input type="checkbox" value="${t.id}" ${ready?"checked":""}><span>${t.name}${reg?` ${reg.checkedIn?"✅":"⏳"}`:""}</span></label>`;
+      }).join("")||'<div class="muted">Primero aprueba clubes.</div>';
+      const drawBox=document.getElementById("relDrawResult");
+      if(drawBox){
+        drawBox.classList.remove("drawing");
+        drawBox.innerHTML=draw.length?draw.map((id,i)=>`<span class="relDrawChip">${i+1}. ${relTeam(id)?.name||"Club"}</span>`).join(""):'<span class="muted">Aún no se ha realizado el sorteo.</span>';
+      }
+      const two=document.getElementById("relTwoLeggedInput");if(two)two.checked=r.twoLegged!==false;
       const q=document.getElementById("relQualifiersInput");
       [...q.options].forEach(o=>o.disabled=Number(o.value)>approved.length);
       const allowed=[16,8,4,2].find(n=>n<=approved.length);
@@ -1289,7 +1363,9 @@ function renderRelampago(){
         const ht=relTeam(m.homeTeamId),at=relTeam(m.awayTeamId),hs=m.homeScore,as=m.awayScore;
         const hw=m.status==="confirmed"&&Number(m.winnerTeamId)===Number(m.homeTeamId);
         const aw=m.status==="confirmed"&&Number(m.winnerTeamId)===Number(m.awayTeamId);
+        const legLabel=`<span class="relLegTag">${Number(m.leg)===2?"VUELTA":"IDA / ÚNICO"}</span>`;
         return `<div class="relBracketGame" data-open-rel-match="${m.id}">
+          ${legLabel}
           <div class="relBracketLine ${hw?"relBracketWinner":""}"><span>${ht?.name||"TBD"}</span><b>${hs??"–"}</b></div>
           <div class="relBracketLine ${aw?"relBracketWinner":""}"><span>${at?.name||"TBD"}</span><b>${as??"–"}</b></div>
           <div class="fixtureStatus ${m.status}" style="margin-top:7px;display:inline-block">${relStatusText(m.status)}</div>
@@ -1298,23 +1374,36 @@ function renderRelampago(){
       }).join("")}</div>`;
     }).join("");
   }
+
+  const history=document.getElementById("relHistory");
+  if(history){
+    const rows=r.history||[];
+    history.innerHTML=rows.length?rows.map(x=>`<div class="relHistoryCard"><div class="relHistoryCup">🏆</div><b>${x.championName||relTeam(x.championTeamId)?.name||"Campeón"}</b><small>${x.name||"RELÁMPAGO"} • ${x.completedAt?new Date(x.completedAt).toLocaleDateString():""}</small></div>`).join(""):'<div class="muted">El primer campeón aparecerá aquí cuando termine un Relámpago.</div>';
+  }
   bindRelMatchButtons();
+}
+function relNeedsPenaltyFields(m){
+  if(m.phase!=="knockout")return false;
+  const tieGames=(relData().matches||[]).filter(x=>String(x.tieId||x.id)===String(m.tieId||m.id));
+  return tieGames.length===1||Number(m.leg)===Math.max(...tieGames.map(x=>Number(x.leg)||1));
 }
 function relMatchActions(m,teamId){
   const involved=isAdmin()||teamId===Number(m.homeTeamId)||teamId===Number(m.awayTeamId);
   if(!involved||m.status==="confirmed")return "";
   const opponentCanConfirm=m.status==="pending_confirmation"&&(isAdmin()||teamId!==Number(m.submittedByTeamId));
   const canSubmit=m.status!=="pending_confirmation"||isAdmin();
+  const pens=relNeedsPenaltyFields(m)?`<div class="relPenaltyInputs"><small>PENALES</small><input type="number" min="0" max="99" id="rph-${m.id}" value="${m.penaltyHome??""}" placeholder="0"><span>-</span><input type="number" min="0" max="99" id="rpa-${m.id}" value="${m.penaltyAway??""}" placeholder="0"></div>`:"";
   return `<div class="relMatchActions">
-    ${canSubmit?`<input type="number" min="0" max="99" id="rhs-${m.id}" value="${m.homeScore??""}" placeholder="0"><span>-</span><input type="number" min="0" max="99" id="ras-${m.id}" value="${m.awayScore??""}" placeholder="0"><button class="btn primary" data-rel-submit="${m.id}">SUBIR</button>`:""}
+    ${canSubmit?`<input type="number" min="0" max="99" id="rhs-${m.id}" value="${m.homeScore??""}" placeholder="0"><span>-</span><input type="number" min="0" max="99" id="ras-${m.id}" value="${m.awayScore??""}" placeholder="0"><button class="btn primary" data-rel-submit="${m.id}">SUBIR</button>${pens}`:""}
     ${opponentCanConfirm?`<button class="btn primary" data-rel-confirm="${m.id}">CONFIRMAR</button><button class="btn danger" data-rel-dispute="${m.id}">NO COINCIDE</button>`:""}
   </div>`;
 }
 function relMatchCard(m,teamId){
   const ht=relTeam(m.homeTeamId),at=relTeam(m.awayTeamId);
   const score=m.homeScore==null?"VS":`${m.homeScore} - ${m.awayScore}`;
+  const leg=m.phase==="knockout"?`<span class="relLegTag">${m.stage||"ELIMINATORIA"} • ${Number(m.leg)===2?"VUELTA":"IDA / PARTIDO ÚNICO"}</span>`:"";
   return `<div class="relMatch">
-    <div class="home">${ht?.name||"LOCAL"}</div><div class="relScore">${score}</div><div class="away">${at?.name||"VISITANTE"}</div>
+    <div class="home">${leg}${ht?.name||"LOCAL"}</div><div class="relScore">${score}</div><div class="away">${at?.name||"VISITANTE"}</div>
     <div class="fixtureStatus ${m.status}">${relStatusText(m.status)}</div>
     ${relMatchActions(m,teamId)}
   </div>`;
@@ -1327,16 +1416,16 @@ function bindRelMatchButtons(){
 async function submitRelMatch(id){
   const hs=Number(document.getElementById("rhs-"+id)?.value),as=Number(document.getElementById("ras-"+id)?.value);
   if(!Number.isInteger(hs)||!Number.isInteger(as)||hs<0||as<0){alert("Escribe un marcador válido.");return}
-  const m=(relData().matches||[]).find(x=>String(x.id)===String(id));
-  if(m?.phase==="knockout"&&hs===as){alert("En eliminatorias tiene que haber un ganador.");return}
-  const r=await fetch(`/api/relampago/matches/${id}/submit`,{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({homeScore:hs,awayScore:as})});
+  const phEl=document.getElementById("rph-"+id),paEl=document.getElementById("rpa-"+id);
+  const penaltyHome=phEl?.value===""||!phEl?null:Number(phEl.value),penaltyAway=paEl?.value===""||!paEl?null:Number(paEl.value);
+  const r=await fetch(`/api/relampago/matches/${id}/submit`,{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({homeScore:hs,awayScore:as,penaltyHome,penaltyAway})});
   const j=await r.json().catch(()=>({}));
-  if(!r.ok){alert(j.error==="knockout_draw_not_allowed"?"En eliminatorias no se permiten empates.":"No se pudo subir el resultado.");return}
+  if(!r.ok){alert(j.error==="invalid_penalties"?"Escribe ambos resultados de penales o deja los dos vacíos.":"No se pudo subir el resultado.");return}
   await fetchServerState();
 }
 async function confirmRelMatch(id){
   const r=await fetch(`/api/relampago/matches/${id}/confirm`,{method:"POST",headers:authHeaders()});
-  if(!r.ok){alert("No se pudo confirmar el resultado.");return}
+  if(!r.ok){const j=await r.json().catch(()=>({}));alert(j.error==="penalties_required"?"El global terminó empatado. Deben registrar el resultado de los penales en el partido decisivo.":"No se pudo confirmar el resultado.");return}
   await fetchServerState();
 }
 async function disputeRelMatch(id){
@@ -1351,12 +1440,16 @@ async function startRelampago(){
   const qualifiers=Number(document.getElementById("relQualifiersInput").value);
   const leagueRounds=Number(document.getElementById("relRoundsInput").value);
   const name=document.getElementById("relNameInput").value.trim()||"RELÁMPAGO FC26-27";
+  const twoLegged=document.getElementById("relTwoLeggedInput")?.checked!==false;
   if(teamIds.length<4){alert("Selecciona al menos 4 clubes.");return}
   if(qualifiers>teamIds.length){alert("No pueden clasificar más clubes de los que participan.");return}
   if(!confirm(`¿Iniciar ${name} con ${teamIds.length} clubes?`))return;
-  const res=await fetch("/api/admin/relampago/start",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({name,teamIds,leagueRounds,qualifiers})});
+  const res=await fetch("/api/admin/relampago/start",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({name,teamIds,leagueRounds,qualifiers,twoLegged})});
   const j=await res.json().catch(()=>({}));
-  if(!res.ok){alert(j.error==="invalid_qualifiers"?"Elige Top 2, 4, 8 o 16 según la cantidad de clubes.":"No se pudo iniciar el torneo.");return}
+  if(!res.ok){
+    const msg=j.error==="invalid_qualifiers"?"Elige Top 2, 4, 8 o 16 según la cantidad de clubes.":j.error==="checkin_required"?"Hay equipos aprobados que todavía no hicieron CHECK-IN.":"No se pudo iniciar el torneo.";
+    alert(msg);return
+  }
   await fetchServerState();
 }
 async function resetRelampago(){
@@ -1393,7 +1486,10 @@ function renderClubHub(){
   const nameEl=document.getElementById("clubHubName");
   const metaEl=document.getElementById("clubHubMeta");
   if(nameEl)nameEl.textContent=club.name;
-  if(metaEl)metaEl.textContent=profile.region||"Club oficial PINTO FC26-27";
+  if(metaEl){
+    const cups=((state.relampago||{}).history||[]).filter(x=>Number(x.championTeamId)===selectedClubHubId).length;
+    metaEl.innerHTML=`${profile.region||"Club oficial PINTO FC26-27"}${cups?` <span class="relTrophyBadge">🏆 RELÁMPAGO ×${cups}</span>`:""}`;
+  }
 
   const view=document.getElementById("clubProfileView");
   if(view)view.innerHTML=`<p>${profile.bio||"Este club todavía no ha agregado una descripción."}</p><div class="muted" style="margin-top:10px">Capitán: ${profile.captain||"—"}${profile.social?" • "+profile.social:""}</div>`;
