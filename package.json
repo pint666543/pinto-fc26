@@ -1,8 +1,8 @@
 {
   "name": "pinto-fc26-v10-online",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "private": true,
-  "description": "PINTO FC26 1.4.2 Mobile Admin hard fix for Relampago",
+  "description": "PINTO FC26 1.5.0 Organizer Panel",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

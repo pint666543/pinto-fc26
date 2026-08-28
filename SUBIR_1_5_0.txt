@@ -1,0 +1,11 @@
+PINTO FC26 1.5.0 — PANEL DE ORGANIZADOR
+- Nuevo rol Organizador de torneos.
+- El Admin aprueba su cuenta.
+- Panel independiente ORGANIZADOR/ORGANIZA.
+- Torneos de 4, 8 o 16 clubes.
+- Selección de clubes aprobados.
+- Sorteo y bracket automáticos.
+- Resultados y avance automático.
+- Campeón automático.
+- Admin global puede ver todos los torneos.
+Sube index.html, app.html, server.js y package.json. Commit changes y espera Railway Online.

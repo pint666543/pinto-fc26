@@ -378,6 +378,12 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
   .relMobileAdminDetails{margin-top:10px}
 }
 
+
+.organizerHero{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(135deg,#06150d,#07131a);border-color:#2b6540}.organizerHero h2{margin:4px 0;font-size:28px}.organizerHeroIcon{font-size:54px}
+.organizerGrid{display:grid;grid-template-columns:.8fr 1.2fr;gap:12px;margin-top:12px}.orgTournamentCard{border:1px solid #203d48;border-radius:12px;padding:12px;background:#07131a;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px}.orgTeamSelector{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}.orgTeamChoice{display:flex;gap:8px;align-items:center;border:1px solid #203d48;background:#07131a;padding:10px;border-radius:10px}.orgTeamChoice input{accent-color:#32ff69}.orgRound{margin-top:15px}.orgMatch{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;border:1px solid #203d48;background:#061119;border-radius:10px;padding:10px;margin-bottom:7px}.orgMatch .away{text-align:right}.orgMatchScore{display:flex;gap:4px;align-items:center}.orgMatchScore input{width:48px!important;text-align:center}.orgChampion{border:1px solid #6a5a16;background:#1a1604;border-radius:14px;padding:18px;text-align:center;margin-top:12px}.orgChampion .cup{font-size:42px}.orgChampion b{display:block;font-size:20px;color:#ffe36b}
+@media(max-width:760px){.organizerGrid{grid-template-columns:1fr}.orgTeamSelector{grid-template-columns:1fr 1fr}.organizerHero h2{font-size:23px}.orgMatch{grid-template-columns:1fr}.orgMatch .away{text-align:left}.mobileBottomNav{overflow-x:auto!important;justify-content:flex-start!important}.mobileBottomNav button{min-width:82px!important;flex:0 0 82px!important}}
+@media(max-width:420px){.orgTeamSelector{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body><div id="app" class="app">
@@ -711,6 +717,32 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
   </div>
 </section>
 
+
+<section class="page" id="page-organizer">
+  <div class="pageTitle">PANEL DE ORGANIZADOR</div>
+  <div class="organizerHero panel body">
+    <div><div class="eyebrow">PINTO TOURNAMENT CONTROL</div><h2>CREA Y ADMINISTRA TUS TORNEOS</h2><p class="muted">Tus torneos, tus clubes, tus cruces y tus resultados.</p></div>
+    <div class="organizerHeroIcon">🏆</div>
+  </div>
+  <div class="organizerGrid">
+    <div class="panel body">
+      <div class="sectionHead"><h3>NUEVO TORNEO</h3><span class="tag">ORGANIZADOR</span></div>
+      <label class="ruleLabel">Nombre</label><input id="orgTournamentName" class="input" style="width:100%" placeholder="Copa Pinto Champions">
+      <label class="ruleLabel">Cupos</label><select id="orgTournamentSize" class="input" style="width:100%"><option value="4">4 clubes</option><option value="8" selected>8 clubes</option><option value="16">16 clubes</option></select>
+      <button id="orgCreateTournament" class="btn primary" type="button" style="margin-top:12px;width:100%">＋ CREAR TORNEO</button>
+    </div>
+    <div class="panel body"><div class="sectionHead"><h3>MIS TORNEOS</h3><span id="orgCountBadge" class="tag">0</span></div><div id="orgTournamentList"></div></div>
+  </div>
+  <div id="orgTournamentManager" class="panel body hidden" style="margin-top:12px">
+    <div class="sectionHead"><div><div class="eyebrow">CONTROL DEL TORNEO</div><h3 id="orgManagerName">TORNEO</h3></div><span id="orgManagerStatus" class="tag">BORRADOR</span></div>
+    <div id="orgManagerDraft">
+      <p class="muted">Selecciona exactamente los clubes requeridos.</p>
+      <div id="orgTeamSelector" class="orgTeamSelector"></div>
+      <div class="actions" style="margin-top:12px"><button id="orgSaveTeams" class="btn secondary" type="button">GUARDAR CLUBES</button><button id="orgStartTournament" class="btn primary" type="button">🎲 SORTEAR E INICIAR</button><button id="orgDeleteTournament" class="btn danger" type="button">ELIMINAR</button></div>
+    </div>
+    <div id="orgBracket"></div>
+  </div>
+</section>
 <section class="page" id="page-rules">
   <div class="pageTitle">REGLAMENTO FC26-27</div>
   <div class="rulesHero panel">
@@ -811,6 +843,7 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
   <button type="button" data-mobile-page="clubs" onclick="return mobileGoSafe('clubs',this,event)"><span>🛡</span>CLUBES</button>
   <button type="button" data-mobile-page="league" onclick="return mobileGoSafe('league',this,event)"><span>▦</span>LIGA</button>
   <button type="button" data-mobile-page="relampago" onclick="return mobileGoSafe('relampago',this,event)"><span>⚡</span>RELÁMPAGO</button>
+  <button type="button" class="organizer-mobile hidden" data-mobile-page="organizer" onclick="return mobileGoSafe('organizer',this,event)"><span>🏆</span>ORGANIZA</button>
   <button type="button" class="admin-mobile hidden" data-mobile-page="admin" onclick="return mobileGoSafe('admin',this,event)"><span>⚙</span>ADMIN</button>
 </nav>
 
@@ -914,10 +947,10 @@ let authToken=localStorage.getItem("pinto_auth_token")||"";
 let authUser=JSON.parse(localStorage.getItem("pinto_auth_user")||"null");
 function authHeaders(){return authToken?{"Authorization":"Bearer "+authToken}:{}}
 if(!authToken||!authUser){location.replace("/");}
-role=authUser?.role==="admin"?"admin":authUser?.role==="viewer"?"viewer":authUser?.role==="dt"?Number(authUser?.teamId):"player";
+role=authUser?.role==="admin"?"admin":authUser?.role==="organizer"?"organizer":authUser?.role==="viewer"?"viewer":authUser?.role==="dt"?Number(authUser?.teamId):"player";
 document.getElementById("logout").addEventListener("click",()=>{localStorage.removeItem("pinto_auth_token");localStorage.removeItem("pinto_auth_user");location.replace("/")});
-function isAdmin(){return role==="admin"||String(authUser?.role||"").toLowerCase()==="admin"} function isViewer(){return role==="viewer"||role==="player"} function myTeam(){return typeof role==="number"?state.teams.find(t=>t.id===role):null}
-function updateRole(){document.getElementById("roleChip").textContent=isAdmin()?"COMISIONADO":role==="player"?"JUGADOR":role==="viewer"?"ESPECTADOR":myTeam()?`${myTeam().dt} • ${myTeam().name}`:"DT";document.querySelectorAll(".adminOnly").forEach(e=>e.classList.toggle("hidden",!isAdmin()))}
+function isAdmin(){return role==="admin"||String(authUser?.role||"").toLowerCase()==="admin"} function isOrganizer(){return role==="organizer"||String(authUser?.role||"").toLowerCase()==="organizer"} function isViewer(){return role==="viewer"||role==="player"||role==="organizer"} function myTeam(){return typeof role==="number"?state.teams.find(t=>t.id===role):null}
+function updateRole(){document.getElementById("roleChip").textContent=isAdmin()?"COMISIONADO":isOrganizer()?"ORGANIZADOR":role==="player"?"JUGADOR":role==="viewer"?"ESPECTADOR":myTeam()?`${myTeam().dt} • ${myTeam().name}`:"DT";document.querySelectorAll(".adminOnly").forEach(e=>e.classList.toggle("hidden",!isAdmin()))}
 
 document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>setPage(b.dataset.page)));
 
@@ -1673,6 +1706,34 @@ document.getElementById("saveClubProfileBtn")?.addEventListener("click",async()=
   await fetchServerState();renderClubHub();
 });
 
+
+let organizerTournaments=[],selectedOrganizerTournamentId=null;
+async function loadOrganizerTournaments(){if(!(isOrganizer()||isAdmin()))return;try{const r=await fetch("/api/organizer/tournaments",{headers:authHeaders(),cache:"no-store"});if(r.ok){organizerTournaments=(await r.json()).tournaments||[];renderOrganizerPanel()}}catch{}}
+function organizerTeam(id){return (state.teams||[]).find(t=>Number(t.id)===Number(id))}
+function selectedOrganizerTournament(){return organizerTournaments.find(t=>String(t.id)===String(selectedOrganizerTournamentId))}
+function renderOrganizerPanel(){
+ const allowed=isOrganizer()||isAdmin();document.querySelectorAll(".organizerNav,.organizer-mobile").forEach(x=>x.classList.toggle("hidden",!allowed));if(!allowed)return;
+ const c=document.getElementById("orgCountBadge");if(c)c.textContent=String(organizerTournaments.length);
+ const list=document.getElementById("orgTournamentList");if(list)list.innerHTML=organizerTournaments.length?organizerTournaments.map(t=>`<div class="orgTournamentCard"><div><b>${t.name}</b><div class="muted">${t.size} clubes • ${(t.status||"draft").toUpperCase()}</div></div><button class="btn secondary" data-org-open="${t.id}" type="button">ABRIR</button></div>`).join(""):'<div class="muted">Todavía no has creado torneos.</div>';
+ document.querySelectorAll("[data-org-open]").forEach(b=>b.onclick=()=>{selectedOrganizerTournamentId=b.dataset.orgOpen;renderOrganizerManager()});if(selectedOrganizerTournamentId)renderOrganizerManager()
+}
+function renderOrganizerManager(){
+ const t=selectedOrganizerTournament(),box=document.getElementById("orgTournamentManager");if(!box)return;if(!t){box.classList.add("hidden");return}box.classList.remove("hidden");document.getElementById("orgManagerName").textContent=t.name;document.getElementById("orgManagerStatus").textContent=(t.status||"draft").toUpperCase();
+ const draft=document.getElementById("orgManagerDraft");draft.classList.toggle("hidden",t.status!=="draft");
+ if(t.status==="draft"){const selected=new Set((t.teamIds||[]).map(Number)),teams=(state.teams||[]).filter(x=>x.approved);document.getElementById("orgTeamSelector").innerHTML=teams.length?teams.map(team=>`<label class="orgTeamChoice"><input type="checkbox" value="${team.id}" ${selected.has(Number(team.id))?"checked":""}><span>${team.name}</span></label>`).join(""):'<div class="muted">No hay clubes aprobados.</div>'}
+ const bracket=document.getElementById("orgBracket");if(t.status==="draft"){bracket.innerHTML="";return}
+ bracket.innerHTML=t.status==="completed"?`<div class="orgChampion"><div class="cup">🏆</div><b>${organizerTeam(t.championTeamId)?.name||"CAMPEÓN"}</b><span>${t.name}</span></div>`:"";
+ const rounds=[...new Set((t.matches||[]).map(m=>Number(m.round)))].sort((a,b)=>a-b);
+ bracket.innerHTML+=rounds.map(round=>{const games=t.matches.filter(m=>Number(m.round)===round);return `<div class="orgRound"><h4>${games[0]?.stage||`RONDA ${round}`}</h4>${games.map(m=>{const done=m.status==="confirmed";return `<div class="orgMatch"><div><b>${organizerTeam(m.homeTeamId)?.name||"TBD"}</b></div><div class="orgMatchScore"><input type="number" min="0" max="99" id="oh-${m.id}" value="${m.homeScore??""}" ${done?"disabled":""}><span>-</span><input type="number" min="0" max="99" id="oa-${m.id}" value="${m.awayScore??""}" ${done?"disabled":""}>${done?'<span class="tag">FINAL</span>':`<button class="btn primary" type="button" data-org-result="${m.id}">GUARDAR</button>`}</div><div class="away"><b>${organizerTeam(m.awayTeamId)?.name||"TBD"}</b></div></div>`}).join("")}</div>`}).join("");
+ document.querySelectorAll("[data-org-result]").forEach(b=>b.onclick=()=>submitOrganizerResult(b.dataset.orgResult))
+}
+async function createOrganizerTournament(){const name=document.getElementById("orgTournamentName").value.trim(),size=Number(document.getElementById("orgTournamentSize").value);if(!name){alert("Escribe un nombre.");return}const r=await fetch("/api/organizer/tournaments",{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({name,size})}),j=await r.json().catch(()=>({}));if(!r.ok){alert(j.error||"No se pudo crear.");return}selectedOrganizerTournamentId=j.id;document.getElementById("orgTournamentName").value="";await loadOrganizerTournaments()}
+async function saveOrganizerTeams(){const t=selectedOrganizerTournament();if(!t)return;const ids=[...document.querySelectorAll("#orgTeamSelector input:checked")].map(x=>Number(x.value));if(ids.length>t.size){alert(`Máximo ${t.size} clubes.`);return}const r=await fetch(`/api/organizer/tournaments/${t.id}/teams`,{method:"PUT",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({teamIds:ids})});if(!r.ok){alert("No se pudieron guardar.");return}await loadOrganizerTournaments()}
+async function startOrganizerTournament(){const t=selectedOrganizerTournament();if(!t)return;await saveOrganizerTeams();const q=selectedOrganizerTournament();if((q.teamIds||[]).length!==Number(q.size)){alert(`Selecciona exactamente ${q.size} clubes.`);return}if(!confirm("¿Sortear e iniciar?"))return;const r=await fetch(`/api/organizer/tournaments/${q.id}/start`,{method:"POST",headers:authHeaders()});if(!r.ok){alert("No se pudo iniciar.");return}await loadOrganizerTournaments()}
+async function submitOrganizerResult(matchId){const t=selectedOrganizerTournament(),hs=Number(document.getElementById("oh-"+matchId)?.value),as=Number(document.getElementById("oa-"+matchId)?.value);if(!Number.isInteger(hs)||!Number.isInteger(as)||hs<0||as<0||hs===as){alert("Resultado definitivo, sin empate.");return}const r=await fetch(`/api/organizer/tournaments/${t.id}/matches/${matchId}/result`,{method:"POST",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify({homeScore:hs,awayScore:as})});if(!r.ok){alert("No se pudo guardar.");return}await loadOrganizerTournaments()}
+async function deleteOrganizerTournament(){const t=selectedOrganizerTournament();if(!t||!confirm(`¿Eliminar ${t.name}?`))return;const r=await fetch(`/api/organizer/tournaments/${t.id}`,{method:"DELETE",headers:authHeaders()});if(r.ok){selectedOrganizerTournamentId=null;await loadOrganizerTournaments()}}
+document.getElementById("orgCreateTournament")?.addEventListener("click",createOrganizerTournament);document.getElementById("orgSaveTeams")?.addEventListener("click",saveOrganizerTeams);document.getElementById("orgStartTournament")?.addEventListener("click",startOrganizerTournament);document.getElementById("orgDeleteTournament")?.addEventListener("click",deleteOrganizerTournament);
+
 function render(){
  
  const i=currentInfo(),mine=myTeam();
@@ -1702,7 +1763,7 @@ function render(){
  leagueBody.innerHTML=state.teams.filter(t=>t.approved).map((t,idx)=>`<tr><td>${idx+1}</td><td>${t.name}</td><td>${t.dt}</td><td>${state.picks.filter(p=>p.teamId===t.id).length}</td><td class="green">ACTIVO</td></tr>`).join("");
  if(isAdmin()) renderPendingAccounts();
  adminLog.innerHTML=state.log.slice(0,25).map((l,idx)=>`<div class="row"><b>${idx+1}</b><span>${l}</span><span></span></div>`).join("")||'<div class="muted">Sin actividad.</div>';
- pauseBtn.textContent=state.paused?"REANUDAR DRAFT":"PAUSAR DRAFT";renderCards();renderV8();renderLeague();renderRelampago();renderPlayerStats();renderClubHub();renderRulebook();mobileRoleNav();updateTimer();if(isAdmin())renderPendingAccounts()
+ pauseBtn.textContent=state.paused?"REANUDAR DRAFT":"PAUSAR DRAFT";renderCards();renderV8();renderLeague();renderRelampago();renderPlayerStats();renderClubHub();renderRulebook();renderOrganizerPanel();mobileRoleNav();updateTimer();if(isAdmin())renderPendingAccounts()
 }
 
 pauseBtn.addEventListener("click",()=>{if(!isAdmin())return;state.paused=!state.paused;state.log.unshift(state.paused?"Draft pausado":"Draft reanudado");persist()});
@@ -1818,10 +1879,11 @@ document.querySelectorAll("[data-mobile-page]").forEach(btn=>btn.addEventListene
   setPage(btn.dataset.mobilePage);
 }));
 function mobileRoleNav(){
-  const a=document.querySelector('[data-mobile-page="admin"]');
-  if(a)a.classList.toggle("hidden",!isAdmin());
+  const a=document.querySelector('[data-mobile-page="admin"]');if(a)a.classList.toggle("hidden",!isAdmin());
+  document.querySelectorAll(".organizer-mobile,.organizerNav").forEach(x=>x.classList.toggle("hidden",!(isOrganizer()||isAdmin())));
 }
 mobileRoleNav();
+loadOrganizerTournaments();
 syncMobileNav("home");
 
 

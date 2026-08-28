@@ -24,6 +24,7 @@ const cleanState = {
   picks:[], skips:[], paused:false, scouting:{}, combine:{},
   settings:{seconds:45,draftType:"Snake"},
   clubProfiles:{},
+  organizerTournaments:[],
   playerStats:{},
   relampago:{
     name:"RELÁMPAGO FC26-27",
@@ -94,11 +95,15 @@ async function initDb(){
  await pool.query(`CREATE TABLE IF NOT EXISTS pinto_state(id INTEGER PRIMARY KEY,revision BIGINT NOT NULL,state JSONB NOT NULL,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
  await pool.query(`CREATE TABLE IF NOT EXISTS pinto_users(
    id BIGSERIAL PRIMARY KEY, username TEXT UNIQUE NOT NULL, password_hash TEXT NOT NULL, salt TEXT NOT NULL,
-   role TEXT NOT NULL CHECK(role IN ('player','dt','viewer','admin')),
+   role TEXT NOT NULL CHECK(role IN ('player','dt','viewer','organizer','admin')),
    status TEXT NOT NULL DEFAULT 'pending', display_name TEXT NOT NULL, ea_id TEXT, country TEXT, platform TEXT,
    position TEXT, secondary_position TEXT, discord TEXT, availability TEXT, club TEXT, abbr TEXT, region TEXT,
    team_id BIGINT, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
  )`);
+ try{
+   await pool.query(`ALTER TABLE pinto_users DROP CONSTRAINT IF EXISTS pinto_users_role_check`);
+   await pool.query(`ALTER TABLE pinto_users ADD CONSTRAINT pinto_users_role_check CHECK(role IN ('player','dt','viewer','organizer','admin'))`);
+ }catch(e){console.warn("Role constraint migration:",e.message)}
  const s=await pool.query("SELECT id FROM pinto_state WHERE id=1");
  if(!s.rowCount)await pool.query("INSERT INTO pinto_state(id,revision,state) VALUES(1,1,$1::jsonb)",[JSON.stringify(cleanState)]);
  for (const adm of ADMIN_ACCOUNTS){
@@ -356,7 +361,7 @@ app.get("/api/health",(req,res)=>res.json({ok:true,db:usePostgres?"postgres":"lo
 app.post("/api/auth/register",async(req,res)=>{
  try{
   const u=req.body||{};
-  if(!["player","dt","viewer"].includes(u.role))return res.status(400).json({error:"invalid_role"});
+  if(!["player","dt","viewer","organizer"].includes(u.role))return res.status(400).json({error:"invalid_role"});
   if(!/^[a-zA-Z0-9_.-]{3,24}$/.test(u.username||""))return res.status(400).json({error:"invalid_username"});
   if(String(u.password||"").length<8)return res.status(400).json({error:"password_short"});
   if(!String(u.display_name||"").trim())return res.status(400).json({error:"name_required"});
@@ -901,6 +906,47 @@ app.post("/api/admin/relampago/matches/:id/resolve",auth,adminOnly,async(req,res
 });
 
 
+
+function ensureOrganizerTournaments(st){if(!Array.isArray(st.organizerTournaments))st.organizerTournaments=[];return st.organizerTournaments}
+function organizerOnly(req,res,next){if(!["admin","organizer"].includes(req.user?.role))return res.status(403).json({error:"organizer_only"});next()}
+function organizerAllowed(user,t){return user?.role==="admin"||(user?.role==="organizer"&&String(t.ownerUserId)===String(user.id))}
+function organizerBracket(teamIds,tournamentId){
+ const ids=[...teamIds].map(Number),out=[];let matchNo=1,size=ids.length;
+ for(let i=0;i<ids.length;i+=2)out.push({id:`ORG-${tournamentId}-R1-M${matchNo++}`,round:1,stage:size===2?"FINAL":size===4?"SEMIFINAL":size===8?"CUARTOS":size===16?"OCTAVOS":`TOP ${size}`,homeTeamId:ids[i],awayTeamId:ids[i+1],homeScore:null,awayScore:null,winnerTeamId:null,status:"scheduled"});
+ return out
+}
+function organizerMaybeAdvance(t){
+ const currentRound=Math.max(1,...(t.matches||[]).map(m=>Number(m.round)||1)),current=(t.matches||[]).filter(m=>Number(m.round)===currentRound);
+ if(!current.length||!current.every(m=>m.status==="confirmed"&&m.winnerTeamId))return;
+ if(current.length===1){t.status="completed";t.championTeamId=Number(current[0].winnerTeamId);t.completedAt=new Date().toISOString();return}
+ if((t.matches||[]).some(m=>Number(m.round)===currentRound+1))return;
+ const winners=current.map(m=>Number(m.winnerTeamId)),size=winners.length;
+ for(let i=0;i<winners.length;i+=2)t.matches.push({id:`ORG-${t.id}-R${currentRound+1}-M${Math.floor(i/2)+1}`,round:currentRound+1,stage:size===2?"FINAL":size===4?"SEMIFINAL":size===8?"CUARTOS":`TOP ${size}`,homeTeamId:winners[i],awayTeamId:winners[i+1],homeScore:null,awayScore:null,winnerTeamId:null,status:"scheduled"})
+}
+app.get("/api/organizer/tournaments",auth,organizerOnly,async(req,res)=>{try{const st=(await getStore()).state,all=ensureOrganizerTournaments(st);res.json({tournaments:req.user.role==="admin"?all:all.filter(t=>String(t.ownerUserId)===String(req.user.id))})}catch{res.status(500).json({error:"server_error"})}});
+app.post("/api/organizer/tournaments",auth,organizerOnly,async(req,res)=>{try{
+ const name=String(req.body?.name||"").trim().slice(0,80),size=Number(req.body?.size)||8;if(!name)return res.status(400).json({error:"name_required"});if(![4,8,16].includes(size))return res.status(400).json({error:"invalid_size"});
+ const id=`T${Date.now()}`;await mutate(st=>{ensureOrganizerTournaments(st).unshift({id,name,size,status:"draft",ownerUserId:req.user.id,ownerUsername:req.user.username,createdAt:new Date().toISOString(),teamIds:[],matches:[],championTeamId:null,completedAt:null});st.log.unshift(`🏆 Torneo creado: ${name}`)});res.json({ok:true,id})
+}catch{res.status(500).json({error:"server_error"})}});
+app.put("/api/organizer/tournaments/:id/teams",auth,organizerOnly,async(req,res)=>{try{
+ const st=(await getStore()).state,t=ensureOrganizerTournaments(st).find(x=>String(x.id)===String(req.params.id));if(!t)return res.status(404).json({error:"not_found"});if(!organizerAllowed(req.user,t))return res.status(403).json({error:"forbidden"});if(t.status!=="draft")return res.status(400).json({error:"already_started"});
+ const approved=new Set((st.teams||[]).filter(x=>x.approved).map(x=>Number(x.id))),valid=[...new Set((req.body?.teamIds||[]).map(Number))].filter(id=>approved.has(id)).slice(0,t.size);
+ await mutate(x=>{ensureOrganizerTournaments(x).find(v=>String(v.id)===String(req.params.id)).teamIds=valid});res.json({ok:true})
+}catch{res.status(500).json({error:"server_error"})}});
+app.post("/api/organizer/tournaments/:id/start",auth,organizerOnly,async(req,res)=>{try{
+ const st=(await getStore()).state,t=ensureOrganizerTournaments(st).find(x=>String(x.id)===String(req.params.id));if(!t)return res.status(404).json({error:"not_found"});if(!organizerAllowed(req.user,t))return res.status(403).json({error:"forbidden"});if((t.teamIds||[]).length!==Number(t.size))return res.status(400).json({error:"fill_all_slots"});
+ await mutate(x=>{const tt=ensureOrganizerTournaments(x).find(v=>String(v.id)===String(req.params.id)),shuffled=shuffleIds(tt.teamIds);tt.teamIds=shuffled;tt.matches=organizerBracket(shuffled,tt.id);tt.status="active";tt.startedAt=new Date().toISOString()});res.json({ok:true})
+}catch{res.status(500).json({error:"server_error"})}});
+app.post("/api/organizer/tournaments/:id/matches/:matchId/result",auth,organizerOnly,async(req,res)=>{try{
+ const hs=scoreValue(req.body?.homeScore),as=scoreValue(req.body?.awayScore);if(hs===null||as===null||hs===as)return res.status(400).json({error:"decisive_score_required"});
+ const st=(await getStore()).state,t=ensureOrganizerTournaments(st).find(x=>String(x.id)===String(req.params.id));if(!t)return res.status(404).json({error:"not_found"});if(!organizerAllowed(req.user,t))return res.status(403).json({error:"forbidden"});
+ await mutate(x=>{const tt=ensureOrganizerTournaments(x).find(v=>String(v.id)===String(req.params.id)),m=tt.matches.find(v=>String(v.id)===String(req.params.matchId));if(!m)throw new Error("match_not_found");m.homeScore=hs;m.awayScore=as;m.status="confirmed";m.winnerTeamId=hs>as?Number(m.homeTeamId):Number(m.awayTeamId);organizerMaybeAdvance(tt)});res.json({ok:true})
+}catch(e){if(e.message==="match_not_found")return res.status(404).json({error:"match_not_found"});res.status(500).json({error:"server_error"})}});
+app.delete("/api/organizer/tournaments/:id",auth,organizerOnly,async(req,res)=>{try{
+ const st=(await getStore()).state,t=ensureOrganizerTournaments(st).find(x=>String(x.id)===String(req.params.id));if(!t)return res.status(404).json({error:"not_found"});if(!organizerAllowed(req.user,t))return res.status(403).json({error:"forbidden"});
+ await mutate(x=>{x.organizerTournaments=ensureOrganizerTournaments(x).filter(v=>String(v.id)!==String(req.params.id))});res.json({ok:true})
+}catch{res.status(500).json({error:"server_error"})}});
+
 app.get("/api/state",async(req,res)=>{try{res.json(await getStore())}catch{res.status(500).json({error:"database_error"})}});
 app.put("/api/state",auth,async(req,res)=>{
  try{
@@ -913,4 +959,4 @@ app.put("/api/state",auth,async(req,res)=>{
 app.get("/app.html",(req,res)=>res.sendFile(path.join(ROOT,"app.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"index.html")));
 
-initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.4.2 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
+initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.5.0 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
