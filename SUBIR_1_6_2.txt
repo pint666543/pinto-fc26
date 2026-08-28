@@ -1,0 +1,21 @@
+PINTO FC26 1.6.2 — ADAPTIVE MOBILE
+
+CORRECCIÓN:
+- La web ahora usa el ancho REAL disponible de cada celular.
+- iPhone SE / teléfonos pequeños: bloques en 1 columna cuando hace falta.
+- iPhone normal/Pro y Android medios: grids de 2 columnas donde caben.
+- Pro Max / Android grandes: aprovecha más ancho automáticamente.
+- Landscape también se adapta.
+- Safe areas de iPhone (notch, Dynamic Island y barra inferior).
+- Se corrigió el desbordamiento horizontal de RESUMEN/LIGA.
+- Tablas se desplazan dentro de su tarjeta, no empujan toda la página.
+- Textos, títulos, métricas, botones e inputs usan tamaños fluidos.
+- Barra inferior usa ancho adaptable y scroll horizontal limpio cuando hay muchas secciones.
+- viewport-fit=cover agregado.
+
+ACTUALIZA EN GITHUB:
+1. Reemplaza index.html, app.html, server.js y package.json.
+2. Commit changes.
+3. Espera Railway Online.
+4. iPhone: cierra Safari completamente y vuelve a abrir.
+5. PC: Ctrl+F5.
