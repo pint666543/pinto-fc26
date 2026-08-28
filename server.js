@@ -923,7 +923,13 @@ function organizerMaybeAdvance(t){
  const winners=current.map(m=>Number(m.winnerTeamId)),size=winners.length;
  for(let i=0;i<winners.length;i+=2)t.matches.push({id:`ORG-${t.id}-R${currentRound+1}-M${Math.floor(i/2)+1}`,round:currentRound+1,stage:size===2?"FINAL":size===4?"SEMIFINAL":size===8?"CUARTOS":`TOP ${size}`,homeTeamId:winners[i],awayTeamId:winners[i+1],homeScore:null,awayScore:null,winnerTeamId:null,status:"scheduled"})
 }
-app.get("/api/organizer/tournaments",auth,organizerOnly,async(req,res)=>{try{const st=(await getStore()).state,all=ensureOrganizerTournaments(st);res.json({tournaments:req.user.role==="admin"?all:all.filter(t=>String(t.ownerUserId)===String(req.user.id))})}catch{res.status(500).json({error:"server_error"})}});
+app.get("/api/organizer/tournaments",auth,async(req,res)=>{try{
+ const st=(await getStore()).state,all=ensureOrganizerTournaments(st);
+ if(req.user.role==="admin")return res.json({tournaments:all});
+ if(req.user.role==="organizer")return res.json({tournaments:all.filter(t=>String(t.ownerUserId)===String(req.user.id))});
+ if(req.user.role==="dt"){const teamId=accountTeamId(req.user,st);return res.json({tournaments:all.filter(t=>(t.teamIds||[]).some(id=>Number(id)===Number(teamId)))})}
+ return res.status(403).json({error:"forbidden"});
+}catch{res.status(500).json({error:"server_error"})}});
 app.post("/api/organizer/tournaments",auth,organizerOnly,async(req,res)=>{try{
  const name=String(req.body?.name||"").trim().slice(0,80),size=Number(req.body?.size)||8;
  const format=["knockout","groups_playoffs"].includes(req.body?.format)?req.body.format:"knockout";
@@ -950,8 +956,31 @@ app.post("/api/organizer/tournaments/:id/start",auth,organizerOnly,async(req,res
 app.post("/api/organizer/tournaments/:id/matches/:matchId/result",auth,organizerOnly,async(req,res)=>{try{
  const hs=scoreValue(req.body?.homeScore),as=scoreValue(req.body?.awayScore);if(hs===null||as===null||hs===as)return res.status(400).json({error:"decisive_score_required"});
  const st=(await getStore()).state,t=ensureOrganizerTournaments(st).find(x=>String(x.id)===String(req.params.id));if(!t)return res.status(404).json({error:"not_found"});if(!organizerAllowed(req.user,t))return res.status(403).json({error:"forbidden"});
- await mutate(x=>{const tt=ensureOrganizerTournaments(x).find(v=>String(v.id)===String(req.params.id)),m=tt.matches.find(v=>String(v.id)===String(req.params.matchId));if(!m)throw new Error("match_not_found");m.homeScore=hs;m.awayScore=as;m.status="confirmed";m.winnerTeamId=hs>as?Number(m.homeTeamId):Number(m.awayTeamId);organizerMaybeAdvance(tt)});res.json({ok:true})
+ await mutate(x=>{const tt=ensureOrganizerTournaments(x).find(v=>String(v.id)===String(req.params.id)),m=tt.matches.find(v=>String(v.id)===String(req.params.matchId));if(!m)throw new Error("match_not_found");m.homeScore=hs;m.awayScore=as;m.status="confirmed";m.winnerTeamId=hs>as?Number(m.homeTeamId):Number(m.awayTeamId);m.resolvedByUserId=req.user.id;m.resolvedAt=new Date().toISOString();organizerMaybeAdvance(tt)});res.json({ok:true})
 }catch(e){if(e.message==="match_not_found")return res.status(404).json({error:"match_not_found"});res.status(500).json({error:"server_error"})}});
+
+app.post("/api/organizer/tournaments/:id/matches/:matchId/submit",auth,async(req,res)=>{try{
+ if(!["dt","admin"].includes(req.user.role))return res.status(403).json({error:"dt_only"});
+ const hs=scoreValue(req.body?.homeScore),as=scoreValue(req.body?.awayScore);if(hs===null||as===null||hs===as)return res.status(400).json({error:"decisive_score_required"});
+ const st=(await getStore()).state,t=ensureOrganizerTournaments(st).find(x=>String(x.id)===String(req.params.id)),teamId=req.user.role==="admin"?Number(req.body?.teamId):accountTeamId(req.user,st);
+ if(!t)return res.status(404).json({error:"not_found"});const m=(t.matches||[]).find(v=>String(v.id)===String(req.params.matchId));if(!m)return res.status(404).json({error:"match_not_found"});
+ if(teamId!==Number(m.homeTeamId)&&teamId!==Number(m.awayTeamId))return res.status(403).json({error:"not_your_match"});
+ if(m.status==="confirmed")return res.status(400).json({error:"already_confirmed"});
+ await mutate(x=>{const tt=ensureOrganizerTournaments(x).find(v=>String(v.id)===String(req.params.id)),mm=tt.matches.find(v=>String(v.id)===String(req.params.matchId));mm.homeScore=hs;mm.awayScore=as;mm.status="pending_confirmation";mm.submittedByTeamId=Number(teamId);mm.submittedByUserId=req.user.id;mm.submittedAt=new Date().toISOString();mm.disputeNote=null});res.json({ok:true})
+}catch{res.status(500).json({error:"server_error"})}});
+
+app.post("/api/organizer/tournaments/:id/matches/:matchId/confirm",auth,async(req,res)=>{try{
+ if(req.user.role!=="dt")return res.status(403).json({error:"dt_only"});const st=(await getStore()).state,t=ensureOrganizerTournaments(st).find(x=>String(x.id)===String(req.params.id)),teamId=accountTeamId(req.user,st);
+ if(!t)return res.status(404).json({error:"not_found"});const m=(t.matches||[]).find(v=>String(v.id)===String(req.params.matchId));if(!m)return res.status(404).json({error:"match_not_found"});
+ if(m.status!=="pending_confirmation")return res.status(400).json({error:"not_pending"});if(teamId!==Number(m.homeTeamId)&&teamId!==Number(m.awayTeamId))return res.status(403).json({error:"not_your_match"});if(Number(teamId)===Number(m.submittedByTeamId))return res.status(403).json({error:"opponent_must_confirm"});
+ await mutate(x=>{const tt=ensureOrganizerTournaments(x).find(v=>String(v.id)===String(req.params.id)),mm=tt.matches.find(v=>String(v.id)===String(req.params.matchId));mm.status="confirmed";mm.confirmedByTeamId=Number(teamId);mm.confirmedAt=new Date().toISOString();mm.winnerTeamId=Number(mm.homeScore)>Number(mm.awayScore)?Number(mm.homeTeamId):Number(mm.awayTeamId);organizerMaybeAdvance(tt)});res.json({ok:true})
+}catch{res.status(500).json({error:"server_error"})}});
+
+app.post("/api/organizer/tournaments/:id/matches/:matchId/dispute",auth,async(req,res)=>{try{
+ if(req.user.role!=="dt")return res.status(403).json({error:"dt_only"});const note=String(req.body?.note||"Resultado disputado").trim().slice(0,300),st=(await getStore()).state,t=ensureOrganizerTournaments(st).find(x=>String(x.id)===String(req.params.id)),teamId=accountTeamId(req.user,st);
+ if(!t)return res.status(404).json({error:"not_found"});const m=(t.matches||[]).find(v=>String(v.id)===String(req.params.matchId));if(!m)return res.status(404).json({error:"match_not_found"});if(m.status!=="pending_confirmation")return res.status(400).json({error:"not_pending"});if(teamId!==Number(m.homeTeamId)&&teamId!==Number(m.awayTeamId))return res.status(403).json({error:"not_your_match"});if(Number(teamId)===Number(m.submittedByTeamId))return res.status(403).json({error:"opponent_only"});
+ await mutate(x=>{const tt=ensureOrganizerTournaments(x).find(v=>String(v.id)===String(req.params.id)),mm=tt.matches.find(v=>String(v.id)===String(req.params.matchId));mm.status="disputed";mm.disputeNote=note;mm.disputedByTeamId=Number(teamId);mm.disputedAt=new Date().toISOString()});res.json({ok:true})
+}catch{res.status(500).json({error:"server_error"})}});
 app.delete("/api/organizer/tournaments/:id",auth,organizerOnly,async(req,res)=>{try{
  const st=(await getStore()).state,t=ensureOrganizerTournaments(st).find(x=>String(x.id)===String(req.params.id));if(!t)return res.status(404).json({error:"not_found"});if(!organizerAllowed(req.user,t))return res.status(403).json({error:"forbidden"});
  await mutate(x=>{x.organizerTournaments=ensureOrganizerTournaments(x).filter(v=>String(v.id)!==String(req.params.id))});res.json({ok:true})
@@ -969,4 +998,4 @@ app.put("/api/state",auth,async(req,res)=>{
 app.get("/app.html",(req,res)=>res.sendFile(path.join(ROOT,"app.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"index.html")));
 
-initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.6.3 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
+initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.6.4 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});

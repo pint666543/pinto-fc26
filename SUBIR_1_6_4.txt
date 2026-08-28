@@ -1,0 +1,10 @@
+PINTO FC26 1.6.4 — RESULTADOS DT EN TORNEOS
+- Los DT ven MIS TORNEOS cuando su club participa.
+- El DT de cualquiera de los dos clubes puede enviar el resultado.
+- El DT rival debe CONFIRMAR antes de que el resultado sea oficial.
+- El rival puede DISPUTAR el resultado.
+- En disputa, el Organizador/Admin resuelve.
+- Solo un resultado CONFIRMADO hace avanzar el bracket.
+- El Organizador conserva control para resolver/corregir.
+- Compatible con móvil y PC.
+Sube index.html, app.html, server.js y package.json a GitHub.
