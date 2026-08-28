@@ -1028,11 +1028,29 @@ button,input,select,textarea{
   .mobileEntityFields{grid-template-columns:1fr!important}
 }
 
+
+/* ===== PINTO FC26 1.6.5 — WHATSAPP JORNADAS ===== */
+.fixtureRoundShare{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-top:18px;margin-bottom:8px;
+}
+.fixtureRoundShare .fixtureRound{margin:0!important;flex:1}
+.whatsappBtn{
+  background:linear-gradient(180deg,#21bd5a,#12823e)!important;
+  border:1px solid #30dc72!important;color:#fff!important;
+  white-space:nowrap;
+}
+.whatsappBtn:active{transform:scale(.98)}
+@media(max-width:760px){
+  .fixtureRoundShare{align-items:stretch;flex-direction:column;gap:7px}
+  .fixtureRoundShare .whatsappBtn{width:100%!important}
+}
+
 </style>
 </head>
 <body><div id="app" class="app">
   <header class="top">
-    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.6.4 PLATFORM</div></div></div>
+    <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.6.5 PLATFORM</div></div></div>
     <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="relampago">⚡ RELÁMPAGO</button><button class="organizerNav hidden" data-page="organizer">🏆 ORGANIZADOR</button><button data-page="stats">STATS</button><button data-page="rules">REGLAMENTO</button><button data-page="admin">ADMIN PANEL</button></nav>
     <div class="topUser"><span id="syncBadge" class="syncBadge">● CONECTADO</span><div id="roleChip" class="roleChip"></div><button class="btn secondary" id="logout">SALIR</button></div>
   </header>
@@ -1045,7 +1063,7 @@ button,input,select,textarea{
     <button data-page="clubs">🛡 &nbsp; CLUBS</button><button data-page="warroom">⌂ &nbsp; WAR ROOM</button><button data-page="board">▦ &nbsp; DRAFT BOARD</button><button data-page="combine">◈ &nbsp; COMBINE</button><button data-page="formation">⚽ &nbsp; XI BUILDER</button><button data-page="relampago">⚡ &nbsp; RELÁMPAGO FC26-27</button><button class="organizerNav hidden" data-page="organizer">🏆 &nbsp; ORGANIZADOR</button><button data-page="stats">📊 &nbsp; ESTADÍSTICAS</button><button data-page="rules">📘 &nbsp; REGLAMENTO 26-27</button>
     <button data-page="requests" class="adminOnly">✦ &nbsp; REGISTRATION</button>
     <button data-page="admin" class="adminOnly">⚙ &nbsp; PANEL ADMIN</button>
-    <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">RELEASE 1.6.4 • ONLINE</div></div></div>
+    <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">RELEASE 1.6.5 • ONLINE</div></div></div>
   </aside>
 
   <main class="main">
@@ -1782,7 +1800,7 @@ function renderLeague(){
   const byTeam=id=>(state.teams||[]).find(t=>Number(t.id)===Number(id));
   let lastRound=0,html="";
   fixtures.forEach(m=>{
-    if(m.round!==lastRound){lastRound=m.round;html+=`<div class="fixtureRound">JORNADA ${m.round}</div>`}
+    if(m.round!==lastRound){lastRound=m.round;html+=`<div class="fixtureRoundShare"><div class="fixtureRound">JORNADA ${m.round}</div><button type="button" class="btn whatsappBtn" data-share-round="${m.round}">📲 COMPARTIR EN WHATSAPP</button></div>`}
     const home=byTeam(m.homeTeamId),away=byTeam(m.awayTeamId);
     const involved=isAdmin()||teamId===Number(m.homeTeamId)||teamId===Number(m.awayTeamId);
     const score=m.homeScore==null?"VS":`${m.homeScore} - ${m.awayScore}`;
@@ -1802,7 +1820,40 @@ function renderLeague(){
   document.querySelectorAll("[data-submit-match]").forEach(b=>b.onclick=()=>submitMatch(b.dataset.submitMatch));
   document.querySelectorAll("[data-confirm-match]").forEach(b=>b.onclick=()=>confirmMatch(b.dataset.confirmMatch));
   document.querySelectorAll("[data-dispute-match]").forEach(b=>b.onclick=()=>disputeMatch(b.dataset.disputeMatch));
+  document.querySelectorAll("[data-share-round]").forEach(b=>b.onclick=()=>shareLeagueRound(Number(b.dataset.shareRound)));
 }
+
+function leagueRoundWhatsAppText(round){
+  const fixtures=(state.fixtures||[]).filter(m=>Number(m.round)===Number(round));
+  if(!fixtures.length)return "";
+  const teamName=id=>(state.teams||[]).find(t=>Number(t.id)===Number(id))?.name||"CLUB";
+  const lines=fixtures.map(m=>{
+    const score=m.status==="confirmed"&&m.homeScore!=null?`${m.homeScore} - ${m.awayScore}`:"VS";
+    return `⚽ ${teamName(m.homeTeamId)} ${score} ${teamName(m.awayTeamId)}`;
+  });
+  const pending=fixtures.filter(m=>m.status!=="confirmed").length;
+  const confirmed=fixtures.length-pending;
+  return [
+    `🏆 *PINTO FC26 — JORNADA ${round}*`,
+    ``,
+    ...lines,
+    ``,
+    `✅ Confirmados: ${confirmed}`,
+    `⏳ Pendientes: ${pending}`,
+    ``,
+    `📲 Ver jornada completa: ${location.origin}`,
+    ``,
+    `_PINTO FC26 • Clubes Pro_`
+  ].join("\n");
+}
+function shareLeagueRound(round){
+  const text=leagueRoundWhatsAppText(round);
+  if(!text){alert("Esta jornada todavía no tiene cruces.");return}
+  const url="https://wa.me/?text="+encodeURIComponent(text);
+  const w=window.open(url,"_blank","noopener,noreferrer");
+  if(!w)location.href=url;
+}
+
 async function submitMatch(id){
   const h=Number(document.getElementById("hs-"+id)?.value),a=Number(document.getElementById("as-"+id)?.value);
   if(!Number.isInteger(h)||!Number.isInteger(a)||h<0||a<0){alert("Escribe un marcador válido.");return}

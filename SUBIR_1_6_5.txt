@@ -1,0 +1,18 @@
+PINTO FC26 1.6.5 — COMPARTIR JORNADAS POR WHATSAPP
+
+NUEVO:
+- Cada JORNADA de la Liga tiene botón 📲 COMPARTIR EN WHATSAPP.
+- Funciona con WhatsApp normal.
+- En iPhone/Android abre WhatsApp con el mensaje ya preparado.
+- Solo eliges el grupo de DT y pulsas enviar.
+- El mensaje incluye todos los cruces de esa jornada.
+- Si un partido ya está confirmado, incluye el marcador.
+- Incluye cantidad de confirmados y pendientes.
+- Incluye enlace directo a PINTO FC26.
+- No necesita WhatsApp Business ni bots.
+
+ACTUALIZAR:
+1. Sube index.html, app.html, server.js y package.json al repo pinto-fc26.
+2. Commit changes.
+3. Espera Railway Online.
+4. Cierra Safari/Chrome y vuelve a abrir la web.
