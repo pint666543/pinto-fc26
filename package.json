@@ -1,8 +1,8 @@
 {
   "name": "pinto-fc26-v10-online",
-  "version": "1.2.5",
+  "version": "1.3.0",
   "private": true,
-  "description": "PINTO FC26 1.2.5 password visibility toggle",
+  "description": "PINTO FC26 1.3.0 Club Center, rosters and player statistics",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

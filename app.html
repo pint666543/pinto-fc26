@@ -334,12 +334,24 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
   }
 }
 
+
+.clubHubHero{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#07151c,#07120b);border-color:#245234}
+.clubHubHero h2{font-size:32px;margin:4px 0}.clubHubShield{font-size:58px}
+.clubHubGrid{display:grid;grid-template-columns:1.4fr .8fr;gap:12px;margin-top:12px}
+.clubRosterGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.clubPlayerCard{border:1px solid #1b3944;border-radius:9px;background:#07131a;padding:12px}
+.clubPlayerCard b{display:block;font-size:13px}.clubPlayerCard span{font-size:10px;color:#84969e}
+.clubLinkBtn{border:0;background:transparent;color:inherit;padding:0;cursor:pointer;text-align:left}
+.clubLinkBtn:hover{color:#3cff67}
+@media(max-width:760px){.clubHubGrid{grid-template-columns:1fr}.clubRosterGrid{grid-template-columns:1fr 1fr}.clubHubHero h2{font-size:25px}}
+@media(max-width:420px){.clubRosterGrid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body><div id="app" class="app">
   <header class="top">
     <div class="brand topBrand"><div class="logo">P</div><div><div class="brandTitle">PINTO <span>FC26</span></div><div class="brandSub">RELEASE 1.2.4 PLATFORM</div></div></div>
-    <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="relampago">⚡ RELÁMPAGO</button><button data-page="rules">REGLAMENTO</button><button data-page="admin">ADMIN PANEL</button></nav>
+    <nav class="topNav"><button class="active" data-page="home">HOME</button><button data-page="draft">DRAFT</button><button data-page="players">PLAYERS</button><button data-page="clubs">CLUBS</button><button data-page="warroom">WAR ROOM</button><button data-page="board">BOARD</button><button data-page="league">LEAGUE</button><button data-page="relampago">⚡ RELÁMPAGO</button><button data-page="stats">STATS</button><button data-page="rules">REGLAMENTO</button><button data-page="admin">ADMIN PANEL</button></nav>
     <div class="topUser"><span id="syncBadge" class="syncBadge">● CONECTADO</span><div id="roleChip" class="roleChip"></div><button class="btn secondary" id="logout">SALIR</button></div>
   </header>
 
@@ -348,7 +360,7 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
     <button data-page="draft">⚽ &nbsp; DRAFT ROOM</button>
     <button data-page="tracker">◉ &nbsp; LIVE TRACKER</button>
     <button data-page="players">♟ &nbsp; PLAYERS</button>
-    <button data-page="clubs">🛡 &nbsp; CLUBS</button><button data-page="warroom">⌂ &nbsp; WAR ROOM</button><button data-page="board">▦ &nbsp; DRAFT BOARD</button><button data-page="combine">◈ &nbsp; COMBINE</button><button data-page="formation">⚽ &nbsp; XI BUILDER</button><button data-page="relampago">⚡ &nbsp; RELÁMPAGO FC26-27</button><button data-page="rules">📘 &nbsp; REGLAMENTO 26-27</button>
+    <button data-page="clubs">🛡 &nbsp; CLUBS</button><button data-page="warroom">⌂ &nbsp; WAR ROOM</button><button data-page="board">▦ &nbsp; DRAFT BOARD</button><button data-page="combine">◈ &nbsp; COMBINE</button><button data-page="formation">⚽ &nbsp; XI BUILDER</button><button data-page="relampago">⚡ &nbsp; RELÁMPAGO FC26-27</button><button data-page="stats">📊 &nbsp; ESTADÍSTICAS</button><button data-page="rules">📘 &nbsp; REGLAMENTO 26-27</button>
     <button data-page="requests" class="adminOnly">✦ &nbsp; REGISTRATION</button>
     <button data-page="admin" class="adminOnly">⚙ &nbsp; PANEL ADMIN</button>
     <div class="sideFoot"><div class="server"><b class="green">● LIVE SYNC ACTIVE</b><div class="muted" style="margin-top:5px">RELEASE 1.0.2 • ONLINE</div></div></div>
@@ -552,6 +564,66 @@ radial-gradient(circle at 10% 80%,rgba(60,255,103,.035),transparent 28%)}
   <div class="panel body" style="margin-top:12px">
     <div class="sectionHead"><h3>ELIMINATORIAS</h3><span class="tag">BRACKET AUTOMÁTICO</span></div>
     <div id="relKnockoutBracket" class="relBracket"></div>
+  </div>
+</section>
+
+
+<section class="page" id="page-clubhub">
+  <div class="pageTitle">CLUB CENTER</div>
+  <div class="clubHubHero panel body">
+    <div>
+      <div class="eyebrow">PINTO FC26-27</div>
+      <h2 id="clubHubName">CLUB</h2>
+      <div id="clubHubMeta" class="muted"></div>
+    </div>
+    <div class="clubHubShield">🛡</div>
+  </div>
+
+  <div class="clubHubGrid">
+    <div class="panel body">
+      <div class="sectionHead">
+        <h3>PERFIL DEL CLUB</h3>
+        <button id="editClubProfileBtn" class="btn secondary hidden" type="button">EDITAR</button>
+      </div>
+      <div id="clubProfileView"></div>
+      <div id="clubProfileEdit" class="hidden">
+        <label class="ruleLabel">Descripción</label>
+        <textarea id="clubBioInput" class="input" style="width:100%;min-height:100px"></textarea>
+        <label class="ruleLabel">Región</label>
+        <input id="clubRegionInput" class="input" style="width:100%">
+        <label class="ruleLabel">Capitán</label>
+        <input id="clubCaptainInput" class="input" style="width:100%">
+        <label class="ruleLabel">Red social</label>
+        <input id="clubSocialInput" class="input" style="width:100%">
+        <button id="saveClubProfileBtn" class="btn primary" style="margin-top:10px" type="button">GUARDAR PERFIL</button>
+      </div>
+    </div>
+
+    <div class="panel body">
+      <div class="sectionHead"><h3>RESUMEN</h3><span class="tag">TEMPORADA</span></div>
+      <div id="clubHubMetrics" class="metrics"></div>
+    </div>
+  </div>
+
+  <div class="panel body" style="margin-top:12px">
+    <div class="sectionHead"><h3>PLANTILLA</h3><span id="clubRosterCount" class="tag">0 JUGADORES</span></div>
+    <div id="clubRoster" class="clubRosterGrid"></div>
+  </div>
+
+  <div class="panel body" style="margin-top:12px">
+    <div class="sectionHead"><h3>ÚLTIMOS PARTIDOS</h3><span class="tag">RESULTADOS</span></div>
+    <div id="clubRecentMatches"></div>
+  </div>
+</section>
+
+<section class="page" id="page-stats">
+  <div class="pageTitle">ESTADÍSTICAS</div>
+  <div class="panel body">
+    <div class="sectionHead">
+      <div><div class="eyebrow">FC26-27</div><h3>RANKING DE JUGADORES</h3></div>
+      <span class="tag">LIVE</span>
+    </div>
+    <div class="tableWrap"><table class="table" id="playerStatsTable"></table></div>
   </div>
 </section>
 
@@ -1296,6 +1368,97 @@ async function resetRelampago(){
 document.getElementById("relStartBtn")?.addEventListener("click",startRelampago);
 document.getElementById("relResetBtn")?.addEventListener("click",resetRelampago);
 
+
+let selectedClubHubId=null;
+
+function playerTeamFromState(playerId){
+  const pick=(state.picks||[]).find(p=>Number(p.playerId)===Number(playerId));
+  return pick?Number(pick.teamId):null;
+}
+function allConfirmedClubMatches(teamId){
+  const league=(state.fixtures||[]).filter(m=>m.status==="confirmed"&&(Number(m.homeTeamId)===teamId||Number(m.awayTeamId)===teamId));
+  const rel=(((state.relampago||{}).matches)||[]).filter(m=>m.status==="confirmed"&&(Number(m.homeTeamId)===teamId||Number(m.awayTeamId)===teamId));
+  return [...league,...rel];
+}
+function openClubHub(id){
+  selectedClubHubId=Number(id);
+  setPage("clubhub");
+  renderClubHub();
+}
+function renderClubHub(){
+  if(!selectedClubHubId)return;
+  const club=(state.teams||[]).find(t=>Number(t.id)===selectedClubHubId);
+  if(!club)return;
+  const profile=(state.clubProfiles||{})[String(selectedClubHubId)]||{};
+  const nameEl=document.getElementById("clubHubName");
+  const metaEl=document.getElementById("clubHubMeta");
+  if(nameEl)nameEl.textContent=club.name;
+  if(metaEl)metaEl.textContent=profile.region||"Club oficial PINTO FC26-27";
+
+  const view=document.getElementById("clubProfileView");
+  if(view)view.innerHTML=`<p>${profile.bio||"Este club todavía no ha agregado una descripción."}</p><div class="muted" style="margin-top:10px">Capitán: ${profile.captain||"—"}${profile.social?" • "+profile.social:""}</div>`;
+
+  const editBtn=document.getElementById("editClubProfileBtn");
+  const canEdit=isAdmin()||(currentUser?.role==="dt"&&Number(currentAccountTeamId())===selectedClubHubId);
+  if(editBtn)editBtn.classList.toggle("hidden",!canEdit);
+
+  const matches=allConfirmedClubMatches(selectedClubHubId);
+  let w=0,d=0,l=0,gf=0,gc=0;
+  matches.forEach(m=>{
+    const home=Number(m.homeTeamId)===selectedClubHubId;
+    const a=Number(home?m.homeScore:m.awayScore),b=Number(home?m.awayScore:m.homeScore);
+    gf+=a;gc+=b;if(a>b)w++;else if(a<b)l++;else d++;
+  });
+  const metrics=document.getElementById("clubHubMetrics");
+  if(metrics)metrics.innerHTML=`<div class="metric"><span>PJ</span><b>${matches.length}</b></div><div class="metric"><span>V</span><b>${w}</b></div><div class="metric"><span>GF</span><b>${gf}</b></div><div class="metric"><span>DG</span><b>${gf-gc}</b></div>`;
+
+  const roster=(state.players||[]).filter(p=>playerTeamFromState(p.id)===selectedClubHubId);
+  const count=document.getElementById("clubRosterCount");
+  if(count)count.textContent=`${roster.length} JUGADORES`;
+  const rosterEl=document.getElementById("clubRoster");
+  if(rosterEl)rosterEl.innerHTML=roster.length?roster.map(p=>{
+    const st=(state.playerStats||{})[String(p.id)]||{};
+    return `<div class="clubPlayerCard"><b>${p.name||p.username||"Jugador"}</b><span>${p.position||"Jugador"} • ${st.goals||0} G • ${st.assists||0} A</span></div>`;
+  }).join(""):'<div class="muted">La plantilla todavía está vacía.</div>';
+
+  const recent=matches.slice(-5).reverse();
+  const recentEl=document.getElementById("clubRecentMatches");
+  if(recentEl)recentEl.innerHTML=recent.length?recent.map(m=>`<div class="relMatch"><div class="home">${relTeam(m.homeTeamId)?.name||"Club"}</div><div class="relScore">${m.homeScore} - ${m.awayScore}</div><div class="away">${relTeam(m.awayTeamId)?.name||"Club"}</div><div class="fixtureStatus confirmed">FINAL</div></div>`).join(""):'<div class="muted">Sin partidos confirmados todavía.</div>';
+}
+function renderPlayerStats(){
+  const table=document.getElementById("playerStatsTable");if(!table)return;
+  const rows=(state.players||[]).map(p=>({p,s:(state.playerStats||{})[String(p.id)]||{}}))
+    .sort((a,b)=>(b.s.goals||0)-(a.s.goals||0)||(b.s.assists||0)-(a.s.assists||0));
+  table.innerHTML='<tr><th>#</th><th>Jugador</th><th>Club</th><th>PJ</th><th>G</th><th>A</th><th>CS</th><th>MVP</th></tr>'+
+  rows.map((x,i)=>{
+    const tid=playerTeamFromState(x.p.id);
+    return `<tr><td>${i+1}</td><td>${x.p.name||x.p.username||"Jugador"}</td><td>${tid?`<button class="clubLinkBtn" type="button" data-club-open="${tid}">${relTeam(tid)?.name||"Club"}</button>`:"Agente libre"}</td><td>${x.s.matches||0}</td><td><b>${x.s.goals||0}</b></td><td>${x.s.assists||0}</td><td>${x.s.cleanSheets||0}</td><td>${x.s.mvp||0}</td></tr>`;
+  }).join("");
+  document.querySelectorAll("[data-club-open]").forEach(btn=>btn.addEventListener("click",()=>openClubHub(btn.dataset.clubOpen)));
+}
+document.getElementById("editClubProfileBtn")?.addEventListener("click",()=>{
+  const p=(state.clubProfiles||{})[String(selectedClubHubId)]||{};
+  document.getElementById("clubProfileView")?.classList.add("hidden");
+  document.getElementById("clubProfileEdit")?.classList.remove("hidden");
+  document.getElementById("clubBioInput").value=p.bio||"";
+  document.getElementById("clubRegionInput").value=p.region||"";
+  document.getElementById("clubCaptainInput").value=p.captain||"";
+  document.getElementById("clubSocialInput").value=p.social||"";
+});
+document.getElementById("saveClubProfileBtn")?.addEventListener("click",async()=>{
+  const body={
+    bio:document.getElementById("clubBioInput").value,
+    region:document.getElementById("clubRegionInput").value,
+    captain:document.getElementById("clubCaptainInput").value,
+    social:document.getElementById("clubSocialInput").value
+  };
+  const r=await fetch(`/api/clubs/${selectedClubHubId}/profile`,{method:"PUT",headers:{"Content-Type":"application/json",...authHeaders()},body:JSON.stringify(body)});
+  if(!r.ok){alert("No se pudo guardar el perfil.");return}
+  document.getElementById("clubProfileEdit")?.classList.add("hidden");
+  document.getElementById("clubProfileView")?.classList.remove("hidden");
+  await fetchServerState();renderClubHub();
+});
+
 function render(){
  
  const i=currentInfo(),mine=myTeam();
@@ -1325,7 +1488,7 @@ function render(){
  leagueBody.innerHTML=state.teams.filter(t=>t.approved).map((t,idx)=>`<tr><td>${idx+1}</td><td>${t.name}</td><td>${t.dt}</td><td>${state.picks.filter(p=>p.teamId===t.id).length}</td><td class="green">ACTIVO</td></tr>`).join("");
  if(isAdmin()) renderPendingAccounts();
  adminLog.innerHTML=state.log.slice(0,25).map((l,idx)=>`<div class="row"><b>${idx+1}</b><span>${l}</span><span></span></div>`).join("")||'<div class="muted">Sin actividad.</div>';
- pauseBtn.textContent=state.paused?"REANUDAR DRAFT":"PAUSAR DRAFT";renderCards();renderV8();renderLeague();renderRelampago();renderRulebook();mobileRoleNav();updateTimer();if(isAdmin())renderPendingAccounts()
+ pauseBtn.textContent=state.paused?"REANUDAR DRAFT":"PAUSAR DRAFT";renderCards();renderV8();renderLeague();renderRelampago();renderPlayerStats();renderClubHub();renderRulebook();mobileRoleNav();updateTimer();if(isAdmin())renderPendingAccounts()
 }
 
 pauseBtn.addEventListener("click",()=>{if(!isAdmin())return;state.paused=!state.paused;state.log.unshift(state.paused?"Draft pausado":"Draft reanudado");persist()});

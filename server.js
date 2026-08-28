@@ -23,6 +23,8 @@ const cleanState = {
   teams:[], players:[], playerRequests:[], dtRequests:[],
   picks:[], skips:[], paused:false, scouting:{}, combine:{},
   settings:{seconds:45,draftType:"Snake"},
+  clubProfiles:{},
+  playerStats:{},
   relampago:{
     name:"RELÁMPAGO FC26-27",
     status:"not_started",
@@ -558,6 +560,51 @@ app.post("/api/admin/matches/:id/resolve",auth,adminOnly,async(req,res)=>{
 
 
 
+
+app.put("/api/clubs/:id/profile",auth,async(req,res)=>{
+  try{
+    const st=(await getStore()).state;
+    const club=(st.teams||[]).find(t=>Number(t.id)===Number(req.params.id));
+    if(!club)return res.status(404).json({error:"club_not_found"});
+    const myTeam=req.user.role==="admin"?Number(req.params.id):accountTeamId(req.user,st);
+    if(req.user.role!=="admin"&&(req.user.role!=="dt"||Number(myTeam)!==Number(req.params.id)))
+      return res.status(403).json({error:"forbidden"});
+    const p=req.body||{};
+    await mutate(x=>{
+      x.clubProfiles=x.clubProfiles||{};
+      x.clubProfiles[String(req.params.id)]={
+        bio:String(p.bio||"").slice(0,500),
+        region:String(p.region||"").slice(0,60),
+        captain:String(p.captain||"").slice(0,60),
+        social:String(p.social||"").slice(0,100),
+        updatedAt:new Date().toISOString()
+      };
+      x.log.unshift(`Perfil de club actualizado: ${club.name}`);
+    });
+    res.json({ok:true});
+  }catch(e){res.status(500).json({error:"server_error"})}
+});
+
+app.put("/api/admin/player-stats/:id",auth,adminOnly,async(req,res)=>{
+  try{
+    const st=(await getStore()).state;
+    const pl=(st.players||[]).find(p=>Number(p.id)===Number(req.params.id));
+    if(!pl)return res.status(404).json({error:"player_not_found"});
+    const n=v=>Math.max(0,Math.min(999,parseInt(v)||0));
+    await mutate(x=>{
+      x.playerStats=x.playerStats||{};
+      x.playerStats[String(req.params.id)]={
+        matches:n(req.body?.matches),
+        goals:n(req.body?.goals),
+        assists:n(req.body?.assists),
+        cleanSheets:n(req.body?.cleanSheets),
+        mvp:n(req.body?.mvp)
+      };
+    });
+    res.json({ok:true});
+  }catch(e){res.status(500).json({error:"server_error"})}
+});
+
 app.get("/api/rulebook",async(req,res)=>{
   try{
     const st=(await getStore()).state;
@@ -780,4 +827,4 @@ app.put("/api/state",auth,async(req,res)=>{
 app.get("/app.html",(req,res)=>res.sendFile(path.join(ROOT,"app.html")));
 app.get("*",(req,res)=>res.sendFile(path.join(ROOT,"index.html")));
 
-initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.2.5 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});
+initDb().then(()=>app.listen(PORT,"0.0.0.0",()=>console.log(`PINTO FC26 RELEASE 1.3.0 on ${PORT}`))).catch(e=>{console.error(e);process.exit(1)});

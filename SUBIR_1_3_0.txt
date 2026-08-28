@@ -1,0 +1,19 @@
+PINTO FC26 1.3.0 — CLUB CENTER + PLANTILLAS + ESTADÍSTICAS
+
+NUEVO:
+- Perfil profesional de cada club.
+- DT puede editar el perfil de su propio club.
+- Admin puede editar cualquier club.
+- Plantilla automática usando jugadores drafteados.
+- Resumen: PJ, victorias, goles a favor y diferencia de goles.
+- Últimos 5 partidos confirmados.
+- Nueva sección ESTADÍSTICAS.
+- Ranking de jugadores: PJ, goles, asistencias, porterías a cero y MVP.
+- Backend preparado para estadísticas de jugadores.
+
+SUBE A GITHUB:
+app.html
+server.js
+package.json
+
+Commit changes → espera Railway Online.
